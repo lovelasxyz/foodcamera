@@ -1,0 +1,598 @@
+.rouletteContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+  position: relative;
+}
+
+.rouletteViewport {
+  position: relative;
+  width: 100%;
+  height: 140px;
+  overflow: hidden;
+  border-radius: var(--radius-md);
+  margin: 16px 0;
+}
+
+/* Градиентные тени по бокам */
+.rouletteViewport::before {
+  content: '';
+  background: linear-gradient(90deg, rgba(20, 20, 21, 1) 18.77%, rgba(20, 20, 21, 0) 100%);
+  width: 48px;
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  top: 0;
+  z-index: 2;
+}
+
+/* Центральный курсор */
+.rouletteViewport::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 4px;
+  height: 140px;
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    #0075FF 15%,
+    #0075FF 85%,
+    transparent 100%
+  );
+  border-radius: 2px;
+  z-index: 10;
+  filter: drop-shadow(0 0 5px rgba(0, 117, 255, 0.6));
+}
+
+.shadowRight {
+  background: linear-gradient(-90deg, rgba(20, 20, 21, 1) 18.77%, rgba(20, 20, 21, 0) 100%);
+  width: 48px;
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  top: 0;
+  z-index: 2;
+}
+
+.rouletteItems {
+  display: flex;
+  align-items: center;
+  height: 100%;
+  position: absolute;
+  left: 0;
+  transform: translateY(-50%);
+  gap: 8px;
+  will-change: transform;
+}
+
+.rouletteItem {
+  flex-shrink: 0;
+  width: 100px;
+  height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-md);
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.rouletteItem:hover {
+  background: rgba(255, 255, 255, 0.12);
+  transform: scale(1.02);
+}
+
+.rouletteItem img {
+  width: 100px;
+  height: 100px;
+  border-radius: var(--radius-md);
+
+  object-fit: contain;
+}
+
+.prizeHint {
+  position: absolute;
+  bottom: 4px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(0, 0, 0, 0.8);
+  border-radius: 4px;
+  padding: 2px 6px;
+  font-size: 10px;
+  color: white;
+  z-index: 2;
+}
+
+.prizeHint .coinIcon {
+  width: 12px;
+  height: 12px;
+}
+
+.multiplierTabs {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.multiplierTab {
+  padding: 8px 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-md);
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.multiplierTab.active {
+  background: rgba(0, 117, 255, 0.2);
+  border-color: rgba(0, 117, 255, 0.4);
+  color: white;
+}
+
+.multiplierTab.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.spinButton.centered {
+  justify-content: center !important;
+  padding: 0 15px !important;
+}
+.spinButton:before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .2), transparent);
+  transition: all .3s ease;
+}
+.actionButtons {
+  display: flex
+  ;
+      flex-direction: column;
+      gap: 10px;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      max-width: 337px;
+      margin: 0 auto;
+      width: 100%;
+      transition: margin-top 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+}
+.buttonLabel{
+  color: var(--color-text);
+  font-size: var(--font-size-md);
+  line-height: var(--line-height-md);
+  font-weight: var(--font-weight-semibold);
+}
+.priceValue{
+  color: var(--color-text);
+  font-size: var(--font-size-md);
+  line-height: var(--line-height-md);
+  font-weight: var(--font-weight-semibold);
+}
+.coinSmall{
+  width: 20px;
+  height: 20px;
+  position: relative;
+  display: flex
+;
+  align-items: center;
+  justify-content: center;
+}
+.coinImage{
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.priceTag{
+  background: linear-gradient(115.39deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, .75) 100%);
+  border-radius: var(--radius-md);
+  padding: 0 16px;
+  display: flex
+;
+  flex-direction: row;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+.spinButton {
+  background: #0075FF;
+  border-radius: var(--radius-md);
+  padding: 0 0 0 15px;
+  display: flex
+;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  height: 50px;
+  cursor: pointer;
+  transition: all .2s ease;
+  box-shadow: 0 4px 8px #0075ff33;
+  position: relative;
+  overflow: hidden;
+}
+
+.spinButton:hover:not(:disabled) {
+  background: linear-gradient(135deg, rgba(0, 117, 255, 1), rgba(0, 140, 255, 1));
+  transform: translateY(-1px);
+}
+
+.spinButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.resultContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  text-align: center;
+  padding: 20px;
+}
+
+.resultTitle {
+  font-size: 24px;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.resultPrize {
+  display: flex;
+  justify-content: center;
+  position: relative;
+}
+
+.winningPrize {
+  transform: scale(1.2);
+  animation: prizeGlow 2s ease-in-out infinite alternate;
+}
+
+.resultActions {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+  margin: 20px 0;
+}
+
+.keepButton {
+  background: #0075FF;
+  border-radius: var(--radius-md);
+  padding: 0 0 0 15px;
+  display: flex
+;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  height: 50px;
+  cursor: pointer;
+  transition: all .2s ease;
+  box-shadow: 0 4px 8px #0075ff33;
+  position: relative;
+  overflow: hidden;
+}
+
+.quickSellButton {
+  background: linear-gradient(135deg, rgba(80, 222, 37, 0.8), rgba(80, 222, 37, 1));
+  border: none;
+  border-radius: var(--radius-lg);
+  padding: 16px 20px;
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.upgradeButton {
+  background: #FF8400;
+  border: none;
+  border-radius: var(--radius-lg);
+  padding: 16px 20px;
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.prizesTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.prizesGrid {
+  display: flex
+  ;
+      flex-direction: row;
+      gap: 8px;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+      width: 100%;
+}
+
+.prizesSection {
+  width: 100%;
+  padding: 0 0 16px;
+  display: flex
+;
+margin-top: 15px;
+  flex-direction: column;
+  gap: 16px;
+  align-items: flex-start;
+  justify-content: flex-start;
+}
+
+.prizeGridItem {
+  background: rgba(255, 255, 255, .05);
+  border-radius: var(--radius-lg);
+  display: flex
+;
+  flex-direction: column;
+  gap: 6px;
+  align-items: center;
+  justify-content: center;
+  width: 107px;
+  height: 107px;
+  position: relative;
+}
+
+.prizeGridItem img {
+  width: 50px;
+  height:50px;
+  object-fit: contain;
+}
+
+.prizePrice {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+@keyframes prizeGlow {
+  0%, 100% {
+    filter: drop-shadow(0 4px 12px rgba(0, 117, 255, 0.3));
+  }
+  50% {
+    filter: drop-shadow(0 4px 20px rgba(0, 117, 255, 0.6));
+  }
+}
+
+/* Scrollbar styles */
+.prizesGrid::-webkit-scrollbar {
+  width: 4px;
+}
+
+.prizesGrid::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 2px;
+}
+
+.prizesGrid::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 2px;
+}
+
+.prizesGrid::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .rouletteViewport {
+    height: 140px;
+    margin: 12px 0;
+  }
+  
+  .rouletteItem {
+    width: 100px;
+    height: 100px;
+  }
+
+  
+  .resultActions {
+    flex-direction: column;
+  }
+}
+
+ .rouletteItems {
+  display: flex;
+  align-items: center;
+  height: 100%;
+  position: absolute;
+  left: 0;
+  transform: translateY(-50%);
+  gap: 8px;
+  will-change: transform;
+  transition: none; /* Убираем transition, используем requestAnimationFrame */
+}
+
+/* Эффекты для редких предметов */
+.rouletteItem[data-rarity="legendary"] {
+  position: relative;
+  overflow: visible;
+}
+
+.rouletteItem[data-rarity="legendary"]::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  background: linear-gradient(45deg, #FFD700, #FFA500, #FFD700);
+  border-radius: inherit;
+  z-index: -1;
+  animation: legendaryGlow 2s ease-in-out infinite;
+}
+
+.rouletteItem[data-rarity="epic"] {
+  box-shadow: 0 0 15px rgba(139, 92, 246, 0.4);
+  border: 2px solid #8B5CF6;
+}
+
+.rouletteItem[data-rarity="rare"] {
+  box-shadow: 0 0 10px rgba(59, 130, 246, 0.3);
+  border: 2px solid #3B82F6;
+}
+
+/* Анимации */
+@keyframes legendaryGlow {
+  0%, 100% {
+    opacity: 0.7;
+    filter: brightness(1);
+  }
+  50% {
+    opacity: 1;
+    filter: brightness(1.2);
+  }
+}
+
+/* Эффект sparkles для легендарных предметов */
+@keyframes sparkle {
+  0%, 100% { 
+    opacity: 0; 
+    transform: scale(0) rotate(0deg); 
+  }
+  50% { 
+    opacity: 1; 
+    transform: scale(1) rotate(180deg); 
+  }
+}
+
+.sparkle {
+  position: absolute;
+  font-size: 12px;
+  pointer-events: none;
+  animation: sparkle 2s infinite;
+  z-index: 10;
+}
+
+.prizesTitle {
+  color: var(--color-text);
+  padding-left: 1.4rem;
+  opacity: .5;
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-sm);
+  letter-spacing: .01px;
+}
+@media (max-width: 420px) {
+  .prizeGridItem{
+      width: 90px;
+      height: 90px;
+  }
+}
+.prizeItem {
+    background: rgba(255, 255, 255, .05);
+    border-radius: var(--radius-lg);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    align-items: center;
+    justify-content: center;
+    width: 107px;
+    height: 107px;
+    position: relative;
+}
+
+.prizeImage {
+    width: 70px;
+    height: 70px;
+    object-fit: cover;
+    aspect-ratio: 1;
+}
+
+.prizeHint {
+    z-index: 1;
+}
+
+.hint {
+    background: rgba(163, 171, 187, .12);
+    border-radius: var(--radius-lg);
+    padding: 3px 12px 3px 3px;
+    display: flex;
+    flex-direction: row;
+    gap: 6px;
+    align-items: center;
+    justify-content: flex-start;
+    position: absolute;
+    left: 0;
+    top: 0;
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+}
+
+.coinWrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+}
+
+.coin {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.coin.small {
+    width: 20px;
+    height: 20px;
+}
+
+.coinImage {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.price {
+    color: var(--color-text);
+    font-size: var(--font-size-sm);
+    line-height: var(--line-height-sm);
+    font-weight: var(--font-weight-semibold);
+}
+
+@media (max-width: 420px) {
+    .prizeItem {
+        width: 90px;
+        height: 90px;
+    }
+
+    .prizeImage {
+        width: 60px;
+        height: 60px;
+    }
+}
+
+

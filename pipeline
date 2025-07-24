@@ -1,0 +1,1026 @@
+# @cases speedup
+
+# Ускоренный Pipeline - 8 недель
+
+## 🚀 Общая стратегия ускорения
+
+**Цель:** Готовый продукт за 8 недель
+
+**Команда:** 4 разработчика (интенсивная работа)
+
+**Методология:** Kanban с быстрыми итерациями
+
+**Платежи:** Telegram Bot (проще и быстрее)
+
+---
+
+## ⚡ WEEK 1-2: Foundation Sprint
+
+### Day 1-3: Project Setup
+
+**Ответственный:** DevOps + Tech Lead
+
+**Приоритет:** БЛОКЕР
+
+**Задачи:**
+
+- [ ]  Monorepo setup (lerna) - 4 часа
+- [ ]  Docker dev environment - 4 часа
+- [ ]  PostgreSQL + Redis setup - 2 часа
+- [ ]  Basic CI/CD (GitHub Actions) - 4 часа
+- [ ]  Environment configs - 2 часа
+
+**Deliverable:** Готовая инфраструктура
+
+### Day 4-7: Core Backend
+
+**Ответственный:** Backend Developer
+
+**Приоритет:** КРИТИЧЕСКИЙ
+
+**Задачи:**
+
+- [ ]  Database schema (users, cases, prizes, inventory) - 6 часов
+- [ ]  Basic Express API setup - 4 часа
+- [ ]  JWT auth with Telegram WebApp - 8 часов
+- [ ]  CRUD APIs for cases/prizes - 8 часов
+- [ ]  Basic game logic (case opening) - 6 часов
+
+**Deliverable:** Работающее API
+
+### Day 8-14: React Mini App Foundation
+
+**Ответственный:** Frontend Developer
+**Приоритет:** КРИТИЧЕСКИЙ
+
+**Задачи:**
+
+- [ ]  React app + TypeScript setup - 4 часа
+- [ ]  Telegram WebApp integration - 6 часов
+- [ ]  Navigation (3 screens) - 4 часа
+- [ ]  Adapt react-roulette-pro - 8 часов
+- [ ]  Basic API integration - 6 часов
+- [ ]  Mobile-first responsive - 6 часов
+
+**Deliverable:** Базовое Mini App
+
+### Day 10-14: Telegram Bot Foundation
+
+**Ответственный:** Backend Developer #2
+
+**Приоритет:** ВЫСОКИЙ
+
+**Задачи:**
+
+- [ ]  Bot setup (telegraf.js) - 3 часа
+- [ ]  Admin authentication - 4 часа
+- [ ]  Basic admin commands (/admin, /stats) - 6 часов
+- [ ]  Case/prize management commands - 8 часов
+
+**Deliverable:** Функциональный админ-бот
+
+---
+
+## ⚡ WEEK 3-4: Game Mechanics
+
+### Day 15-18: Case Opening System
+
+**Ответственный:** Frontend + Backend
+
+**Приоритет:** КРИТИЧЕСКИЙ
+
+**Backend (2 дня):**
+
+- [ ]  Prize probability calculation - 4 часа
+- [ ]  Case opening API with balance check - 6 часа
+- [ ]  Inventory management API - 4 часа
+- [ ]  Transaction logging - 2 часа
+
+**Frontend (2 дня):**
+
+- [ ]  Case grid component - 4 часа
+- [ ]  Roulette animation integration - 8 часов
+- [ ]  Prize result modal - 4 часа
+- [ ]  Inventory page - 4 часа
+
+**Deliverable:** Полный цикл открытия кейсов
+
+### Day 19-21: User Management
+
+**Ответственный:** Backend Developer
+
+**Приоритет:** ВЫСОКИЙ
+
+**Задачи:**
+
+- [ ]  User registration flow - 4 часа
+- [ ]  Profile API - 3 часа
+- [ ]  Balance system (add/subtract) - 4 часа
+- [ ]  Basic user analytics - 3 часа
+
+**Deliverable:** Система пользователей
+
+### Day 22-28: Admin Panel Enhancement
+
+**Ответственный:** Backend Developer #2
+
+**Приоритет:** СРЕДНИЙ
+
+**Задачи:**
+
+- [ ]  Advanced bot commands - 8 часов
+- [ ]  User management via bot - 6 часов
+- [ ]  Real-time stats - 6 часов
+- [ ]  Bulk operations - 4 часа
+
+**Deliverable:** Продвинутая админка
+
+---
+
+## 💳 WEEK 5-6: Payment System (BOT APPROACH)
+
+### Day 29-32: USDT Infrastructure
+
+**Ответственный:** Backend Developer (Web3 опыт)
+
+**Приоритет:** БЛОКЕР
+
+**Задачи:**
+
+- [ ]  BSC Web3 connection - 4 часа
+- [ ]  HD Wallet setup - 6 часов
+- [ ]  Address generation system - 8 часов
+- [ ]  USDT contract integration - 6 часов
+- [ ]  Transaction monitoring - 8 часов
+
+**Deliverable:** Blockchain интеграция
+
+### Day 33-35: Bot Payment Commands
+
+**Ответственный:** Backend Developer #2
+
+**Приоритет:** КРИТИЧЕСКИЙ
+
+**Задачи:**
+
+- [ ]  /balance command - 2 часа
+- [ ]  /deposit [amount] command - 6 часов
+- [ ]  QR code generation for bot - 4 часов
+- [ ]  /withdraw [address] [amount] command - 8 часов
+- [ ]  Transaction status tracking - 4 часа
+
+**Deliverable:** Платежные команды бота
+
+### Day 36-42: Payment Processing
+
+**Ответственный:** Backend Developer
+**Приоритет:** КРИТИЧЕСКИЙ
+
+**Задачи:**
+
+- [ ]  Automatic deposit detection - 8 часов
+- [ ]  Balance auto-update - 4 часа
+- [ ]  Withdrawal processing - 8 часов
+- [ ]  Fee calculation - 4 часа
+- [ ]  Transaction notifications - 4 часа
+
+**Deliverable:** Полный платежный цикл
+
+---
+
+## 🎨 WEEK 7: Polish & Testing
+
+### Day 43-46: UI Enhancement
+
+**Ответственный:** Frontend Developer
+
+**Приоритет:** СРЕДНИЙ
+
+**Задачи:**
+
+- [ ]  Design system basics - 6 часов
+- [ ]  Animations polish - 6 часов
+- [ ]  Mobile optimization - 6 часов
+- [ ]  Error handling UI - 4 часа
+
+**Deliverable:** Polished UI
+
+### Day 47-49: Security & Validation
+
+**Ответственный:** Backend Developer
+**Приоритет:** КРИТИЧЕСКИЙ
+
+**Задачи:**
+
+- [ ]  Input validation everywhere - 6 часов
+- [ ]  Rate limiting - 3 часа
+- [ ]  Security audit - 6 часов
+- [ ]  Payment limits - 3 часа
+
+**Deliverable:** Безопасная система
+
+---
+
+## 🚀 WEEK 8: Production Ready
+
+### Day 50-53: Testing & Bug Fixes
+
+**Ответственный:** Вся команда
+
+**Приоритет:** БЛОКЕР
+
+**Задачи:**
+
+- [ ]  E2E testing всех flow - 8 часов
+- [ ]  Critical bug fixes - 8 часов
+- [ ]  Performance optimization - 6 часов
+- [ ]  Mobile device testing - 4 часов
+
+**Deliverable:** Стабильная система
+
+### Day 54-56: Production Deployment
+
+**Ответственный:** DevOps
+
+**Приоритет:** БЛОКЕР
+
+**Задачи:**
+
+- [ ]  Production server setup - 6 часов
+- [ ]  Database migration - 2 часа
+- [ ]  SSL & security config - 4 часа
+- [ ]  Monitoring setup - 4 часа
+
+**Deliverable:** Live система
+
+---
+
+## 🎯 Упрощенная архитектура для 8 недель
+
+### Minimal Tech Stack
+
+```jsx
+Backend:
+├── Node.js + Express
+├── PostgreSQL (одна БД)
+├── Redis (кэш)
+├── Web3.js (BSC only)
+└── Telegraf.js (bot)
+
+Frontend:
+├── React + TypeScript
+├── Zustand (state)
+├── React Query (API)
+├── Tailwind CSS
+└── react-roulette-pro
+
+Infrastructure:
+├── Docker
+├── GitHub Actions
+└── Single VPS server
+
+```
+
+### Упрощенные фичи
+
+**Убираем из MVP:**
+
+- ❌ Multi-network support (только BSC)
+- ❌ Advanced analytics dashboard
+- ❌ Web admin panel (только bot)
+- ❌ Referral system
+- ❌ Push notifications
+- ❌ Achievement system
+
+**Оставляем только:**
+
+- ✅ Telegram auth
+- ✅ Case opening with roulette
+- ✅ USDT deposits/withdrawals (bot)
+- ✅ Basic inventory
+- ✅ Admin bot commands
+- ✅ Mobile-responsive UI
+
+---
+
+## 💳 Detailed Payment Flow (BOT)
+
+### Deposit Process:
+
+```
+1. User: /deposit 50
+2. Bot: "Переведите 50 USDT на адрес: 0x123..."
+3. Bot: [QR Code image]
+4. Bot: "Ожидаем поступление..."
+5. System: Monitors blockchain
+6. Bot: "✅ Поступило 50 USDT! Баланс: 100 USDT"
+
+```
+
+### Withdrawal Process:
+
+```
+1. User: /withdraw 0x456... 30
+2. Bot: "Подтвердите вывод 30 USDT на 0x456...?"
+3. User: Confirms
+4. Bot: "Обрабатываем..."
+5. System: Sends transaction
+6. Bot: "✅ Отправлено! TxHash: 0x789..."
+
+```
+
+### Bot Commands Structure:
+
+```jsx
+// Основные команды
+/start - Welcome message + registration
+/help - List of commands
+/balance - Show current balance
+/deposit [amount] - Generate deposit address
+/withdraw [address] [amount] - Withdraw USDT
+/history - Last 10 transactions
+/support - Contact support
+
+// Админские команды
+/admin - Enter admin mode
+/add_case [name] [price] - Add new case
+/add_prize [case_id] [name] [rarity] - Add prize
+/stats - Show system statistics
+/users - User management
+/set_balance [user_id] [amount] - Set user balance
+
+```
+
+---
+
+## 🔥 Critical Success Factors
+
+### Team Coordination
+
+- **Daily standups** (15 min)
+- **Shared task board** (Notion/Linear)
+- **Code reviews** в течение 2 часов
+- **Pair programming** для сложных задач
+
+### Technical Decisions
+
+- **No perfectionism** - работающее решение лучше идеального
+- **Copy-paste over abstraction** initially
+- **Hardcode configurations** (no complex config system)
+- **Single deployment** (no microservices)
+
+### Risk Mitigation
+
+- **Blockchain integration** - тестировать в первую очередь
+- **Mobile compatibility** - тестировать каждый день
+- **Bot rate limits** - изучить ограничения Telegram
+- **Payment security** - code review обязателен
+
+---
+
+## 📊 Simplified Metrics
+
+**Week 4 Checkpoint:**
+
+- [ ]  User can register via Telegram
+- [ ]  User can open cases
+- [ ]  Basic admin commands work
+- [ ]  Mobile UI responsive
+
+**Week 6 Checkpoint:**
+
+- [ ]  USDT deposits work
+- [ ]  USDT withdrawals work
+- [ ]  Balance updates correctly
+- [ ]  Bot commands functional
+
+**Week 8 Launch:**
+
+- [ ]  Full user flow works E2E
+- [ ]  No critical bugs
+- [ ]  Production deployment ready
+- [ ]  Basic monitoring in place
+
+---
+
+## 🚨 Simplified Risk Management
+
+**High Risk Items:**
+
+1. **Blockchain integration complexity**
+    - Start on Day 1 with research
+    - Have backup plan (manual processing)
+2. **Telegram WebApp limitations**
+    - Test early and often
+    - Fallback to web version if needed
+3. **Team availability**
+    - Buffer time in critical tasks
+    - Cross-training on key components
+
+**Daily Risk Review:**
+
+- Are we on track for weekly goals?
+- Any blockers need immediate attention?
+- Should we cut scope further?
+
+---
+
+## ✅ Simplified Definition of Done
+
+**Per Task:**
+
+- [ ]  Feature works as specified
+- [ ]  Basic error handling
+- [ ]  Mobile responsive (if UI)
+- [ ]  Tested on staging
+
+**Per Week:**
+
+- [ ]  Demo to stakeholders
+- [ ]  Critical bugs fixed
+- [ ]  Next week planned
+- [ ]  Risk assessment updated
+
+**Final Launch:**
+
+- [ ]  E2E user flow tested
+- [ ]  Security basics covered
+- [ ]  Production monitoring
+- [ ]  Rollback plan ready
+
+---
+
+## 🎯 Resource Allocation
+
+**Backend Focus:** 60% (payments critical)
+**Frontend Focus:** 30% (mobile UI)
+**DevOps Focus:** 10% (simple deployment)
+
+**Week Distribution:**
+
+- Week 1-2: Foundation (25%)
+- Week 3-4: Game mechanics (25%)
+- Week 5-6: Payments (35%)
+- Week 7-8: Polish & deploy (15%)
+
+**Success Criteria:** Live working product with basic monetization in 8 weeks!
+
+# Ускоренный Pipeline Lucky Box - 8 недель
+
+## 🚀 Общая стратегия ускорения
+
+**Цель:** Готовый продукт за 8 недель
+
+**Команда:** 4 разработчика (интенсивная работа)
+
+**Методология:** Kanban с быстрыми итерациями
+
+**Платежи:** Telegram Bot (проще и быстрее)
+
+---
+
+## ⚡ WEEK 1-2: Foundation Sprint
+
+### Day 1-3: Project Setup
+
+**Ответственный:** DevOps + Tech Lead
+
+**Приоритет:** БЛОКЕР
+
+**Задачи:**
+
+- [ ]  Monorepo setup (lerna) - 4 часа
+- [ ]  Docker dev environment - 4 часа
+- [ ]  PostgreSQL + Redis setup - 2 часа
+- [ ]  Basic CI/CD (GitHub Actions) - 4 часа
+- [ ]  Environment configs - 2 часа
+
+**Deliverable:** Готовая инфраструктура
+
+### Day 4-7: Core Backend
+
+**Ответственный:** Backend Developer
+
+**Приоритет:** КРИТИЧЕСКИЙ
+
+**Задачи:**
+
+- [ ]  Database schema (users, cases, prizes, inventory) - 6 часов
+- [ ]  Basic Express API setup - 4 часа
+- [ ]  JWT auth with Telegram WebApp - 8 часов
+- [ ]  CRUD APIs for cases/prizes - 8 часов
+- [ ]  Basic game logic (case opening) - 6 часов
+
+**Deliverable:** Работающее API
+
+### Day 8-14: React Mini App Foundation
+
+**Ответственный:** Frontend Developer
+**Приоритет:** КРИТИЧЕСКИЙ
+
+**Задачи:**
+
+- [ ]  React app + TypeScript setup - 4 часа
+- [ ]  Telegram WebApp integration - 6 часов
+- [ ]  Navigation (3 screens) - 4 часа
+- [ ]  Adapt react-roulette-pro - 8 часов
+- [ ]  Basic API integration - 6 часов
+- [ ]  Mobile-first responsive - 6 часов
+
+**Deliverable:** Базовое Mini App
+
+### Day 10-14: Telegram Bot Foundation
+
+**Ответственный:** Backend Developer #2
+
+**Приоритет:** ВЫСОКИЙ
+
+**Задачи:**
+
+- [ ]  Bot setup (telegraf.js) + scenes - 4 часа
+- [ ]  Inline keyboard architecture - 6 часов
+- [ ]  Main menu with navigation - 4 часа
+- [ ]  Admin authentication & menus - 6 часов
+- [ ]  State management for conversations - 4 часа
+
+**Deliverable:** Функциональный inline-бот
+
+---
+
+## ⚡ WEEK 3-4: Game Mechanics
+
+### Day 15-18: Case Opening System
+
+**Ответственный:** Frontend + Backend
+
+**Приоритет:** КРИТИЧЕСКИЙ
+
+**Backend (2 дня):**
+
+- [ ]  Prize probability calculation - 4 часа
+- [ ]  Case opening API with balance check - 6 часа
+- [ ]  Inventory management API - 4 часа
+- [ ]  Transaction logging - 2 часа
+
+**Frontend (2 дня):**
+
+- [ ]  Case grid component - 4 часа
+- [ ]  Roulette animation integration - 8 часов
+- [ ]  Prize result modal - 4 часа
+- [ ]  Inventory page - 4 часа
+
+**Deliverable:** Полный цикл открытия кейсов
+
+### Day 19-21: User Management
+
+**Ответственный:** Backend Developer
+
+**Приоритет:** ВЫСОКИЙ
+
+**Задачи:**
+
+- [ ]  User registration flow - 4 часа
+- [ ]  Profile API - 3 часа
+- [ ]  Balance system (add/subtract) - 4 часа
+- [ ]  Basic user analytics - 3 часа
+
+**Deliverable:** Система пользователей
+
+### Day 22-28: Admin Panel Enhancement
+
+**Ответственный:** Backend Developer #2
+
+**Приоритет:** СРЕДНИЙ
+
+**Задачи:**
+
+- [ ]  Advanced inline admin menus - 8 часов
+- [ ]  Case/Prize CRUD via inline keyboards - 10 часов
+- [ ]  User management interface - 6 часов
+- [ ]  Real-time stats with refresh buttons - 4 часа
+
+**Deliverable:** Полная inline админка
+
+---
+
+## 💳 WEEK 5-6: Payment System (BOT APPROACH)
+
+### Day 29-32: USDT Infrastructure
+
+**Ответственный:** Backend Developer (Web3 опыт)
+
+**Приоритет:** БЛОКЕР
+
+**Задачи:**
+
+- [ ]  BSC Web3 connection - 4 часа
+- [ ]  HD Wallet setup - 6 часов
+- [ ]  Address generation system - 8 часов
+- [ ]  USDT contract integration - 6 часов
+- [ ]  Transaction monitoring - 8 часов
+
+**Deliverable:** Blockchain интеграция
+
+### Day 33-35: Bot Payment Interface
+
+**Ответственный:** Backend Developer #2
+
+**Приоритет:** КРИТИЧЕСКИЙ
+
+**Задачи:**
+
+- [ ]  Payment inline keyboards & scenes - 8 часов
+- [ ]  Deposit flow (amount → address → status) - 8 часов
+- [ ]  Withdraw flow (amount → address → confirm) - 8 часов
+- [ ]  QR code generation & display - 4 часа
+- [ ]  Transaction status checking - 4 часа
+
+**Deliverable:** Полный inline payment UX
+
+### Day 36-42: Payment Processing
+
+**Ответственный:** Backend Developer
+**Приоритет:** КРИТИЧЕСКИЙ
+
+**Задачи:**
+
+- [ ]  Automatic deposit detection - 8 часов
+- [ ]  Balance auto-update - 4 часа
+- [ ]  Withdrawal processing - 8 часов
+- [ ]  Fee calculation - 4 часа
+- [ ]  Transaction notifications - 4 часа
+
+**Deliverable:** Полный платежный цикл
+
+---
+
+## 🎨 WEEK 7: Polish & Testing
+
+### Day 43-46: UI Enhancement
+
+**Ответственный:** Frontend Developer
+
+**Приоритет:** СРЕДНИЙ
+
+**Задачи:**
+
+- [ ]  Design system basics - 6 часов
+- [ ]  Animations polish - 6 часов
+- [ ]  Mobile optimization - 6 часов
+- [ ]  Error handling UI - 4 часа
+
+**Deliverable:** Polished UI
+
+### Day 47-49: Security & Validation
+
+**Ответственный:** Backend Developer
+**Приоритет:** КРИТИЧЕСКИЙ
+
+**Задачи:**
+
+- [ ]  Input validation everywhere - 6 часов
+- [ ]  Rate limiting - 3 часа
+- [ ]  Security audit - 6 часов
+- [ ]  Payment limits - 3 часа
+
+**Deliverable:** Безопасная система
+
+---
+
+## 🚀 WEEK 8: Production Ready
+
+### Day 50-53: Testing & Bug Fixes
+
+**Ответственный:** Вся команда
+
+**Приоритет:** БЛОКЕР
+
+**Задачи:**
+
+- [ ]  E2E testing всех flow - 8 часов
+- [ ]  Critical bug fixes - 8 часов
+- [ ]  Performance optimization - 6 часов
+- [ ]  Mobile device testing - 4 часов
+
+**Deliverable:** Стабильная система
+
+### Day 54-56: Production Deployment
+
+**Ответственный:** DevOps
+
+**Приоритет:** БЛОКЕР
+
+**Задачи:**
+
+- [ ]  Production server setup - 6 часов
+- [ ]  Database migration - 2 часа
+- [ ]  SSL & security config - 4 часа
+- [ ]  Monitoring setup - 4 часа
+
+**Deliverable:** Live система
+
+---
+
+## 🎯 Упрощенная архитектура для 8 недель
+
+### Minimal Tech Stack
+
+```jsx
+Backend:
+├── Node.js + Express
+├── PostgreSQL (одна БД)
+├── Redis (кэш)
+├── Web3.js (BSC only)
+└── Telegraf.js (bot)
+
+Frontend:
+├── React + TypeScript
+├── Zustand (state)
+├── React Query (API)
+├── Tailwind CSS
+└── react-roulette-pro
+
+Infrastructure:
+├── Docker
+├── GitHub Actions
+└── Single VPS server
+
+```
+
+### Упрощенные фичи
+
+**Убираем из MVP:**
+
+- ❌ Multi-network support (только BSC)
+- ❌ Advanced analytics dashboard
+- ❌ Web admin panel (только bot)
+- ❌ Referral system
+- ❌ Push notifications
+- ❌ Achievement system
+
+**Оставляем только:**
+
+- ✅ Telegram auth
+- ✅ Case opening with roulette
+- ✅ USDT deposits/withdrawals (bot)
+- ✅ Basic inventory
+- ✅ Admin bot commands
+- ✅ Mobile-responsive UI
+
+---
+
+## 💳 Detailed Payment Flow (BOT)
+
+### Deposit Process (Inline):
+
+```
+1. User clicks "💳 Deposit" button
+2. Bot shows amount selection buttons [10$][25$][50$][Custom]
+3. User selects amount or enters custom
+4. Bot generates address + shows QR code button
+5. User clicks "📱 Show QR Code"
+6. Bot shows QR image + "🔄 Check Status" button
+7. User pays, clicks check status
+8. Bot: "✅ Received 50 USDT! Balance updated"
+
+```
+
+### Withdrawal Process (Inline):
+
+```
+1. User clicks "💸 Withdraw" button
+2. Bot shows amount buttons [10$][25$][50$][Max][Custom]
+3. User selects amount
+4. Bot asks for address with [📝 Enter][📚 Saved][📱 QR Scan]
+5. User provides address
+6. Bot shows confirmation with [✅ Confirm][❌ Cancel]
+7. User confirms
+8. Bot: "Processing..." → "✅ Sent! Hash: 0x123..."
+
+```
+
+### Bot Inline Interface Structure:
+
+### Main Menu (after /start):
+
+```
+💰 Lucky Box Wallet
+Balance: 125.50 USDT
+
+┌─────────────────────────────┐
+│  💳 Deposit              │
+│  💸 Withdraw             │
+│  📊 Balance & History     │
+│  ⚙️ Settings             │
+│  🎮 Open Mini App        │
+└─────────────────────────────┘
+
+```
+
+### Deposit Flow:
+
+```
+Step 1: Amount Selection
+┌─────────────────────────────┐
+│  💳 Choose deposit amount   │
+│                            │
+│  [10$] [25$] [50$] [100$]  │
+│  [250$] [500$] [Custom]    │
+│                            │
+│  [← Back to Menu]          │
+└─────────────────────────────┘
+
+Step 2: Payment Instructions
+┌─────────────────────────────┐
+│  Send 50 USDT to:          │
+│  0x742d35Cc6635Bf...       │
+│                            │
+│  [📱 Show QR Code]         │
+│  [📋 Copy Address]         │
+│  [🔄 Check Status]         │
+│                            │
+│  [← Choose Amount]         │
+└─────────────────────────────┘
+
+```
+
+### Withdraw Flow:
+
+```
+Step 1: Amount Input
+┌─────────────────────────────┐
+│  💸 Withdraw USDT          │
+│  Available: 125.50 USDT    │
+│                            │
+│  [10$] [25$] [50$] [Max]   │
+│  [Custom Amount]           │
+│                            │
+│  [← Back to Menu]          │
+└─────────────────────────────┘
+
+Step 2: Address Input
+┌─────────────────────────────┐
+│  Enter recipient address:   │
+│                            │
+│  [📝 Enter Address]        │
+│  [📚 Address Book]         │
+│  [📱 Scan QR Code]         │
+│                            │
+│  [← Choose Amount]         │
+└─────────────────────────────┘
+
+Step 3: Confirmation
+┌─────────────────────────────┐
+│  Confirm Withdrawal        │
+│                            │
+│  Amount: 50 USDT           │
+│  To: 0x8A7d...2F3c         │
+│  Fee: 1 USDT               │
+│  Total: 51 USDT            │
+│                            │
+│  [✅ Confirm] [❌ Cancel]   │
+└─────────────────────────────┘
+
+```
+
+### Admin Interface:
+
+```
+Admin Main Menu:
+┌─────────────────────────────┐
+│  👑 Admin Panel            │
+│                            │
+│  🎲 Manage Cases           │
+│  🏆 Manage Prizes          │
+│  👥 User Management        │
+│  📊 Statistics             │
+│  ⚙️ System Settings        │
+└─────────────────────────────┘
+
+Case Management:
+┌─────────────────────────────┐
+│  🎲 Case Management        │
+│                            │
+│  [➕ Add New Case]         │
+│  [📝 Edit Case]           │
+│  [🗑️ Delete Case]         │
+│  [👁️ View All Cases]      │
+│                            │
+│  [← Back to Admin]         │
+└─────────────────────────────┘
+
+```
+
+---
+
+## 🔥 Critical Success Factors
+
+### Team Coordination
+
+- **Daily standups** (15 min)
+- **Shared task board** (Notion/Linear)
+- **Code reviews** в течение 2 часов
+- **Pair programming** для сложных задач
+
+### Technical Decisions
+
+- **No perfectionism** - работающее решение лучше идеального
+- **Copy-paste over abstraction** initially
+- **Hardcode configurations** (no complex config system)
+- **Single deployment** (no microservices)
+
+### Risk Mitigation
+
+- **Blockchain integration** - тестировать в первую очередь
+- **Mobile compatibility** - тестировать каждый день
+- **Bot rate limits** - изучить ограничения Telegram
+- **Payment security** - code review обязателен
+
+---
+
+## 📊 Simplified Metrics
+
+**Week 4 Checkpoint:**
+
+- [ ]  User can register via Telegram
+- [ ]  User can open cases
+- [ ]  Basic admin commands work
+- [ ]  Mobile UI responsive
+
+**Week 6 Checkpoint:**
+
+- [ ]  USDT deposits work
+- [ ]  USDT withdrawals work
+- [ ]  Balance updates correctly
+- [ ]  Bot commands functional
+
+**Week 8 Launch:**
+
+- [ ]  Full user flow works E2E
+- [ ]  No critical bugs
+- [ ]  Production deployment ready
+- [ ]  Basic monitoring in place
+
+---
+
+## 🚨 Simplified Risk Management
+
+**High Risk Items:**
+
+1. **Blockchain integration complexity**
+    - Start on Day 1 with research
+    - Have backup plan (manual processing)
+2. **Telegram WebApp limitations**
+    - Test early and often
+    - Fallback to web version if needed
+3. **Team availability**
+    - Buffer time in critical tasks
+    - Cross-training on key components
+
+**Daily Risk Review:**
+
+- Are we on track for weekly goals?
+- Any blockers need immediate attention?
+- Should we cut scope further?
+
+---
+
+## ✅ Simplified Definition of Done
+
+**Per Task:**
+
+- [ ]  Feature works as specified
+- [ ]  Basic error handling
+- [ ]  Mobile responsive (if UI)
+- [ ]  Tested on staging
+
+**Per Week:**
+
+- [ ]  Demo to stakeholders
+- [ ]  Critical bugs fixed
+- [ ]  Next week planned
+- [ ]  Risk assessment updated
+
+**Final Launch:**
+
+- [ ]  E2E user flow tested
+- [ ]  Security basics covered
+- [ ]  Production monitoring
+- [ ]  Rollback plan ready
+
+---
+
+## 🎯 Resource Allocation
+
+**Backend Focus:** 60% (payments critical)
+**Frontend Focus:** 30% (mobile UI)
+**DevOps Focus:** 10% (simple deployment)
+
+**Week Distribution:**
+
+- Week 1-2: Foundation (25%)
+- Week 3-4: Game mechanics (25%)
+- Week 5-6: Payments (35%)
+- Week 7-8: Polish & deploy (15%)
+
+**Success Criteria:** Live working product with basic monetization in 8 weeks!

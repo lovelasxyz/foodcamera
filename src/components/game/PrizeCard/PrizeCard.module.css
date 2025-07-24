@@ -1,0 +1,99 @@
+.prizeCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px;
+  border-radius: 8px;
+  background: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+  min-width: 120px;
+  border: 2px solid transparent;
+}
+
+.prizeCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.imageContainer {
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 8px;
+}
+
+.prizeImage {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.prizeInfo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+}
+
+.prizeName {
+  font-size: 12px;
+  font-weight: 600;
+  color: #333;
+  text-align: center;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.prizePrice {
+  font-size: 14px;
+  font-weight: 700;
+  color: #333;
+}
+
+.token {
+  color: #667eea;
+  font-weight: 800;
+}
+
+/* Редкость */
+.common {
+  border-color: #9ca3af;
+}
+
+.rare {
+  border-color: #3b82f6;
+  background: linear-gradient(145deg, #ffffff, #f0f7ff);
+}
+
+.epic {
+  border-color: #8b5cf6;
+  background: linear-gradient(145deg, #ffffff, #f3f0ff);
+}
+
+.legendary {
+  border-color: #f59e0b;
+  background: linear-gradient(145deg, #ffffff, #fefbf0);
+  position: relative;
+}
+.legendary::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  background: linear-gradient(45deg, #f59e0b, #d97706);
+  animation: legendaryGlow 2s infinite;
+  border-radius: inherit;
+  z-index: -1;
+}
+
+@keyframes legendaryGlow {
+  from {
+    opacity: 0.7;
+  }
+  to {
+    opacity: 1;
+  }
+} 

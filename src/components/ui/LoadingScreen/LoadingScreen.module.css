@@ -1,0 +1,328 @@
+/* Общие стили для LoadingScreen */
+.loadingScreen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  background: var(--color-background);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  overflow: hidden;
+}
+
+/* Стили для простого режима (бывший AppLoader) */
+.content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  max-width: 300px;
+  width: 100%;
+  padding: 20px;
+}
+
+.logoContainer {
+    width: 250px;
+    max-width: 100%;
+    display: flex
+;
+    justify-content: center;
+    align-items: center;    
+}
+
+.logo {
+  margin-bottom: 24px;
+  display: flex;
+  justify-content: center;
+}
+
+.logoShape {
+  width: 120px;
+  height: 120px;
+  background: linear-gradient(135deg, #667eea 0%, #4b82a2 100%);
+  border-radius: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  box-shadow: 0 20px 40px rgba(102, 126, 234, 0.3);
+  animation: logoGlow 2s ease-in-out infinite alternate;
+}
+
+.logoShape::before {
+  content: '';
+  position: absolute;
+  inset: 2px;
+  background: linear-gradient(135deg, #7b8ef5 0%, #5c87b8 100%);
+  border-radius: 28px;
+  z-index: -1;
+}
+
+.logoInner {
+  font-size: 48px;
+  font-weight: 700;
+  color: white;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.appName {
+  font-size: 24px;
+  font-weight: 600;
+  color: #ffffff;
+  margin: 0 0 8px 0;
+  letter-spacing: -0.5px;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.copyright {
+  font-size: 14px;
+  color: #888888;
+  margin: 0;
+  font-weight: 400;
+  opacity: 0.8;
+}
+
+.simpleLoaderContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  animation: fadeInUp 0.8s ease-out 0.2s both;
+}
+
+.status {
+  font-size: 16px;
+  color: #ffffff;
+  margin: 0;
+  font-weight: 500;
+  opacity: 0.9;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* Стили для режима авторизации Telegram (оригинальный LoadingPage) */
+.loaderContainer {
+    display: flex
+;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    max-width: 393px;
+    width: 100%;
+    position: relative;
+    padding: var(--spacing-16);
+    background-color: var(--color-background);
+    margin: 0 auto;
+}
+
+.loaderContent {
+    display: flex
+;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.loaderHeader {
+    display: flex
+;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    letter-spacing: -.4px;
+    width: 100%;
+    margin-bottom: 32px;
+}
+
+.floatingLogo {
+  aspect-ratio: 1;
+  object-fit: contain;
+  width: 100%;
+  animation: float 1s ease-in-out infinite alternate;
+}
+
+.loaderTitle {
+    color: var(--color-text);
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
+    margin-top: var(--spacing-10);
+}
+
+.loaderCopyright {
+    color: #4e4e50;
+    font-size: var(--font-size-md);
+    font-weight: var(--font-weight-normal);
+    margin-top: var(--spacing-10);
+}
+
+.loaderSocialHandle {
+    color: var(--color-text);
+    font-size: var(--font-size-md);
+    font-weight: var(--font-weight-normal);
+    position: absolute;
+    bottom: var(--spacing-16);
+}
+
+.loaderStatus {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.statusText {
+  color: #ffffffb3;
+  font-size: 14px;
+}
+
+/* Стили для ошибок */
+.errorContainer {
+    display: flex
+    ;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+        text-align: center;
+        background: rgba(255, 255, 255, .05);
+        border-radius: 16px;
+        padding: 24px;
+        width: 100%;
+        max-width: 320px;
+        animation: fadeIn-764519fb .3s ease;
+}
+
+.errorIcon {
+  font-size: 48px;
+}
+
+.errorTitle {
+  color: var(--color-text);
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.errorMessage {
+  color: var(--color-text);
+  opacity: 0.8;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.retryButton {
+  background: rgba(0, 136, 204, 0.8);
+  color: #fff;
+  border-radius: 12px;
+  padding: 12px 24px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-top: 12px;
+  border: none;
+}
+
+.retryButton:hover {
+  background: rgba(0, 136, 204, 1);
+  transform: translateY(-2px);
+}
+
+/* Общие стили для спиннера */
+.spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid rgba(255, 255, 255, 0.1);
+  border-top-color: #08c;
+  border-radius: 50%;
+  animation: spin 1.2s linear infinite;
+}
+
+/* Анимации */
+@keyframes spin {
+  0% { 
+    transform: rotate(0deg); 
+  }
+  100% { 
+    transform: rotate(360deg); 
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes logoGlow {
+  from {
+    box-shadow: 0 20px 40px rgba(102, 126, 234, 0.3);
+    transform: scale(1);
+  }
+  to {
+    box-shadow: 0 25px 50px rgba(102, 126, 234, 0.4);
+    transform: scale(1.02);
+  }
+}
+
+@keyframes float {
+  0% {
+    transform: translateY(-8px);
+  }
+  100% {
+    transform: translateY(8px);
+  }
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Мобильные оптимизации */
+@media (max-width: 480px) {
+  .logoShape {
+    width: 100px;
+    height: 100px;
+    border-radius: 25px;
+  }
+
+  .logoShape::before {
+    border-radius: 23px;
+  }
+
+  .logoInner {
+    font-size: 40px;
+  }
+
+  .status, .statusText {
+    font-size: 14px;
+  }
+
+  .loaderSocialHandle {
+    font-size: 14px;
+  }
+}
+
+/* Темная тема для Telegram */
+@media (prefers-color-scheme: dark) {
+  .loadingScreen {
+    background: var(--color-background);
+  }
+} 

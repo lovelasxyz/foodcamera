@@ -1,0 +1,110 @@
+/* Live Status Bar */
+.liveStatusBar {
+    border-radius: var(--radius-md);
+    display: flex
+;
+    width: 100%;
+    max-width: 99%;
+    overflow: hidden;
+    position: relative;
+}
+
+/* Live индикатор */
+.liveIndicator {
+  padding: 0 var(--spacing-16);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-4);
+  align-items: center;
+  position: absolute;
+  left: -2px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2;
+  border-radius: var(--radius-md);
+  padding: var(--spacing-8) var(--spacing-12);
+}
+
+.liveDot {
+  color: var(--color-live, #23c265);
+  font-size: 12px;
+  font-weight: var(--font-weight-semibold);
+  height: 10px;
+  animation: pulse 2s infinite;
+  margin-bottom: 3px;
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.liveText {
+  color: var(--color-live, #23c265);
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-sm);
+  font-weight: var(--font-weight-semibold);
+  writing-mode: vertical-lr;
+  transform: rotate(180deg);
+  margin-bottom: 8px;
+  letter-spacing: 0.5px;
+}
+
+/* Live items container */
+.liveItems {
+  display: flex;
+  flex-direction: row;
+  gap: 3px;
+  align-items: center;
+  flex: 1;
+  margin-left: 30px;
+  overflow: hidden;
+  padding-left: 8px;
+}
+
+/* Individual live item */
+.liveItem {
+  flex-shrink: 0;
+  position: relative;
+  overflow: hidden;
+  opacity: 0;
+  animation: liveItemSlideIn 0.5s ease forwards;
+}
+
+
+
+.liveImage {
+  margin-right: 5px;
+  width: 50px;
+  height: 50px;
+  object-fit: cover;
+  aspect-ratio: 1;
+  border-radius: var(--radius-sm);
+}
+
+/* Анимации */
+@keyframes liveItemSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Медиа запросы */
+@media (max-width: 420px) {
+
+  .liveItems {
+    margin-left: 40px;
+  }
+} 

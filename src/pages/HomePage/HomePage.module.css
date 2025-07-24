@@ -1,0 +1,237 @@
+.homePage {
+  min-height: 100vh;
+      padding: 0 var(--spacing-8);
+    display: flex;
+        padding-bottom: 98px;
+    flex-direction: column;
+    gap: var(--spacing-10);
+    align-items: center;
+    width: 100%;
+    max-width: 100%;
+    margin: 0 auto;
+  background: var(--color-background);
+}
+
+.casesContainer {
+    width: 100%;
+    padding: 0 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+    align-items: center;
+}
+
+/* Live status bar */
+.liveStatusBar {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-16);
+  padding: var(--spacing-16);
+  margin-bottom: var(--spacing-16);
+  overflow: hidden;
+}
+
+.liveIndicator {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-4);
+  flex-shrink: 0;
+}
+
+.liveText {
+  color: var(--color-live);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+}
+
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.1);
+  }
+}
+
+.liveItems {
+  display: flex;
+  gap: var(--spacing-8);
+  overflow-x: hidden;
+  flex: 1;
+  animation: scrollLeft 30s linear infinite;
+}
+
+@keyframes scrollLeft {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.liveItem {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.liveItemContent {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.liveImage {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
+
+/* Free case banner */
+.freeCaseBanner {
+    background: linear-gradient(115.39deg, #0098EA 0%, #3FBCFF 100%);
+    border-radius: 16px;
+    padding: 15px;
+    display: flex
+;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    position: relative;
+    box-shadow: 0 0 20px #3fbcff59;
+    overflow: hidden;
+    margin-bottom: -10px;
+    width: 100%;
+}
+
+.lightningIcon {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lightningIcon img {
+  width: 24px;
+  height: 24px;
+}
+
+.bannerContent {
+    display: flex
+;
+    flex-direction: row;
+    gap: 5px;
+    align-items: center;
+    justify-content: flex-start;
+    position: relative;
+}
+
+.coinWrapper {
+  width: 24px;
+  height: 24px;
+}
+
+.coinWrapper img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.bannerText {
+  color: white;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+}
+
+.telegramButton {
+    background: #ffffff;
+    border-radius: 10px;
+    color: black;
+    padding: 8px 16px;
+    display: flex
+;
+    flex-direction: row;
+    gap: 8px;
+    align-items: center;
+    justify-content: center;
+    height: 36px;
+    min-width: 72px;
+    
+    max-height: 36px;
+    position: relative;
+    box-shadow: 0 0 50px #ffffff80;
+    border: none;
+    cursor: pointer;
+}
+
+.casesGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+  width: 100%;
+}
+
+.loading,
+.noCases {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+  font-size: 1.1rem;
+  color: var(--text-secondary);
+}
+
+/* Адаптивность */
+/* Очень маленькие экраны - минимум 2 элемента */
+@media (max-width: 380px) {
+  .casesGrid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+  
+  .casesContainer {
+    padding: 12px;
+  }
+}
+
+/* Маленькие экраны */
+@media (min-width: 381px) and (max-width: 480px) {
+  .casesGrid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+}
+
+/* Средние экраны */
+@media (min-width: 481px) and (max-width: 768px) {
+  .casesGrid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+}
+
+/* Большие экраны */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .casesGrid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 18px;
+  }
+}
+
+/* Очень большие экраны */
+@media (min-width: 1025px) {
+  .casesGrid {
+    grid-template-columns: repeat(5, 1fr);
+    gap: 20px;
+  }
+} 

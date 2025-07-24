@@ -1,0 +1,15 @@
+<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="tonGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0098EA;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#0075FF;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <circle cx="10" cy="10" r="10" fill="url(#tonGradient)" />
+  
+  <!-- TON logo simplified -->
+  <path d="M6 7h8c0.5 0 1 0.5 1 1v4c0 0.5-0.5 1-1 1H6c-0.5 0-1-0.5-1-1V8c0-0.5 0.5-1 1-1z" fill="white" opacity="0.9"/>
+  <path d="M8 9v2m4-2v2" stroke="#0075FF" stroke-width="1.5" stroke-linecap="round"/>
+  <circle cx="10" cy="10" r="1" fill="#0075FF"/>
+</svg> 
