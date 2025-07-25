@@ -4,10 +4,10 @@ import { useGameStore } from '@/store/gameStore';
 import { useUserStore } from '@/store/userStore';
 import { Modal } from '@/components/ui/Modal';
 import styles from './RouletteWheel.module.css';
+import useSoundEffects from '@/hooks/useSoundEffects';
 
-
-// 🆕 Новый хук для улучшенной физики рулетки
-const useRoulettePhysics = (isSpinning: boolean, finalPosition: number) => {
+// Простой хук для плавной анимации
+const useRouletteAnimation = (isSpinning: boolean, targetPosition: number) => {
   const [position, setPosition] = useState(0);
   
   useEffect(() => {
@@ -17,16 +17,15 @@ const useRoulettePhysics = (isSpinning: boolean, finalPosition: number) => {
     }
     
     const startTime = Date.now();
-    const duration = 4000; // 4 секунды
-    const startPosition = 0;
+    const duration = 4000;
     
     const animate = () => {
       const elapsed = Date.now() - startTime;
       const progress = Math.min(elapsed / duration, 1);
       
-      // Улучшенная easing функция для более реалистичного замедления
-      const eased = 1 - Math.pow(1 - progress, 3);
-      const currentPosition = startPosition + (finalPosition * eased);
+      // Easing function для плавного замедления
+      const eased = 1 - Math.pow(1 - progress, 4);
+      const currentPosition = targetPosition * eased;
       
       setPosition(currentPosition);
       
@@ -36,78 +35,9 @@ const useRoulettePhysics = (isSpinning: boolean, finalPosition: number) => {
     };
     
     requestAnimationFrame(animate);
-  }, [isSpinning, finalPosition]);
+  }, [isSpinning, targetPosition]);
   
   return position;
-};
-
-// 🆕 Хук для звуковых эффектов
-const useSoundEffects = () => {
-  const playSound = (soundType: 'spin' | 'win' | 'rare') => {
-    if (typeof window === 'undefined') return;
-    
-    // Простые звуки через Web Audio API или можно использовать файлы
-    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-    
-    const sounds = {
-      spin: () => {
-        // Звук вращения - низкочастотный гул
-        const oscillator = audioContext.createOscillator();
-        const gainNode = audioContext.createGain();
-        
-        oscillator.connect(gainNode);
-        gainNode.connect(audioContext.destination);
-        
-        oscillator.frequency.setValueAtTime(100, audioContext.currentTime);
-        gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 2);
-        
-        oscillator.start();
-        oscillator.stop(audioContext.currentTime + 2);
-      },
-      win: () => {
-        // Звук выигрыша - мелодичный
-        [261.63, 329.63, 392.00].forEach((freq, i) => {
-          const oscillator = audioContext.createOscillator();
-          const gainNode = audioContext.createGain();
-          
-          oscillator.connect(gainNode);
-          gainNode.connect(audioContext.destination);
-          
-          oscillator.frequency.setValueAtTime(freq, audioContext.currentTime + i * 0.1);
-          gainNode.gain.setValueAtTime(0.1, audioContext.currentTime + i * 0.1);
-          gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + i * 0.1 + 0.3);
-          
-          oscillator.start(audioContext.currentTime + i * 0.1);
-          oscillator.stop(audioContext.currentTime + i * 0.1 + 0.3);
-        });
-      },
-      rare: () => {
-        // Звук редкого предмета - особенный
-        const oscillator = audioContext.createOscillator();
-        const gainNode = audioContext.createGain();
-        
-        oscillator.connect(gainNode);
-        gainNode.connect(audioContext.destination);
-        
-        oscillator.frequency.setValueAtTime(523.25, audioContext.currentTime);
-        oscillator.frequency.exponentialRampToValueAtTime(1046.5, audioContext.currentTime + 0.5);
-        gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 1);
-        
-        oscillator.start();
-        oscillator.stop(audioContext.currentTime + 1);
-      }
-    };
-    
-    try {
-      sounds[soundType]();
-    } catch (error) {
-      console.log('Sound not supported');
-    }
-  };
-  
-  return { playSound };
 };
 
 export const RouletteWheel: React.FC = () => {
@@ -120,80 +50,66 @@ export const RouletteWheel: React.FC = () => {
     closeCase 
   } = useGameStore();
   const { user, addToInventory, updateBalance } = useUserStore();
-  const rouletteRef = useRef<HTMLDivElement>(null);
-
-  // 🆕 Используем новую физику
-  const [finalPosition, setFinalPosition] = useState(0);
-  const currentPosition = useRoulettePhysics(isSpinning, finalPosition);
-  
-  // 🆕 Используем звуки
   const { playSound } = useSoundEffects();
 
-  // Рассчитываем финальную позицию анимации
-  const calculateFinalPosition = (winningIndex: number) => {
-    if (!currentCase) return 0;
+  const [targetPosition, setTargetPosition] = useState(0);
+  const [selectedPrize, setSelectedPrize] = useState<any>(null);
+  const currentPosition = useRouletteAnimation(isSpinning, targetPosition);
+
+  // ПРОСТОЙ АЛГОРИТМ: определяем приз и позицию одновременно
+  const generateSpinResult = () => {
+    if (!currentCase) return { position: 0, prize: null, prizeIndex: 0 };
     
-    const itemWidth = 108; // ширина элемента + gap (100px + 8px)
+    const ITEM_WIDTH = 108;
     const totalItems = currentCase.items.length;
-    const baseSpins = 5; // количество полных оборотов для эффекта
-    const baseDistance = baseSpins * totalItems * itemWidth;
     
-    // Позиция выигрышного элемента для центрирования под курсором
-    const winningPosition = winningIndex * itemWidth;
-    const centerOffset = itemWidth / 2; // центрируем элемент под курсором
+    // 1. Выбираем случайный приз
+    const randomPrizeIndex = Math.floor(Math.random() * totalItems);
+    const selectedPrize = currentCase.items[randomPrizeIndex];
     
-    return -(baseDistance + winningPosition - centerOffset);
+    // 2. Генерируем количество оборотов (5-7)
+    const spins = 5 + Math.random() * 2;
+    
+    // 3. Рассчитываем базовое расстояние
+    const baseDistance = spins * totalItems * ITEM_WIDTH;
+    
+    // 4. Позиция выбранного приза (с небольшим случайным смещением)
+    const prizePosition = randomPrizeIndex * ITEM_WIDTH;
+    const randomOffset = (Math.random() - 0.5) * ITEM_WIDTH * 0.4; // ±20% смещение
+    
+    // 5. Финальная позиция (отрицательная, так как движемся влево)
+    const finalPosition = -(baseDistance + prizePosition + randomOffset);
+    
+    return {
+      position: finalPosition,
+      prize: selectedPrize,
+      prizeIndex: randomPrizeIndex
+    };
   };
 
   const handleSpin = () => {
     if (!currentCase) return;
-
-    if (user.balance < currentCase.price) {
-      return;
-    }
+    if (user.balance < currentCase.price) return;
     
-    // Списываем средства за спин
+    playSound('spin');
+    // Списываем средства
     updateBalance(-currentCase.price);
     
-    // Рассчитываем случайный индекс выигрышного элемента
-    const randomItemIndex = Math.floor(Math.random() * currentCase.items.length);
+    // Генерируем результат
+    const result = generateSpinResult();
     
-    // Устанавливаем финальную позицию анимации
-    const position = calculateFinalPosition(randomItemIndex);
-    setFinalPosition(position);
+    setTargetPosition(result.position);
+    setSelectedPrize(result.prize);
     
-    // 🆕 Проигрываем звук вращения
-    playSound('spin');
-    
-    startSpin(randomItemIndex);
+    // Запускаем анимацию
+    startSpin(result.prizeIndex);
   };
 
   const handleClose = () => {
-    setFinalPosition(0);
+    setTargetPosition(0);
+    setSelectedPrize(null);
     closeCase();
   };
-
-  // 🆕 Проигрываем звук при выигрыше
-  useEffect(() => {
-    if (showResult && spinResult) {
-      // const rarity = spinResult.prize.rarity || 'common';
-      // if (rarity === 'legendary' || rarity === 'epic') {
-      //   playSound('rare');
-      // } else {
-      //   playSound('win');
-      // }
-    }
-  }, [showResult, spinResult, playSound]);
-
-  // Сброс позиции после закрытия результата
-  useEffect(() => {
-    if (!showResult && !isSpinning && finalPosition !== 0) {
-      const timer = setTimeout(() => {
-        setFinalPosition(0);
-      }, 500);
-      return () => clearTimeout(timer);
-    }
-  }, [showResult, isSpinning, finalPosition]);
 
   const handleKeepPrize = () => {
     if (spinResult && currentCase) {
@@ -204,30 +120,46 @@ export const RouletteWheel: React.FC = () => {
 
   const handleQuickSell = () => {
     if (spinResult) {
-      // Добавляем цену приза к балансу пользователя
       updateBalance(spinResult.prize.price);
       closeCase();
     }
   };
 
-
+  // Сброс после закрытия
+  useEffect(() => {
+    if (!showResult && !isSpinning) {
+      const timer = setTimeout(() => {
+        setTargetPosition(0);
+        setSelectedPrize(null);
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [showResult, isSpinning]);
 
   if (!currentCase) return null;
 
-  // Создаем массив элементов для рулетки (дублируем для плавной анимации)
+  // Создаем МНОГО элементов для гарантированного покрытия
   const rouletteItems = [];
-  for (let i = 0; i < 200; i++) {
-    const item = currentCase.items[i % currentCase.items.length];
+  const totalItemsInCase = currentCase.items.length;
+  
+  // Создаем достаточно элементов: 
+  // Максимум 7 оборотов * количество призов * 2 (запас)
+  const neededElements = 7 * totalItemsInCase * 2;
+  const safeElements = Math.max(neededElements, 300); // минимум 300
+  
+  for (let i = 0; i < safeElements; i++) {
+    const originalIndex = i % totalItemsInCase;
+    const item = currentCase.items[originalIndex];
+    
     rouletteItems.push({
       ...item,
-      uniqueId: `${item.id}-${i}`
+      uniqueId: `roulette-${i}`,
+      originalIndex: originalIndex
     });
   }
 
   const sortedPrizes = [...currentCase.items].sort((a, b) => b.price - a.price);
-
-  const totalPrice = currentCase.price;
-  const hasEnoughFunds = user.balance >= totalPrice;
+  const hasEnoughFunds = user.balance >= currentCase.price;
 
   return (
     <Modal
@@ -238,16 +170,24 @@ export const RouletteWheel: React.FC = () => {
     >
       {!showResult ? (
         <div className={styles.rouletteContainer}>
+    
 
-          {/* Рулетка с новой физикой */}
+          {/* Рулетка */}
           <div className={styles.rouletteViewport}>
             <div 
               className={styles.rouletteItems} 
-              style={{ transform: `translateX(${currentPosition}px)` }}
-              ref={rouletteRef}
+              style={{ 
+                transform: `translate(-50%, -50%) translateX(${currentPosition}px)`
+              }}
             >
-              {rouletteItems.map((item) => (
-                <div key={item.uniqueId} className={styles.rouletteItem} data-rarity={item.rarity || 'common'}>
+              {rouletteItems.map((item, index) => (
+                <div 
+                  key={item.uniqueId} 
+                  className={styles.rouletteItem} 
+                  data-rarity={item.rarity || 'common'}
+                  data-index={index}
+                  data-original-index={item.originalIndex}
+                >
                   <img 
                     src={item.image} 
                     alt={item.name} 
@@ -259,32 +199,40 @@ export const RouletteWheel: React.FC = () => {
                       alt="TON" 
                       className={styles.coinIcon}
                     />
-                    <span>{item.price}</span>
+                    <div className={styles.price}> <span>{item.price}</span></div>
                   </div>
                 </div>
+                
               ))}
             </div>
+             <div className={styles.bg}></div>
+
+                 <div className={styles.pointersContainer}>
+                    <img src="/assets/images/Union.svg" className={styles.unionTop} alt="" />
+                    <img src="/assets/images/Union.svg" className={styles.unionBottom} alt="" />
+                  </div> 
+            
             <div className={styles.shadowRight} />
           </div>
 
-          {/* Кнопки действий */}
+          {/* Кнопки */}
           <div className={styles.actionButtons}>
             <button 
               className={styles.spinButton}
               onClick={handleSpin}
               disabled={isSpinning || !hasEnoughFunds}
             >
-             <div className={styles.buttonLabel}>  {isSpinning ? 'Spinning...' : `Spin`} </div>
-              
-             <div className={styles.priceTag}>
-              <div className={styles.priceValue}>{totalPrice.toFixed(2)}</div>
-              <div className={styles.coinSmall}>
-                <div className={styles.coin}>
-                  <img className={styles.coinImage} src="/assets/images/ton.svg" alt="Coin" />
+              <div className={styles.buttonLabel}>
+                {isSpinning ? 'Spinning...' : 'Spin'}
+              </div>
+              <div className={styles.priceTag}>
+                <div className={styles.priceValue}>{currentCase.price.toFixed(2)}</div>
+                <div className={styles.coinSmall}>
+                  <div className={styles.coin}>
+                    <img className={styles.coinImage} src="/assets/images/ton.svg" alt="Coin" />
+                  </div>
                 </div>
               </div>
-              </div>
-            
             </button>
           </div>
 
@@ -295,7 +243,7 @@ export const RouletteWheel: React.FC = () => {
               fontSize: '14px',
               marginTop: '12px'
             }}>
-              Insufficient balance. Need {totalPrice.toFixed(2)} TON
+              Insufficient balance. Need {currentCase.price.toFixed(2)} TON
             </div>
           )}
 
@@ -307,12 +255,14 @@ export const RouletteWheel: React.FC = () => {
                 <div key={item.id} className={styles.prizeGridItem}>
                   <img src={item.image} alt={item.name} />
                   <div className={styles.prizePrice}>
+                    <div className={styles.prizeHint}>
                     <img 
                       src="/assets/images/ton.svg" 
                       alt="TON" 
-                      style={{ width: '10px', height: '10px' }}
+                      className={styles.coinIcon}
                     />
-                    <span>{item.price}</span>
+                    <div className={styles.price}> <span>{item.price}</span></div>
+                  </div>
                   </div>
                 </div>
               ))}
@@ -320,9 +270,7 @@ export const RouletteWheel: React.FC = () => {
           </div>
         </div>
       ) : (
-        <div className={styles.modal}>
-          <div className={styles.resultContainer}>
-         
+        <div className={styles.resultContainer}>
           <div style={{ 
             fontSize: '18px', 
             color: 'rgba(255, 255, 255, 0.7)', 
@@ -345,7 +293,6 @@ export const RouletteWheel: React.FC = () => {
               style={{ width: '24px', height: '24px' }}
             />
             <span>{spinResult?.prize.price}</span>
-            <span style={{ fontSize: '16px', color: 'white' }}>✦</span>
           </div>
 
           <div className={styles.resultPrize}>
@@ -366,39 +313,35 @@ export const RouletteWheel: React.FC = () => {
                     objectFit: 'contain',
                   }}
                 />
-                <div style={{ 
-                  position: 'absolute', 
-                  top: '-10px', 
-                  left: '50%', 
-                  transform: 'translateX(-50%)',
-                  background: 'rgba(0, 0, 0, 0.8)',
-                  padding: '4px 12px',
-                  borderRadius: '12px',
-                  fontSize: '12px'
-                }}>
-                  ✦ ✦ ✦
-                </div>
+                
               </div>
             )}
           </div>
-          </div>
+
           <div className={styles.resultActions}>
-            <button onClick={handleKeepPrize} className={`${styles.spinButton} ${styles.centered}`}><div className={styles.buttonLabel}>Keep it</div></button>
-
-            <button 
-              className={styles.quickSellButton}
-              onClick={handleQuickSell}
-            >
-              Quick Sell {spinResult?.prize.price}
-              <img 
-                src="/assets/images/ton.svg" 
-                alt="TON" 
-                style={{ width: '14px', height: '14px' }}
-              />
+            <button onClick={handleKeepPrize} className={`${styles.spinButton} ${styles.centered}`}>
+              <div className={styles.buttonLabel}>Keep it</div>
             </button>
+ <button 
+          className={styles.quickSellButton}
+          onClick={handleQuickSell}
+          disabled={isSpinning || !hasEnoughFunds}
+        >
+                <div className={styles.buttonLabel}> Quick Sell </div>
+              
+              <div className={styles.priceTag}>
+               <div className={styles.priceValue}>{spinResult?.prize.price.toFixed(2)}</div>
+               <div className={styles.coinSmall}>
+                 <div className={styles.coin}>
+                   <img className={styles.coinImage} src="/assets/images/ton.svg" alt="Coin" />
+                 </div>
+               </div>
+               </div>
+        </button>
+            
           </div>
 
-          {/* Возможные призы в результате */}
+          {/* Возможные призы */}
           <div className={styles.prizesSection}>
             <div className={styles.prizesTitle}>Possible prizes:</div>
             <div className={styles.prizesGrid}>
@@ -406,12 +349,14 @@ export const RouletteWheel: React.FC = () => {
                 <div key={item.id} className={styles.prizeGridItem}>
                   <img src={item.image} alt={item.name} />
                   <div className={styles.prizePrice}>
+                    <div className={styles.prizeHint}>
                     <img 
                       src="/assets/images/ton.svg" 
                       alt="TON" 
-                      style={{ width: '10px', height: '10px' }}
+                      className={styles.coinIcon}
                     />
-                    <span>{item.price}</span>
+                    <div className={styles.price}> <span>{item.price}</span></div>
+                  </div>
                   </div>
                 </div>
               ))}

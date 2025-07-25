@@ -14,7 +14,7 @@ export const LiveStatusBar: React.FC = () => {
 
   // Расширенные моковые данные для демонстрации
   const mockLiveItems: LiveItem[] = [
-    { id: 1, image: '/assets/images/frog.png', name: 'Mystic Frog', price: 1562.28, userName: 'Player123' },
+    { id: 1, image: '/assets/images/frog.png', name: 'Mystic Frog', price: 1562, userName: 'Player123' },
     { id: 2, image: '/assets/images/diamond.png', name: 'Diamond', price: 48.15, userName: 'GamerX' },
     { id: 3, image: '/assets/images/dragon.png', name: 'Dragon', price: 89.99, userName: 'CoolUser' },
     { id: 4, image: '/assets/images/wizard-hat.png', name: 'Wizard Hat', price: 35.20, userName: 'MagicFan' },

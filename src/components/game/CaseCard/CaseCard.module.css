@@ -234,7 +234,7 @@ video.caseImage {
 /* Black backdrop эффект */
 .caseImageContainer.blackBackdrop {
   background: none !important;
-  background-image: url(/images/effects/black_backdrop.svg) !important;
+  background-image: url(assets/images/black_backdrop.svg) !important;
   background-position: center !important;
   background-repeat: no-repeat !important;
   background-size: 105% 200% !important;

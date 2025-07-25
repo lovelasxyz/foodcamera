@@ -1,7 +1,7 @@
 .rouletteContainer {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 24px;
   width: 100%;
   position: relative;
 }
@@ -27,26 +27,7 @@
   z-index: 2;
 }
 
-/* Центральный курсор */
-.rouletteViewport::after {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 4px;
-  height: 140px;
-  background: linear-gradient(
-    180deg,
-    transparent 0%,
-    #0075FF 15%,
-    #0075FF 85%,
-    transparent 100%
-  );
-  border-radius: 2px;
-  z-index: 10;
-  filter: drop-shadow(0 0 5px rgba(0, 117, 255, 0.6));
-}
+
 
 .shadowRight {
   background: linear-gradient(-90deg, rgba(20, 20, 21, 1) 18.77%, rgba(20, 20, 21, 0) 100%);
@@ -57,16 +38,30 @@
   top: 0;
   z-index: 2;
 }
-
+.bg{
+  background: rgba(255, 255, 255, .01);
+    border-width: 2px;
+    border-style: solid;
+    border-image: linear-gradient(-90deg, rgba(61, 68, 92, 0) 9.77%, rgba(10, 93, 201, .6) 50.17%, rgba(61, 68, 92, 0) 90.43%);
+    opacity: .4;
+    border-image-slice: 1;
+    position: absolute;
+    right: 0;
+    left: 0;
+    bottom: 0;
+    top: 0;
+}
 .rouletteItems {
   display: flex;
   align-items: center;
   height: 100%;
   position: absolute;
-  left: 0;
-  transform: translateY(-50%);
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
   gap: 8px;
   will-change: transform;
+  transition: none;
 }
 
 .rouletteItem {
@@ -96,24 +91,63 @@
 }
 
 .prizeHint {
+    background: rgba(163, 171, 187, .12);
+    border-radius: var(--radius-lg);
+    padding: 3px 12px 3px 3px;
+    display: flex
+;
+    flex-direction: row;
+    gap: 6px;
+    align-items: center;
+    justify-content: flex-start;
+    position: absolute;
+    left: 0;
+    top: 0;
+    box-shadow: 0 1px 2px #0003;
+    z-index: 3;
+}
+
+
+/* Item hint with price */
+.itemHint {
   position: absolute;
-  bottom: 4px;
+  bottom: 6px;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
   align-items: center;
   gap: 4px;
-  background: rgba(0, 0, 0, 0.8);
-  border-radius: 4px;
-  padding: 2px 6px;
-  font-size: 10px;
-  color: white;
-  z-index: 2;
+  background: rgba(163, 171, 187, 0.12);
+  border-radius: var(--radius-lg);
+  padding: 3px 12px 3px 3px;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.coinWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
 }
 
 .prizeHint .coinIcon {
-  width: 12px;
-  height: 12px;
+      position: relative;
+    display: flex;
+    margin: 2px;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    object-fit: contain;
+}
+
+.price {
+    color: var(--color-text);
+    font-size: var(--font-size-sm);
+    line-height: var(--line-height-sm);
+    font-weight: var(--font-weight-semibold);
 }
 
 .multiplierTabs {
@@ -162,17 +196,52 @@
   transition: all .3s ease;
 }
 .actionButtons {
-  display: flex
-  ;
+  display: flex;
       flex-direction: column;
       gap: 10px;
       align-items: center;
       justify-content: center;
       width: 100%;
-      max-width: 337px;
       margin: 0 auto;
-      width: 100%;
       transition: margin-top 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+}
+@media screen and (min-width: 350px) {
+.actionButtons {
+      width: 95% !important;
+}
+}
+.pointersContainer{
+      width: 100%;
+    height: 100%;
+    position: absolute;
+    left: 0;
+    top: 0;
+    z-index: 10;
+    pointer-events: none;
+}
+.unionTop{
+      box-sizing: border-box;
+    border-radius: 0;
+    width: 150px;
+    height: 10.05px;
+    position: absolute;
+    left: 50%;
+    top: 0;
+    transform: translate(-50%) translate(-.5px);
+    overflow: visible;
+    filter: drop-shadow(0 0 3px rgba(10, 93, 201, .6));
+}
+.unionBottom{
+      box-sizing: border-box;
+    border-radius: 0;
+    width: 150px;
+    height: 10.05px;
+    position: absolute;
+    left: 49.8%;
+    bottom: 0;
+    transform: translate(-50%) rotate(180deg) translate(-.5px);
+    overflow: visible;
+    filter: drop-shadow(0 0 3px rgba(10, 93, 201, .6));
 }
 .buttonLabel{
   color: var(--color-text);
@@ -247,7 +316,7 @@
   align-items: center;
   gap: 24px;
   text-align: center;
-  padding: 20px;
+  padding: 10px;
 }
 
 .resultTitle {
@@ -272,6 +341,7 @@
 .resultActions {
   display: flex;
   gap: 12px;
+  flex-direction: column;
   width: 100%;
   margin: 20px 0;
 }
@@ -295,19 +365,21 @@
 }
 
 .quickSellButton {
-  background: linear-gradient(135deg, rgba(80, 222, 37, 0.8), rgba(80, 222, 37, 1));
-  border: none;
-  border-radius: var(--radius-lg);
-  padding: 16px 20px;
-  color: white;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  white-space: nowrap;
+    background: #23C265;
+    border-radius: var(--radius-md);
+    padding: 0 0 0 15px;
+    display: flex
+;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    height: 50px;
+    cursor: pointer;
+    transition: all .2s ease;
+    box-shadow: 0 4px 8px #23c26533;
+    position: relative;
+    overflow: hidden;
 }
 
 .upgradeButton {
@@ -345,7 +417,6 @@
   padding: 0 0 16px;
   display: flex
 ;
-margin-top: 15px;
   flex-direction: column;
   gap: 16px;
   align-items: flex-start;
@@ -367,8 +438,8 @@ margin-top: 15px;
 }
 
 .prizeGridItem img {
-  width: 50px;
-  height:50px;
+  width: 70px;
+  height:70px;
   object-fit: contain;
 }
 
@@ -412,56 +483,13 @@ margin-top: 15px;
 @media (max-width: 768px) {
   .rouletteViewport {
     height: 140px;
-    margin: 12px 0;
+    margin: 15px 0px 5px 0;
   }
   
   .rouletteItem {
     width: 100px;
     height: 100px;
   }
-
-  
-  .resultActions {
-    flex-direction: column;
-  }
-}
-
- .rouletteItems {
-  display: flex;
-  align-items: center;
-  height: 100%;
-  position: absolute;
-  left: 0;
-  transform: translateY(-50%);
-  gap: 8px;
-  will-change: transform;
-  transition: none; /* Убираем transition, используем requestAnimationFrame */
-}
-
-/* Эффекты для редких предметов */
-.rouletteItem[data-rarity="legendary"] {
-  position: relative;
-  overflow: visible;
-}
-
-.rouletteItem[data-rarity="legendary"]::before {
-  content: '';
-  position: absolute;
-  inset: -2px;
-  background: linear-gradient(45deg, #FFD700, #FFA500, #FFD700);
-  border-radius: inherit;
-  z-index: -1;
-  animation: legendaryGlow 2s ease-in-out infinite;
-}
-
-.rouletteItem[data-rarity="epic"] {
-  box-shadow: 0 0 15px rgba(139, 92, 246, 0.4);
-  border: 2px solid #8B5CF6;
-}
-
-.rouletteItem[data-rarity="rare"] {
-  box-shadow: 0 0 10px rgba(59, 130, 246, 0.3);
-  border: 2px solid #3B82F6;
 }
 
 /* Анимации */
@@ -530,10 +558,6 @@ margin-top: 15px;
     aspect-ratio: 1;
 }
 
-.prizeHint {
-    z-index: 1;
-}
-
 .hint {
     background: rgba(163, 171, 187, .12);
     border-radius: var(--radius-lg);
@@ -594,5 +618,3 @@ margin-top: 15px;
         height: 60px;
     }
 }
-
-

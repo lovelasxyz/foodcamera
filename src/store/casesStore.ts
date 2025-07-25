@@ -33,7 +33,7 @@ const mockCases: Case[] = [
       { id: 7, name: 'Diamond', price: 48.15, image: ASSET_PATHS.IMAGES.DIAMOND, rarity: 'epic' },
       { id: 8, name: 'Burger', price: 12.30, image: ASSET_PATHS.IMAGES.BURGER, rarity: 'common' },
       { id: 9, name: 'Dragon', price: 89.99, image: ASSET_PATHS.IMAGES.DRAGON, rarity: 'epic' },
-      { id: 10, name: 'Frog', price: 1562.28, image: ASSET_PATHS.IMAGES.FROG, rarity: 'legendary' },
+      { id: 10, name: 'Frog', price: 1562, image: ASSET_PATHS.IMAGES.FROG, rarity: 'legendary' },
       { id: 11, name: 'Gift', price: 25.00, image: ASSET_PATHS.IMAGES.GIFT, rarity: 'rare' },
       { id: 12, name: 'Lightning', price: 42.50, image: ASSET_PATHS.IMAGES.LIGHTNING, rarity: 'epic' },
     ]
@@ -47,7 +47,7 @@ const mockCases: Case[] = [
     items: [
       { id: 1, name: 'Teddy Bear', price: 10.91, image: ASSET_PATHS.IMAGES.TEDDY, rarity: 'common' },
       { id: 2, name: 'Scroll', price: 24.06, image: ASSET_PATHS.IMAGES.SCROLL, rarity: 'common' },
-      { id: 3, name: 'Frog', price: 1562.28, image: ASSET_PATHS.IMAGES.FROG, rarity: 'legendary' },
+      { id: 3, name: 'Frog', price: 1562, image: ASSET_PATHS.IMAGES.FROG, rarity: 'legendary' },
       { id: 4, name: 'Diamond', price: 48.15, image: ASSET_PATHS.IMAGES.DIAMOND, rarity: 'epic' },
       { id: 5, name: 'TON', price: 5.50, image: ASSET_PATHS.IMAGES.TOKEN, rarity: 'common' },
       { id: 6, name: 'TON', price: 15.75, image: ASSET_PATHS.IMAGES.TOKEN_GOLD, rarity: 'rare' },
@@ -75,7 +75,7 @@ const mockCases: Case[] = [
       { id: 7, name: 'Diamond', price: 48.15, image: ASSET_PATHS.IMAGES.DIAMOND, rarity: 'epic' },
       { id: 8, name: 'Burger', price: 12.30, image: ASSET_PATHS.IMAGES.BURGER, rarity: 'common' },
       { id: 9, name: 'Dragon', price: 89.99, image: ASSET_PATHS.IMAGES.DRAGON, rarity: 'epic' },
-      { id: 10, name: 'Frog', price: 1562.28, image: ASSET_PATHS.IMAGES.FROG, rarity: 'legendary' },
+      { id: 10, name: 'Frog', price: 1562, image: ASSET_PATHS.IMAGES.FROG, rarity: 'legendary' },
       { id: 11, name: 'Gift', price: 25.00, image: ASSET_PATHS.IMAGES.GIFT, rarity: 'rare' },
       { id: 12, name: 'Lightning', price: 42.50, image: ASSET_PATHS.IMAGES.LIGHTNING, rarity: 'epic' },
     ]
@@ -96,7 +96,7 @@ const mockCases: Case[] = [
       { id: 7, name: 'Diamond', price: 48.15, image: ASSET_PATHS.IMAGES.DIAMOND, rarity: 'epic' },
       { id: 8, name: 'Burger', price: 12.30, image: ASSET_PATHS.IMAGES.BURGER, rarity: 'common' },
       { id: 9, name: 'Dragon', price: 89.99, image: ASSET_PATHS.IMAGES.DRAGON, rarity: 'epic' },
-      { id: 10, name: 'Frog', price: 1562.28, image: ASSET_PATHS.IMAGES.FROG, rarity: 'legendary' },
+      { id: 10, name: 'Frog', price: 1562, image: ASSET_PATHS.IMAGES.FROG, rarity: 'legendary' },
       { id: 11, name: 'Gift', price: 25.00, image: ASSET_PATHS.IMAGES.GIFT, rarity: 'rare' },
       { id: 12, name: 'Lightning', price: 42.50, image: ASSET_PATHS.IMAGES.LIGHTNING, rarity: 'epic' },
     ]
@@ -134,7 +134,7 @@ const mockCases: Case[] = [
     background: '#FF1493',
     items: [
       { id: 1, name: 'Teddy Bear', price: 10.91, image: ASSET_PATHS.IMAGES.TEDDY, rarity: 'common' },
-      { id: 2, name: 'Frog', price: 1562.28, image: ASSET_PATHS.IMAGES.FROG, rarity: 'legendary' },
+      { id: 2, name: 'Frog', price: 1562, image: ASSET_PATHS.IMAGES.FROG, rarity: 'legendary' },
     ]
   },
   {
@@ -145,7 +145,7 @@ const mockCases: Case[] = [
     background: '#8A2BE2',
     items: [
       { id: 1, name: 'Diamond', price: 48.15, image: ASSET_PATHS.IMAGES.DIAMOND, rarity: 'epic' },
-      { id: 2, name: 'Frog', price: 1562.28, image: ASSET_PATHS.IMAGES.FROG, rarity: 'legendary' },
+      { id: 2, name: 'Frog', price: 1562, image: ASSET_PATHS.IMAGES.FROG, rarity: 'legendary' },
     ]
   }
 ];
