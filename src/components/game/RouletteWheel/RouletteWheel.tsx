@@ -1,5 +1,5 @@
 // src/components/game/RouletteWheel/RouletteWheel.tsx
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useGameStore } from '@/store/gameStore';
 import { useUserStore } from '@/store/userStore';
 import { Modal } from '@/components/ui/Modal';
@@ -53,7 +53,6 @@ export const RouletteWheel: React.FC = () => {
   const { playSound } = useSoundEffects();
 
   const [targetPosition, setTargetPosition] = useState(0);
-  const [selectedPrize, setSelectedPrize] = useState<any>(null);
   const currentPosition = useRouletteAnimation(isSpinning, targetPosition);
 
   // ПРОСТОЙ АЛГОРИТМ: определяем приз и позицию одновременно
@@ -99,7 +98,6 @@ export const RouletteWheel: React.FC = () => {
     const result = generateSpinResult();
     
     setTargetPosition(result.position);
-    setSelectedPrize(result.prize);
     
     // Запускаем анимацию
     startSpin(result.prizeIndex);
@@ -107,7 +105,6 @@ export const RouletteWheel: React.FC = () => {
 
   const handleClose = () => {
     setTargetPosition(0);
-    setSelectedPrize(null);
     closeCase();
   };
 
@@ -130,7 +127,6 @@ export const RouletteWheel: React.FC = () => {
     if (!showResult && !isSpinning) {
       const timer = setTimeout(() => {
         setTargetPosition(0);
-        setSelectedPrize(null);
       }, 500);
       return () => clearTimeout(timer);
     }
