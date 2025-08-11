@@ -1,45 +1,11 @@
 // src/components/game/RouletteWheel/RouletteWheel.tsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useGameStore } from '@/store/gameStore';
 import { useUserStore } from '@/store/userStore';
 import { Modal } from '@/components/ui/Modal';
 import styles from './RouletteWheel.module.css';
 import useSoundEffects from '@/hooks/useSoundEffects';
 import { ROULETTE_CONFIG } from '@/types/game';
-
-// Простой хук для плавной анимации
-const useRouletteAnimation = (isSpinning: boolean, targetPosition: number) => {
-  const [position, setPosition] = useState(0);
-  
-  useEffect(() => {
-    if (!isSpinning) {
-      setPosition(0);
-      return;
-    }
-    
-    const startTime = Date.now();
-    const duration = ROULETTE_CONFIG.SPIN_DURATION;
-    
-    const animate = () => {
-      const elapsed = Date.now() - startTime;
-      const progress = Math.min(elapsed / duration, 1);
-      
-      // Easing function для плавного замедления
-      const eased = ROULETTE_CONFIG.ANIMATION_EASING(progress);
-      const currentPosition = targetPosition * eased;
-      
-      setPosition(currentPosition);
-      
-      if (progress < 1) {
-        requestAnimationFrame(animate);
-      }
-    };
-    
-    requestAnimationFrame(animate);
-  }, [isSpinning, targetPosition]);
-  
-  return position;
-};
 
 export const RouletteWheel: React.FC = () => {
   const { 
@@ -48,46 +14,85 @@ export const RouletteWheel: React.FC = () => {
     spinResult, 
     showResult, 
     startSpin, 
-    closeCase 
+    closeCase,
+    endSpin,
+    resetForNextSpin
   } = useGameStore();
   const { user, addToInventory, updateBalance } = useUserStore();
   const { playSound } = useSoundEffects();
 
-  const [targetPosition, setTargetPosition] = useState(0);
+  const [position, setPosition] = useState(0);
   const [targetReplicaIndex, setTargetReplicaIndex] = useState<number | null>(null);
-  const currentPosition = useRouletteAnimation(isSpinning, targetPosition);
+
+  const resetRoulette = () => {
+    setPosition(0);
+    setTargetReplicaIndex(null);
+  };
+
+  const handleAnimationEnd = () => {
+    if (isSpinning) {
+      endSpin();
+    }
+  };
+
+  const rouletteItems = useMemo(() => {
+    if (!currentCase) return [];
+    
+    const items = [];
+    const totalItemsInCase = currentCase.items.length;
+    // Уменьшаем количество элементов для более плавной и медленной прокрутки
+    const neededElements = 5 * totalItemsInCase * 2; 
+    const reelLength = Math.max(neededElements, 300);
+
+    for (let i = 0; i < reelLength; i++) {
+      const originalIndex = i % totalItemsInCase;
+      const item = currentCase.items[originalIndex];
+      items.push({
+        ...item,
+        uniqueId: `roulette-${i}`,
+        originalIndex: originalIndex
+      });
+    }
+    return items;
+  }, [currentCase]);
 
   // ПРОСТОЙ АЛГОРИТМ: определяем приз и позицию одновременно
   const generateSpinResult = () => {
     if (!currentCase) return { position: 0, prize: null, prizeIndex: 0, targetDomIndex: 0 };
-    
-    // Используем единый шаг элемента (ширина + gap) из конфигурации
+
     const ITEM_WIDTH = ROULETTE_CONFIG.ITEM_WIDTH;
     const totalItems = currentCase.items.length;
-
-    // Длина визуальной ленты (кол-во отрендеренных элементов)
-    const neededElements = 7 * totalItems * 2;
-    const safeElements = Math.max(neededElements, 300);
-    const containerCenter = (safeElements * ITEM_WIDTH) / 2;
+    const reelLength = rouletteItems.length;
+    const containerCenter = (reelLength * ITEM_WIDTH) / 2;
 
     // 1. Выбираем случайный приз
     const randomPrizeIndex = Math.floor(Math.random() * totalItems);
     const selectedPrize = currentCase.items[randomPrizeIndex];
 
-    // 2. Рассчитываем число оборотов так, чтобы целевой элемент оказался около центра ленты
-    const centerSpins = Math.max(3, Math.floor(safeElements / 2 / totalItems) - 1);
-    const extraSpins = Math.floor(Math.random() * 2); // небольшая вариативность 0..1 оборот
-    const spins = centerSpins + extraSpins;
+    // 2. Определяем целевую зону в дальней части ленты (75%-95% длины)
+    const targetZoneStart = Math.floor(reelLength * 0.75);
+    const targetZoneEnd = Math.floor(reelLength * 0.95);
+    const randomBaseIndex = targetZoneStart + Math.floor(Math.random() * (targetZoneEnd - targetZoneStart));
 
-    // 3. Индекс целевого DOM-элемента в длинной ленте
-    const targetDomIndex = spins * totalItems + randomPrizeIndex;
+    // 3. Находим первый доступный индекс для нашего приза
+    let targetDomIndex = randomBaseIndex;
+    while (targetDomIndex % totalItems !== randomPrizeIndex) {
+      targetDomIndex++;
+      // Циклический поиск в пределах зоны, если вышли за край
+      if (targetDomIndex >= targetZoneEnd) {
+        targetDomIndex = targetZoneStart;
+      }
+    }
 
     // 4. Центр целевого DOM-элемента
     const itemCenter = targetDomIndex * ITEM_WIDTH + ITEM_WIDTH / 2;
 
-    // 5. Нам нужно совместить центр контейнера с центром целевого элемента
-    const finalPosition = containerCenter - itemCenter;
-    
+    // 5. Добавляем случайное смещение для неточной остановки
+    const randomOffset = (Math.random() - 0.5) * ITEM_WIDTH * 0.8;
+
+    // 6. Финальная позиция
+    const finalPosition = containerCenter - itemCenter + randomOffset;
+
     return {
       position: finalPosition,
       prize: selectedPrize,
@@ -107,7 +112,7 @@ export const RouletteWheel: React.FC = () => {
     // Генерируем результат
     const result = generateSpinResult();
     
-    setTargetPosition(result.position);
+    setPosition(result.position);
     setTargetReplicaIndex(result.targetDomIndex);
     
     // Запускаем анимацию
@@ -115,22 +120,23 @@ export const RouletteWheel: React.FC = () => {
   };
 
   const handleClose = () => {
-    setTargetPosition(0);
-    setTargetReplicaIndex(null);
+    resetRoulette();
     closeCase();
   };
 
   const handleKeepPrize = () => {
     if (spinResult && currentCase) {
       addToInventory(spinResult.prize, currentCase.name);
-      closeCase();
+      resetForNextSpin();
+      resetRoulette();
     }
   };
 
   const handleQuickSell = () => {
     if (spinResult) {
       updateBalance(spinResult.prize.price);
-      closeCase();
+      resetForNextSpin();
+      resetRoulette();
     }
   };
 
@@ -138,42 +144,24 @@ export const RouletteWheel: React.FC = () => {
   useEffect(() => {
     if (!showResult && !isSpinning) {
       const timer = setTimeout(() => {
-        setTargetPosition(0);
+        resetRoulette();
       }, 500);
       return () => clearTimeout(timer);
     }
   }, [showResult, isSpinning]);
 
-  if (!currentCase) return null;
+  const sortedPrizes = useMemo(() => {
+    if (!currentCase) return [];
+    return [...currentCase.items].sort((a, b) => b.price - a.price);
+  }, [currentCase]);
 
-  // Создаем МНОГО элементов для гарантированного покрытия
-  const rouletteItems = [];
-  const totalItemsInCase = currentCase.items.length;
-  
-  // Создаем достаточно элементов: 
-  // Максимум 7 оборотов * количество призов * 2 (запас)
-  const neededElements = 7 * totalItemsInCase * 2;
-  const safeElements = Math.max(neededElements, 300); // минимум 300
-  
-  for (let i = 0; i < safeElements; i++) {
-    const originalIndex = i % totalItemsInCase;
-    const item = currentCase.items[originalIndex];
-    
-    rouletteItems.push({
-      ...item,
-      uniqueId: `roulette-${i}`,
-      originalIndex: originalIndex
-    });
-  }
-
-  const sortedPrizes = [...currentCase.items].sort((a, b) => b.price - a.price);
-  const hasEnoughFunds = user.balance >= currentCase.price;
+  const hasEnoughFunds = user.balance >= (currentCase?.price ?? 0);
 
   return (
     <Modal
       isOpen={!!currentCase}
       onClose={handleClose}
-      title={currentCase.name}
+      title={currentCase?.name || ''}
       size="lg"
     >
       {!showResult ? (
@@ -184,8 +172,10 @@ export const RouletteWheel: React.FC = () => {
           <div className={styles.rouletteViewport}>
             <div 
               className={styles.rouletteItems} 
-              style={{ 
-                transform: `translate(-50%, -50%) translateX(${currentPosition}px)`
+              onTransitionEnd={handleAnimationEnd}
+              style={{
+                transform: `translate(-50%, -50%) translateX(${position}px)`,
+                transition: isSpinning ? `transform ${ROULETTE_CONFIG.SPIN_DURATION}ms cubic-bezier(0.1, 0, 0.2, 1)` : 'none'
               }}
             >
               {rouletteItems.map((item, index) => (
@@ -234,7 +224,7 @@ export const RouletteWheel: React.FC = () => {
                 {isSpinning ? 'Spinning...' : 'Spin'}
               </div>
               <div className={styles.priceTag}>
-                <div className={styles.priceValue}>{currentCase.price.toFixed(2)}</div>
+                <div className={styles.priceValue}>{(currentCase?.price ?? 0).toFixed(2)}</div>
                 <div className={styles.coinSmall}>
                   <div className={styles.coin}>
                     <img className={styles.coinImage} src="/assets/images/ton.svg" alt="Coin" />
@@ -251,7 +241,7 @@ export const RouletteWheel: React.FC = () => {
               fontSize: '14px',
               marginTop: '12px'
             }}>
-              Insufficient balance. Need {currentCase.price.toFixed(2)} TON
+              Insufficient balance. Need {(currentCase?.price ?? 0).toFixed(2)} TON
             </div>
           )}
 

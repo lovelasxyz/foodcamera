@@ -15,6 +15,8 @@ interface GameActions {
   openCase: (caseData: Case, isDemo: boolean) => void;
   closeCase: () => void;
   startSpin: (finalPosition?: number) => void;
+  endSpin: () => void;
+  resetForNextSpin: () => void;
   finishSpin: (result: SpinResult) => void;
   showSpinResult: () => void;
   resetGame: () => void;
@@ -58,35 +60,34 @@ export const useGameStore = create<GameState & GameActions>((set, get) => ({
     if (!currentCase) return;
 
     set({ isSpinning: true, showResult: false });
+    
+    // Результат будет определен заранее, но показан только после анимации
+    const selectedIndex = (winningIndex !== undefined)
+      ? winningIndex
+      : RouletteService.generateWinningIndex(currentCase.items.length);
 
-    // Симуляция спина с задержкой
-    setTimeout(() => {
-      let selectedIndex;
-      
-      if (winningIndex !== undefined) {
-        // Определяем приз по переданному индексу
-        selectedIndex = winningIndex;
-      } else {
-        // Случайный выбор (для обратной совместимости)
-        selectedIndex = RouletteService.generateWinningIndex(currentCase.items.length);
-      }
-      
-      const result = RouletteService.createSpinResult(currentCase, selectedIndex);
+    const result = RouletteService.createSpinResult(currentCase, selectedIndex);
 
-      set((state) => ({
-        isSpinning: false,
-        spinResult: result,
-        currentSession: state.currentSession ? {
-          ...state.currentSession,
-          result
-        } : null
-      }));
+    set({ spinResult: result });
+  },
 
-      // Показываем результат через небольшую задержку
-      setTimeout(() => {
-        set({ showResult: true });
-      }, ROULETTE_CONFIG.RESULT_DELAY);
-    }, ROULETTE_CONFIG.SPIN_DURATION);
+  endSpin: () => {
+    set((state) => ({
+      isSpinning: false,
+      showResult: true,
+      currentSession: state.currentSession && state.spinResult ? {
+        ...state.currentSession,
+        result: state.spinResult,
+      } : state.currentSession
+    }));
+  },
+
+  resetForNextSpin: () => {
+    set({
+      isSpinning: false,
+      spinResult: null,
+      showResult: false,
+    });
   },
 
   finishSpin: (result) => {

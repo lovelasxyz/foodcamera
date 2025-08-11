@@ -47,7 +47,7 @@ export interface Multiplier {
 export const ROULETTE_CONFIG: RouletteConfig = {
   ITEM_WIDTH: 108,
   BASE_SPINS: 5,
-  SPIN_DURATION: 4000,
+  SPIN_DURATION: 10000,
   RESULT_DELAY: 500,
   ANIMATION_EASING: (t: number) => 1 - Math.pow(1 - t, 4)
 };
