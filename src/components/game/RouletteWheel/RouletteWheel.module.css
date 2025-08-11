@@ -58,7 +58,7 @@
   position: absolute;
   left: 50%;
   top: 50%;
-  transform: translate(-50%, -50%);
+  /* базовое позиционирование переносим в inline-style, чтобы избежать неоднозначного порядка трансформаций */
   gap: 8px;
   will-change: transform;
   transition: none;
@@ -75,6 +75,11 @@
   border-radius: var(--radius-md);
   position: relative;
   transition: all 0.2s ease;
+}
+
+.rouletteItem.highlighted {
+  outline: 2px solid rgba(0, 117, 255, 0.8);
+  box-shadow: 0 0 0 3px rgba(0, 117, 255, 0.25);
 }
 
 .rouletteItem:hover {
@@ -227,7 +232,7 @@
     position: absolute;
     left: 50%;
     top: 0;
-    transform: translate(-50%) translate(-.5px);
+    transform: translateX(-50%);
     overflow: visible;
     filter: drop-shadow(0 0 3px rgba(10, 93, 201, .6));
 }
@@ -237,9 +242,9 @@
     width: 150px;
     height: 10.05px;
     position: absolute;
-    left: 49.8%;
+    left: 50%;
     bottom: 0;
-    transform: translate(-50%) rotate(180deg) translate(-.5px);
+    transform: translateX(-50%) rotate(180deg);
     overflow: visible;
     filter: drop-shadow(0 0 3px rgba(10, 93, 201, .6));
 }

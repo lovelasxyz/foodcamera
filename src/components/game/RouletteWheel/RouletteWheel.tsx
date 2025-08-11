@@ -5,6 +5,7 @@ import { useUserStore } from '@/store/userStore';
 import { Modal } from '@/components/ui/Modal';
 import styles from './RouletteWheel.module.css';
 import useSoundEffects from '@/hooks/useSoundEffects';
+import { ROULETTE_CONFIG } from '@/types/game';
 
 // Простой хук для плавной анимации
 const useRouletteAnimation = (isSpinning: boolean, targetPosition: number) => {
@@ -17,14 +18,14 @@ const useRouletteAnimation = (isSpinning: boolean, targetPosition: number) => {
     }
     
     const startTime = Date.now();
-    const duration = 4000;
+    const duration = ROULETTE_CONFIG.SPIN_DURATION;
     
     const animate = () => {
       const elapsed = Date.now() - startTime;
       const progress = Math.min(elapsed / duration, 1);
       
       // Easing function для плавного замедления
-      const eased = 1 - Math.pow(1 - progress, 4);
+      const eased = ROULETTE_CONFIG.ANIMATION_EASING(progress);
       const currentPosition = targetPosition * eased;
       
       setPosition(currentPosition);
@@ -53,36 +54,45 @@ export const RouletteWheel: React.FC = () => {
   const { playSound } = useSoundEffects();
 
   const [targetPosition, setTargetPosition] = useState(0);
+  const [targetReplicaIndex, setTargetReplicaIndex] = useState<number | null>(null);
   const currentPosition = useRouletteAnimation(isSpinning, targetPosition);
 
   // ПРОСТОЙ АЛГОРИТМ: определяем приз и позицию одновременно
   const generateSpinResult = () => {
-    if (!currentCase) return { position: 0, prize: null, prizeIndex: 0 };
+    if (!currentCase) return { position: 0, prize: null, prizeIndex: 0, targetDomIndex: 0 };
     
-    const ITEM_WIDTH = 108;
+    // Используем единый шаг элемента (ширина + gap) из конфигурации
+    const ITEM_WIDTH = ROULETTE_CONFIG.ITEM_WIDTH;
     const totalItems = currentCase.items.length;
-    
+
+    // Длина визуальной ленты (кол-во отрендеренных элементов)
+    const neededElements = 7 * totalItems * 2;
+    const safeElements = Math.max(neededElements, 300);
+    const containerCenter = (safeElements * ITEM_WIDTH) / 2;
+
     // 1. Выбираем случайный приз
     const randomPrizeIndex = Math.floor(Math.random() * totalItems);
     const selectedPrize = currentCase.items[randomPrizeIndex];
-    
-    // 2. Генерируем количество оборотов (5-7)
-    const spins = 5 + Math.random() * 2;
-    
-    // 3. Рассчитываем базовое расстояние
-    const baseDistance = spins * totalItems * ITEM_WIDTH;
-    
-    // 4. Позиция выбранного приза (с небольшим случайным смещением)
-    const prizePosition = randomPrizeIndex * ITEM_WIDTH;
-    const randomOffset = (Math.random() - 0.5) * ITEM_WIDTH * 0.4; // ±20% смещение
-    
-    // 5. Финальная позиция (отрицательная, так как движемся влево)
-    const finalPosition = -(baseDistance + prizePosition + randomOffset);
+
+    // 2. Рассчитываем число оборотов так, чтобы целевой элемент оказался около центра ленты
+    const centerSpins = Math.max(3, Math.floor(safeElements / 2 / totalItems) - 1);
+    const extraSpins = Math.floor(Math.random() * 2); // небольшая вариативность 0..1 оборот
+    const spins = centerSpins + extraSpins;
+
+    // 3. Индекс целевого DOM-элемента в длинной ленте
+    const targetDomIndex = spins * totalItems + randomPrizeIndex;
+
+    // 4. Центр целевого DOM-элемента
+    const itemCenter = targetDomIndex * ITEM_WIDTH + ITEM_WIDTH / 2;
+
+    // 5. Нам нужно совместить центр контейнера с центром целевого элемента
+    const finalPosition = containerCenter - itemCenter;
     
     return {
       position: finalPosition,
       prize: selectedPrize,
-      prizeIndex: randomPrizeIndex
+      prizeIndex: randomPrizeIndex,
+      targetDomIndex
     };
   };
 
@@ -98,6 +108,7 @@ export const RouletteWheel: React.FC = () => {
     const result = generateSpinResult();
     
     setTargetPosition(result.position);
+    setTargetReplicaIndex(result.targetDomIndex);
     
     // Запускаем анимацию
     startSpin(result.prizeIndex);
@@ -105,6 +116,7 @@ export const RouletteWheel: React.FC = () => {
 
   const handleClose = () => {
     setTargetPosition(0);
+    setTargetReplicaIndex(null);
     closeCase();
   };
 
@@ -179,7 +191,7 @@ export const RouletteWheel: React.FC = () => {
               {rouletteItems.map((item, index) => (
                 <div 
                   key={item.uniqueId} 
-                  className={styles.rouletteItem} 
+                  className={`${styles.rouletteItem} ${index === targetReplicaIndex ? styles.highlighted : ''}`} 
                   data-rarity={item.rarity || 'common'}
                   data-index={index}
                   data-original-index={item.originalIndex}
