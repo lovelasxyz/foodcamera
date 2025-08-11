@@ -1,7 +1,6 @@
 import { create } from 'zustand';
 import { Case, GameSession, SpinResult } from '@/types/game';
 import { RouletteService } from '@/services/RouletteService';
-import { ROULETTE_CONFIG } from '@/types/game';
 
 interface GameState {
   currentCase: Case | null;
