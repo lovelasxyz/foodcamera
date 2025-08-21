@@ -2,6 +2,10 @@ import { create } from 'zustand';
 import { User, InventoryItem } from '@/types/user';
 import { Prize } from '@/types/game';
 import { ParsedTelegramUser } from '@/types/telegram';
+import { SHARD_PRODUCTS } from '@/utils/constants';
+import { Inventory } from '@/domain/inventory/Inventory';
+import { ASSETS } from '@/constants/assets';
+// import { CraftItemUseCase } from '@/application/crafting/CraftItemUseCase';
 
 interface UserState {
   user: User;
@@ -15,6 +19,8 @@ interface UserActions {
   setTelegramUser: (telegramUser: ParsedTelegramUser) => void;
   updateBalance: (amount: number) => void;
   addToInventory: (prize: Prize, fromCase: string) => void;
+  craftFromShards: (shardKey: string, fromCase?: string) => void;
+  sellInventoryItem: (inventoryItemId: string) => void;
   setLoading: (isLoading: boolean) => void;
   setError: (error: string | null) => void;
   disconnectWallet: () => void;
@@ -25,10 +31,12 @@ interface UserActions {
 const defaultUser: User = {
   id: 'guest',
   name: 'Guest User',
-  avatar: '/assets/images/avatar.png',
+  avatar: ASSETS.IMAGES.AVATAR,
   balance: 100.00, // Начальный баланс 100 монет
   wallet: undefined,
-  inventory: []
+  inventory: [],
+  shards: {},
+  lastDrop: null
 };
 
 // Функция для преобразования Telegram пользователя в пользователя приложения
@@ -36,10 +44,12 @@ const createUserFromTelegram = (telegramUser: ParsedTelegramUser): User => {
   return {
     id: telegramUser.id,
     name: telegramUser.name,
-    avatar: telegramUser.avatar || '/assets/images/avatar.png',
+    avatar: telegramUser.avatar || ASSETS.IMAGES.AVATAR,
     balance: 100.00, // Начальный баланс для новых пользователей
     wallet: undefined,
-    inventory: []
+    inventory: [],
+    shards: {},
+    lastDrop: null
   };
 };
 
@@ -75,17 +85,82 @@ export const useUserStore = create<UserState & UserActions>((set) => ({
 
   addToInventory: (prize, fromCase) =>
     set((state) => {
-      const inventoryItem: InventoryItem = {
-        id: `${Date.now()}-${prize.id}`,
-        prize,
-        obtainedAt: Date.now(),
-        fromCase
-      };
+      // Обработка осколков — только накапливаем, крафт вручную в craftFromShards
+      if (prize.isShard && prize.shardKey) {
+        const shardKey = prize.shardKey;
+        const currentCount = state.user.shards?.[shardKey] || 0;
+        const newCount = currentCount + 1;
+        return {
+          user: {
+            ...state.user,
+            shards: { ...state.user.shards, [shardKey]: newCount },
+            lastDrop: { kind: 'shard', id: shardKey }
+          }
+        };
+      }
+
+      // Обычный приз — создаем предмет через доменную модель инвентаря
+      const inventoryItem: InventoryItem = Inventory.createInventoryItem(prize, fromCase);
       
       return {
         user: {
           ...state.user,
-          inventory: [...state.user.inventory, inventoryItem]
+          inventory: [...state.user.inventory, inventoryItem],
+          lastDrop: { kind: 'item', id: inventoryItem.id }
+        }
+      };
+    }),
+
+  craftFromShards: (shardKey, fromCase) =>
+    set((state) => {
+      const getShardCount = (key: string) => state.user.shards?.[key] || 0;
+      // Выполним расчёт через домен, а состояние обновим единым set
+      const have = getShardCount(shardKey);
+      const cfg = SHARD_PRODUCTS[shardKey];
+      if (!cfg || have < cfg.required) return state;
+
+      const fullPrize: Prize = {
+        id: cfg.id,
+        name: cfg.name,
+        price: cfg.price,
+        image: cfg.image,
+        rarity: cfg.rarity
+      };
+      const newItem = Inventory.createInventoryItem(fullPrize, fromCase || 'Craft');
+      const remaining = Math.max(0, have - cfg.required);
+
+      // Обновим карту осколков: если остаток 0 — удалим ключ, чтобы не показывать 0/5
+      const nextShards = { ...(state.user.shards || {}) } as Record<string, number>;
+      if (remaining <= 0) {
+        delete nextShards[shardKey];
+      } else {
+        nextShards[shardKey] = remaining;
+      }
+
+      return {
+        user: {
+          ...state.user,
+          shards: nextShards,
+          inventory: [...state.user.inventory, newItem]
+        }
+      };
+    }),
+
+  sellInventoryItem: (inventoryItemId) =>
+    set((state) => {
+      const item = state.user.inventory.find(i => i.id === inventoryItemId);
+      if (!item) return state;
+      const remainingInventory = state.user.inventory.filter(i => i.id !== inventoryItemId);
+      const newBalance = Math.max(0, state.user.balance + (item.prize.price || 0));
+      const newLastDrop = (state.user.lastDrop?.kind === 'item' && state.user.lastDrop.id === inventoryItemId)
+        ? null
+        : state.user.lastDrop;
+      return {
+        user: {
+          ...state.user,
+          balance: newBalance,
+          inventory: remainingInventory,
+          lastDrop: newLastDrop
         }
       };
     }),

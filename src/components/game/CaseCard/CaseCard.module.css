@@ -127,10 +127,11 @@
 /* Free Case Image Container */
 .freeCaseImageContainer {
   border-radius: 16px;
-  background: radial-gradient(closest-side, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0) 100%), 
-              linear-gradient(180deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.4) 100%);
+  /* background: radial-gradient(closest-side, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0) 100%), 
+              linear-gradient(180deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.4) 100%); */
   width: 100%;
   height: 176px;
+  background-color: #3296BA;
   position: relative;
   overflow: hidden;
 }
@@ -234,7 +235,7 @@ video.caseImage {
 /* Black backdrop эффект */
 .caseImageContainer.blackBackdrop {
   background: none !important;
-  background-image: url(assets/images/black_backdrop.svg) !important;
+  background-image: url(/assets/images/black_backdrop.svg) !important;
   background-position: center !important;
   background-repeat: no-repeat !important;
   background-size: 105% 200% !important;

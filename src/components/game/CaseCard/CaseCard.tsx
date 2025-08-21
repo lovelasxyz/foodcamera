@@ -2,7 +2,8 @@ import React from 'react';
 import { Case } from '@/types/game';
 import { useGameStore } from '@/store/gameStore';
 import { useCase } from '@/hooks/useCase';
-import { CaseService } from '@/services/CaseService';
+import { CaseDomain } from '@/domain/case/CaseDomain';
+import { ASSETS } from '@/constants/assets';
 
 import styles from './CaseCard.module.css';
 
@@ -23,7 +24,7 @@ export const CaseCard: React.FC<CaseCardProps> = ({ caseData }) => {
   };
 
   const isFree = isFreeCase(caseData);
-  const backgroundStyle = CaseService.getBackgroundStyle(caseData);
+  const backgroundStyle = CaseDomain.getBackgroundStyle(caseData);
 
   // Для Free Case используем специальную структуру
   if (isFree) {
@@ -32,7 +33,7 @@ export const CaseCard: React.FC<CaseCardProps> = ({ caseData }) => {
         <div className={styles.freeCaseImageContainer}>
           <img 
             className={styles.freeCaseTextSvg} 
-            src="assets/images/free_case_label.svg" 
+            src={ASSETS.IMAGES.FREE_CASE_LABEL} 
             alt="Free Case"
           />
           <img 
@@ -72,7 +73,7 @@ export const CaseCard: React.FC<CaseCardProps> = ({ caseData }) => {
         <div className={styles.coin}>
           <img 
             className={styles.coinImage} 
-            src="/assets/images/ton.svg" 
+            src={ASSETS.IMAGES.TON} 
             alt="Coin"
           />
         </div>

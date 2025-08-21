@@ -6,7 +6,8 @@ import { CaseCard } from '@/components/game/CaseCard';
 import { RouletteWheel } from '@/components/game/RouletteWheel';
 import { Button } from '@/components/ui/Button';
 import { Loader } from '@/components/ui/Loader';
-import { ASSET_PATHS, MESSAGES } from '@/utils/constants';
+import { ASSETS } from '@/constants/assets';
+import { MESSAGES } from '@/utils/constants';
 import styles from './HomePage.module.css';
 
 export const HomePage: React.FC = () => {
@@ -35,7 +36,7 @@ export const HomePage: React.FC = () => {
         <div className={styles.freeCaseBanner}>
           <div className={styles.bannerContent}>
             <div className={styles.lightningIcon}>
-              <img src={ASSET_PATHS.IMAGES.LIGHTNING} alt="Lightning" />
+              <img src={ASSETS.IMAGES.LIGHTNING} alt="Lightning" />
             </div>
             <div className={styles.bannerText}>{MESSAGES.CHECK_NEWS}</div>
           </div>

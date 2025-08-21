@@ -6,6 +6,8 @@ export const APP_CONFIG = {
   description: 'Приложение для открытия кейсов с рулеткой'
 } as const;
 
+import { ASSETS } from '@/constants/assets';
+
 export const GAME_CONFIG = {
   spinDuration: 8000, // Время вращения рулетки в мс
   resultDelay: 1000,  // Задержка перед показом результата в мс
@@ -41,29 +43,21 @@ export const ROUTES = {
   upgrade: '/upgrade'
 } as const; 
 
-// Пути к изображениям
-export const ASSET_PATHS = {
-  IMAGES: {
-    AVATAR: '/assets/images/avatar.png',
-    BURGER: '/assets/images/burger.png',
-    DIAMOND: '/assets/images/diamond.png',
-    DRAGON: '/assets/images/dragon.png',
-    FREE_CASE: '/assets/images/free-case.png',
-    FROG: '/assets/images/frog.png',
-    GIFT: '/assets/images/gift.png',
-    HELMET: '/assets/images/helmet.png',
-    JACKPOT: '/assets/images/jackpot.svg',
-    LIGHTNING: '/assets/images/lightning.svg',
-    PROFILE: '/assets/images/profile.svg',
-    SCROLL: '/assets/images/scroll.png',
-    TEDDY: '/assets/images/teddy.png',
-    TOKEN_GOLD: '/assets/images/ton.svg',
-    TOKEN: '/assets/images/ton.svg',
-    TON: '/assets/images/ton.svg',
-    UPGRADE: '/assets/images/upgrade.svg',
-    WIZARD_HAT: '/assets/images/wizard-hat.png'
+// Пути к изображениям перемещены в src/constants/assets.ts
+
+// Продукты сборки осколков (по ключу shardKey)
+// При достижении нужного количества осколков пользователю будет добавлен данный приз
+export const SHARD_PRODUCTS: Record<string, { id: number; name: string; price: number; image: string; rarity: 'common' | 'rare' | 'epic' | 'legendary'; required: number; shardImage: string; } > = {
+  gift: {
+    id: 10001,
+    name: 'Gift',
+    price: 25,
+    image: ASSETS.SHARDS.GIFT,
+    rarity: 'rare',
+    required: 5,
+    shardImage: ASSETS.SHARDS.GIFT_SHARD
   }
-} as const;
+};
 
 // Цвета градиентов для кейсов
 export const CASE_GRADIENT_COLORS = {

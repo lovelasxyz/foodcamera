@@ -3,7 +3,8 @@ import { useCasesStore } from '@/store/casesStore';
 import { useUserStore } from '@/store/userStore';
 import { useUIStore } from '@/store/uiStore';
 import { Case } from '@/types/game';
-import { CaseService } from '@/services/CaseService';
+import { CaseDomain } from '@/domain/case/CaseDomain';
+import { OpenCaseUseCase } from '@/application/case/OpenCaseUseCase';
 import { MESSAGES } from '@/utils/constants';
 
 export const useCase = () => {
@@ -12,32 +13,20 @@ export const useCase = () => {
   const { addNotification } = useUIStore();
 
   const openCase = useCallback((caseData: Case) => {
-    if (!CaseService.canAffordCase(caseData, user.balance)) {
-      addNotification({
-        type: 'error',
-        message: MESSAGES.INSUFFICIENT_FUNDS
-      });
-      return false;
-    }
-
-    // Списываем средства если кейс не бесплатный
-    if (!CaseService.isFreeCase(caseData)) {
-      updateBalance(-caseData.price);
-    }
-
-    return true;
+    const uc = new OpenCaseUseCase(updateBalance, addNotification);
+    return uc.tryOpen(caseData, user.balance, MESSAGES.INSUFFICIENT_FUNDS);
   }, [user.balance, updateBalance, addNotification]);
 
   const getCaseStatistics = useCallback((caseData: Case) => {
-    return CaseService.getCaseStatistics(caseData);
+    return CaseDomain.statistics(caseData);
   }, []);
 
   const filterCasesByPrice = useCallback((maxPrice: number) => {
-    return CaseService.filterCasesByPrice(cases, maxPrice);
+    return CaseDomain.filterByPrice(cases, maxPrice);
   }, [cases]);
 
   const sortCasesByPrice = useCallback((ascending: boolean = true) => {
-    return CaseService.sortCasesByPrice(cases, ascending);
+    return CaseDomain.sortByPrice(cases, ascending);
   }, [cases]);
 
   return {
@@ -46,7 +35,7 @@ export const useCase = () => {
     getCaseStatistics,
     filterCasesByPrice,
     sortCasesByPrice,
-    canAffordCase: (caseData: Case) => CaseService.canAffordCase(caseData, user.balance),
-    isFreeCase: CaseService.isFreeCase
+    canAffordCase: (caseData: Case) => CaseDomain.canAfford(caseData, user.balance),
+    isFreeCase: CaseDomain.isFree
   };
 }; 

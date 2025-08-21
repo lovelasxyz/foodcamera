@@ -2,6 +2,7 @@ import React from 'react';
 import { MESSAGES } from '@/utils/constants';
 import { THEME_COLORS } from '@/styles/theme';
 import styles from '../RouletteWheel.module.css';
+import { ASSETS } from '@/constants/assets';
 
 interface ActionButtonsProps {
   isSpinning: boolean;
@@ -30,7 +31,7 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({
                <div className={styles.priceValue}>{spinCost.toFixed(2)}</div>
                <div className={styles.coinSmall}>
                  <div className={styles.coin}>
-                   <img className={styles.coinImage} src="/assets/images/ton.svg" alt="Coin" />
+                   <img className={styles.coinImage} src={ASSETS.IMAGES.TON} alt="Coin" />
                  </div>
                </div>
                </div>

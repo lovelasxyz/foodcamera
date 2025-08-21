@@ -1,4 +1,5 @@
 import React from 'react';
+import { ASSETS } from '@/constants/assets';
 import { useTelegramAuth } from '@/hooks/useTelegramAuth';
 import { shouldUseGuestMode } from '@/utils/environment';
 import styles from './LoadingScreen.module.css';
@@ -83,7 +84,7 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({
         <header className={styles.loaderHeader}>
           <div className={styles.logoContainer}>
             <img 
-              src="/assets/images/loader.png" 
+              src={ASSETS.IMAGES.LOADING_LOGO} 
               alt="Gift Cases by TON Logo" 
               className={styles.floatingLogo}
             />

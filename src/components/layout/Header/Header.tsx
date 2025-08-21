@@ -4,6 +4,7 @@ import { useUserStore } from '@/store/userStore';
 import { useUIStore } from '@/store/uiStore';
 import { shouldUseGuestMode } from '@/utils/environment';
 import styles from './Header.module.css';
+import { ASSETS } from '@/constants/assets';
 
 export const Header: React.FC = () => {
   const { user } = useUserStore();
@@ -25,7 +26,7 @@ export const Header: React.FC = () => {
             onError={(e) => {
               // Fallback к дефолтной аватарке при ошибке загрузки
               const target = e.target as HTMLImageElement;
-              target.src = '/assets/images/avatar.png';
+              target.src = ASSETS.IMAGES.AVATAR;
             }}
           />
           <div className={styles.profileInfo}>
@@ -49,7 +50,7 @@ export const Header: React.FC = () => {
               <div className={styles.coin}>
                 <img 
                   className={styles.coinIcon} 
-                  src="/assets/images/ton.svg" 
+                  src={ASSETS.IMAGES.TON} 
                   alt="TON"
                 />
               </div>

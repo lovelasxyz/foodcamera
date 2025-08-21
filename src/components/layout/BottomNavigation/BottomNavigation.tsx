@@ -1,6 +1,6 @@
 import React from 'react';
 import { useUIStore } from '@/store/uiStore';
-import { ASSET_PATHS } from '@/utils/constants';
+import { ASSETS } from '@/constants/assets';
 import styles from './BottomNavigation.module.css';
 
 interface NavigationTab {
@@ -28,13 +28,13 @@ const renderIcon = (iconType: string) => {
         </div>
       );
     case 'weekly':
-      return <img src={ASSET_PATHS.IMAGES.LIGHTNING} alt="Weekly" className={styles.iconImage} />;
+      return <img src={ASSETS.IMAGES.LIGHTNING} alt="Weekly" className={styles.iconImage} />;
     case 'jackpot':
-      return <img src={ASSET_PATHS.IMAGES.JACKPOT} alt="JackPot" className={styles.iconImage} />;
+      return <img src={ASSETS.IMAGES.JACKPOT} alt="JackPot" className={styles.iconImage} />;
     case 'upgrade':
-      return <img src={ASSET_PATHS.IMAGES.UPGRADE} alt="Upgrade" className={styles.iconImage} />;
+      return <img src={ASSETS.IMAGES.UPGRADE} alt="Upgrade" className={styles.iconImage} />;
     case 'profile':
-      return <img src={ASSET_PATHS.IMAGES.PROFILE} alt="Profile" className={styles.iconImage} />;
+      return <img src={ASSETS.IMAGES.PROFILE} alt="Profile" className={styles.iconImage} />;
     default:
       return null;
   }

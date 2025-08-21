@@ -1,6 +1,7 @@
 import React from 'react';
 import { Prize } from '@/types/game';
-import { ASSET_PATHS, MESSAGES } from '@/utils/constants';
+import { MESSAGES } from '@/utils/constants';
+import { ASSETS } from '@/constants/assets';
 import styles from '../RouletteWheel.module.css';
 
 interface PrizesSectionProps {
@@ -24,7 +25,7 @@ export const PrizesSection: React.FC<PrizesSectionProps> = ({
             <div className={`${styles.hint} ${styles.prizeHint}`}>
               <div className={styles.coinWrapper}>
                 <div className={`${styles.coin} ${styles.small}`}>
-                  <img className={styles.coinImage} src={ASSET_PATHS.IMAGES.TON} alt="Coin" />
+                  <img className={styles.coinImage} src={ASSETS.IMAGES.TON} alt="Coin" />
                 </div>
               </div>
               <div className={styles.price}>{item.price}</div>

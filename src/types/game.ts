@@ -4,6 +4,13 @@ export interface Prize {
   price: number;
   image: string;
   rarity: 'common' | 'rare' | 'epic' | 'legendary';
+  // Осколочная система (опционально)
+  // Если приз является осколком, то при выпадении он увеличивает прогресс
+  // сборки полноценного подарка по ключу shardKey до количества shardsRequired
+  isShard?: boolean;
+  shardKey?: string;        // уникальный ключ набора осколков
+  shardsRequired?: number;  // сколько осколков нужно для сборки
+  description?: string;     // описание для модального окна
 }
 
 export interface Case {

@@ -4,9 +4,21 @@
   padding: var(--spacing-16);
   display: flex;
   flex-direction: column;
+  margin: 0 auto;
+
   gap: var(--spacing-16);
 }
+@media (min-width: 768px) {
+  .profilePage {
+      max-width: 393px;
+  }
+}
 
+@media (min-width: 420px) and (max-width: 767px) {
+  .profile-container[data-v-47cb848d] {
+      max-width: 424px;
+  }
+}
 /* User Profile Section */
 .userProfile {
   display: flex;
@@ -200,8 +212,9 @@ background: linear-gradient(115.39deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255,
 /* Inventory Section */
 .inventoryContainer {
   border-radius: var(--radius-lg);
-  padding: var(--spacing-16);
   margin-bottom: 90px;
+  margin-top: 5px;
+
 }
 
 .inventoryHeader {
@@ -267,26 +280,54 @@ background: linear-gradient(115.39deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255,
 
 .inventoryGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-  gap: var(--spacing-12);
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
   width: 100%;
 }
 
 .inventoryItem {
-  width: 80px;
-  height: 80px;
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: var(--radius-md);
+  position: relative;
+  width: 100%;
+  height: 180px;
+  background: linear-gradient(115.39deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, .09) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
+  padding: 8px;
 }
 
 .itemImage {
-  width: 60px;
-  height: 60px;
+  width: 100%;
+  height: 100%;
+  max-height: 130px;
   object-fit: contain;
+}
+
+.itemPriceTag {
+  position: absolute;
+  left: 10px;
+  bottom: 10px;
+  background: #0090FF;
+  color: #fff;
+  border-radius: 10px;
+  padding: 6px 10px;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.shardBadge {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  background: rgba(0,0,0,0.5);
+  color: #fff;
+  border-radius: 10px;
+  padding: 6px 10px;
+  font-weight: 700;
+  font-size: 14px;
 }
 
 .inventoryHeader {
@@ -330,8 +371,8 @@ background: linear-gradient(115.39deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255,
   transition: all 0.2s ease;
 }
 .itemImage {
-  width: 40px;
-  height: 40px;
+  width:100%;
+  height: 100%;
   object-fit: contain;
 }
 

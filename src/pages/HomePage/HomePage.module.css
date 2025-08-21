@@ -11,7 +11,12 @@
     margin: 0 auto;
   background: var(--color-background);
 }
-
+@media (min-width: 768px) {
+  .homePage {
+      padding: 0 var(--spacing-16);
+      max-width: 90vw;
+  }
+}
 .casesContainer {
     width: 100%;
     padding: 0 16px;

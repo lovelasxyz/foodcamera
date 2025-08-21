@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 import { NavigationPage } from '@/types/ui';
 
 interface Notification {
@@ -14,6 +15,7 @@ interface UIState {
   modalType: string | null;
   loading: boolean;
   notifications: Notification[];
+  showWinModal: boolean;
 }
 
 interface UIActions {
@@ -24,46 +26,58 @@ interface UIActions {
   addNotification: (notification: Omit<Notification, 'id'>) => void;
   removeNotification: (id: string) => void;
   clearNotifications: () => void;
+  setShowWinModal: (show: boolean) => void;
 }
 
-export const useUIStore = create<UIState & UIActions>((set) => ({
-  activePage: 'main',
-  isModalOpen: false,
-  modalType: null,
-  loading: false,
-  notifications: [],
+export const useUIStore = create<UIState & UIActions>()(
+  persist(
+    (set) => ({
+      activePage: 'main',
+      isModalOpen: false,
+      modalType: null,
+      loading: false,
+      notifications: [],
+      showWinModal: true,
 
-  setActivePage: (activePage) => set({ activePage }),
+      setActivePage: (activePage) => set({ activePage }),
 
-  openModal: (modalType) =>
-    set({ isModalOpen: true, modalType }),
+      openModal: (modalType) =>
+        set({ isModalOpen: true, modalType }),
 
-  closeModal: () =>
-    set({ isModalOpen: false, modalType: null }),
+      closeModal: () =>
+        set({ isModalOpen: false, modalType: null }),
 
-  setLoading: (loading) => set({ loading }),
+      setLoading: (loading) => set({ loading }),
 
-  addNotification: (notification) => {
-    const id = Date.now().toString();
-    const newNotification: Notification = { ...notification, id };
-    
-    set((state) => ({
-      notifications: [...state.notifications, newNotification]
-    }));
+      addNotification: (notification) => {
+        const id = Date.now().toString();
+        const newNotification: Notification = { ...notification, id };
+        
+        set((state) => ({
+          notifications: [...state.notifications, newNotification]
+        }));
 
-    // Автоматически удаляем уведомление через указанное время
-    const duration = notification.duration || 5000;
-    setTimeout(() => {
-      set((state) => ({
-        notifications: state.notifications.filter(n => n.id !== id)
-      }));
-    }, duration);
-  },
+        // Автоматически удаляем уведомление через указанное время
+        const duration = notification.duration || 5000;
+        setTimeout(() => {
+          set((state) => ({
+            notifications: state.notifications.filter(n => n.id !== id)
+          }));
+        }, duration);
+      },
 
-  removeNotification: (id) =>
-    set((state) => ({
-      notifications: state.notifications.filter(n => n.id !== id)
-    })),
+      removeNotification: (id) =>
+        set((state) => ({
+          notifications: state.notifications.filter(n => n.id !== id)
+        })),
 
-  clearNotifications: () => set({ notifications: [] }),
-})); 
+      clearNotifications: () => set({ notifications: [] }),
+
+      setShowWinModal: (show) => set({ showWinModal: show }),
+    }),
+    {
+      name: 'ui-storage', // unique name
+      partialize: (state) => ({ showWinModal: state.showWinModal }), // only persist the showWinModal field
+    }
+  )
+); 

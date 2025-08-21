@@ -1,4 +1,5 @@
 import { ParsedTelegramUser, TelegramWebApp, TelegramWebAppUser } from '@/types/telegram';
+import { ASSETS } from '@/constants/assets';
 
 class TelegramAuthService {
   private webApp: TelegramWebApp | null = null;
@@ -79,7 +80,7 @@ class TelegramAuthService {
     }
     
     // Возвращаем дефолтную аватарку
-    return '/assets/images/avatar.png';
+    return ASSETS.IMAGES.AVATAR;
   }
 
   /**

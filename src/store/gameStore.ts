@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { Case, GameSession, SpinResult } from '@/types/game';
-import { RouletteService } from '@/services/RouletteService';
+// Логика рулетки вынесена в домен/UI; стор лишь хранит состояние
 
 interface GameState {
   currentCase: Case | null;
@@ -60,12 +60,17 @@ export const useGameStore = create<GameState & GameActions>((set, get) => ({
 
     set({ isSpinning: true, showResult: false });
     
-    // Результат будет определен заранее, но показан только после анимации
+    // Результат определяется выше (в UI/use case); при отсутствии — выберем случайно
     const selectedIndex = (winningIndex !== undefined)
       ? winningIndex
-      : RouletteService.generateWinningIndex(currentCase.items.length);
+      : Math.floor(Math.random() * currentCase.items.length);
 
-    const result = RouletteService.createSpinResult(currentCase, selectedIndex);
+    const prize = currentCase.items[selectedIndex];
+    const result: SpinResult = {
+      prize,
+      position: selectedIndex,
+      timestamp: Date.now()
+    };
 
     set({ spinResult: result });
   },

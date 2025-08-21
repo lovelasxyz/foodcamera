@@ -1,7 +1,7 @@
 import React, { useRef } from 'react';
 import { animated } from 'react-spring';
 import { Prize } from '@/types/game';
-import { ASSET_PATHS } from '@/utils/constants';
+import { ASSETS } from '@/constants/assets';
 import styles from '../RouletteWheel.module.css';
 
 interface RouletteViewportProps {
@@ -31,7 +31,7 @@ export const RouletteViewport: React.FC<RouletteViewportProps> = ({
             />
             <div className={styles.prizeHint}>
               <img 
-                src={ASSET_PATHS.IMAGES.TON} 
+                src={ASSETS.IMAGES.TON} 
                 alt="TON" 
                 className={styles.coinIcon}
               />
