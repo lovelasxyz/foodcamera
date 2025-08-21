@@ -1,4 +1,3 @@
-import { Prize } from '@/types/game';
 import { CraftingDomain } from '@/domain/crafting/CraftingDomain';
 import { Inventory } from '@/domain/inventory/Inventory';
 import { InventoryItem } from '@/types/user';
