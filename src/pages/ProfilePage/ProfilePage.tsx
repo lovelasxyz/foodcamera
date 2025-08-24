@@ -10,7 +10,7 @@ import { ASSETS } from '@/constants/assets';
 
 export const ProfilePage: React.FC = () => {
   const { user, disconnectWallet, craftFromShards, sellInventoryItem } = useUserStore();
-  const { setActivePage } = useUIStore();
+  const { setActivePage, openModal } = useUIStore();
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
   const [selectedShardKey, setSelectedShardKey] = useState<string | null>(null);
   const selectedInventoryItem = useMemo(() => user.inventory.find(i => i.id === selectedItemId) || null, [user.inventory, selectedItemId]);
@@ -88,7 +88,7 @@ export const ProfilePage: React.FC = () => {
              />
           </div>
         </div>
-        <Button className={styles.depositButton}>
+        <Button className={styles.depositButton} onClick={() => openModal('deposit')}>
           Deposit
         </Button>
       </div>

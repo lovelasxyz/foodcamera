@@ -1,0 +1,255 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.stepper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.step {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text);
+  font-weight: 700;
+}
+
+.active {
+  background: #0090FF;
+  color: #fff;
+}
+
+.line {
+  width: 24px;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.viewport {
+  min-height: 280px;
+}
+
+.stepContent {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.sectionTitle {
+  color: var(--color-text);
+  font-weight: 700;
+  font-size: 18px;
+}
+
+.amountGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.amountChip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: linear-gradient(115.39deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, .09) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: var(--color-text);
+  cursor: pointer;
+}
+
+.chipActive {
+  outline: 2px solid #0090FF;
+}
+
+.tokenIcon {
+  width: 20px;
+  height: 20px;
+}
+
+.inputRow {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.inputLabel {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 14px;
+}
+
+.inputBox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  padding: 10px 12px;
+}
+
+.inputToken {
+  width: 18px;
+  height: 18px;
+}
+
+.input {
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--color-text);
+  font-size: 16px;
+  flex: 1;
+}
+
+.footerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.primaryBtn {
+  background: #0090FF;
+  color: #fff;
+}
+
+.secondaryBtn {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--color-text);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.previewValue {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--color-text);
+  font-weight: 700;
+}
+
+.methods {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+.methodCard {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 14px;
+  background: linear-gradient(115.39deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, .09) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: var(--color-text);
+}
+
+.methodCard img {
+  width: 28px;
+  height: 28px;
+}
+
+.methodActive {
+  outline: 2px solid #0090FF;
+}
+
+.methodName {
+  font-weight: 700;
+}
+
+.methodHint {
+  font-size: 12px;
+  opacity: 0.7;
+}
+
+.payBox {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: linear-gradient(115.39deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, .09) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 12px;
+}
+
+.payRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: var(--color-text);
+}
+
+.payValue {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.payValue img {
+  width: 18px;
+  height: 18px;
+}
+
+.linkBox {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.linkLabel {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 14px;
+}
+
+.linkValue {
+  word-break: break-all;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 12px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  padding: 10px 12px;
+}
+
+.linkActions {
+  display: flex;
+  gap: 10px;
+}
+
+.successIcon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: #17c96420;
+  color: #17c964;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  margin: 12px auto 0;
+}
+
+.successTitle {
+  text-align: center;
+  font-weight: 800;
+  font-size: 20px;
+  color: var(--color-text);
+}
+
+.successHint {
+  text-align: center;
+  color: rgba(255, 255, 255, 0.8);
+}
+

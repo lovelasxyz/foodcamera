@@ -10,6 +10,7 @@ import { LoadingScreen } from '@/components/ui/LoadingScreen';
 import { BottomNavigation } from '@/components/layout/BottomNavigation';
 import { shouldUseGuestMode } from '@/utils/environment';
 import './App.css';
+import { DepositModal } from '@/components/deposit/DepositModal/DepositModal';
 
 const AppContent: React.FC = () => {
   const { activePage } = useUIStore();
@@ -94,6 +95,7 @@ const AppContent: React.FC = () => {
   return (
     <div className={`app-container ${isAvailable ? 'tg-viewport' : ''} ${isExpanded ? 'tg-expanded' : ''}`}>
       {renderPage()}
+      <DepositModal />
       <BottomNavigation />
     </div>
   );
