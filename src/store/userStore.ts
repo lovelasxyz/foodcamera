@@ -19,6 +19,7 @@ interface UserActions {
   setTelegramUser: (telegramUser: ParsedTelegramUser) => void;
   updateBalance: (amount: number) => void;
   addToInventory: (prize: Prize, fromCase: string) => void;
+  receiveInventoryItem: (inventoryItemId: string) => void;
   craftFromShards: (shardKey: string, fromCase?: string) => void;
   sellInventoryItem: (inventoryItemId: string) => void;
   setLoading: (isLoading: boolean) => void;
@@ -111,6 +112,18 @@ export const useUserStore = create<UserState & UserActions>((set) => ({
       };
     }),
 
+  receiveInventoryItem: (inventoryItemId) =>
+    set((state) => {
+      const idx = state.user.inventory.findIndex(i => i.id === inventoryItemId);
+      if (idx === -1) return state;
+      const target = state.user.inventory[idx];
+      if (target.status === 'sold' || target.status === 'received') return state;
+      const updatedItem: InventoryItem = { ...target, status: 'received' };
+      const newInventory = [...state.user.inventory];
+      newInventory[idx] = updatedItem;
+      return { user: { ...state.user, inventory: newInventory } };
+    }),
+
   craftFromShards: (shardKey, fromCase) =>
     set((state) => {
       const getShardCount = (key: string) => state.user.shards?.[key] || 0;
@@ -148,19 +161,20 @@ export const useUserStore = create<UserState & UserActions>((set) => ({
 
   sellInventoryItem: (inventoryItemId) =>
     set((state) => {
-      const item = state.user.inventory.find(i => i.id === inventoryItemId);
-      if (!item) return state;
-      const remainingInventory = state.user.inventory.filter(i => i.id !== inventoryItemId);
-      const newBalance = Math.max(0, state.user.balance + (item.prize.price || 0));
-      const newLastDrop = (state.user.lastDrop?.kind === 'item' && state.user.lastDrop.id === inventoryItemId)
-        ? null
-        : state.user.lastDrop;
+      const targetIndex = state.user.inventory.findIndex(i => i.id === inventoryItemId);
+      if (targetIndex === -1) return state;
+      const target = state.user.inventory[targetIndex];
+      // If already sold, do nothing
+      if (target.status === 'sold') return state;
+      const updatedItem: InventoryItem = { ...target, status: 'sold' };
+      const newInventory = [...state.user.inventory];
+      newInventory[targetIndex] = updatedItem;
+      const newBalance = Math.max(0, state.user.balance + (target.prize.price || 0));
       return {
         user: {
           ...state.user,
           balance: newBalance,
-          inventory: remainingInventory,
-          lastDrop: newLastDrop
+          inventory: newInventory
         }
       };
     }),

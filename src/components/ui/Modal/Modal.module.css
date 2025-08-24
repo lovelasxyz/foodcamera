@@ -14,7 +14,12 @@
   padding: var(--spacing-16);
   transform: translateZ(0);
   overscroll-behavior: contain;
+  opacity: 1;
+  transition: opacity 300ms ease;
 }
+.overlayBottom { align-items: flex-end; }
+.overlayHidden { opacity: 0; }
+.overlayVisible { opacity: 1; }
 .modal::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, .3);
 }
@@ -45,6 +50,19 @@
   overflow-y: auto;
   scrollbar-width: thin;
   scrollbar-color: rgba(255, 255, 255, .2) rgba(255, 255, 255, .05);
+  transition: transform 300ms ease, opacity 300ms ease;
+}
+.modalBottom { border-radius: 24px 24px 0 0; max-width: 95%; }
+.preEnter { transform: translateY(100%); }
+.slideIn { transform: translateY(0); opacity: 1; }
+.slideOut { transform: translateY(100%); opacity: 0.98; }
+.keyboardActive {
+  padding-bottom: 50vh;
+  overflow-y: auto;
+  max-height: 100vh;
+  height: 100vh;
+  border-radius: 0;
+  max-width: 100%;
 }
 
 /* Скроллбар для webkit браузеров */
@@ -79,11 +97,24 @@
 
 /* Заголовок модального окна */
 .header {
-  display: flex;
+  display: flex
+;
+  flex-direction: column;
+  gap: 10px;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
   width: 100%;
   position: relative;
+}
+
+.backButton {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 24px;
+  height: 24px;
+  display: flex; align-items: center; justify-content: center;
+  background: transparent; border: none; color: var(--color-text);
 }
 
 .title {
@@ -98,6 +129,12 @@
   align-items: center;
   justify-content: center;
 }
+
+.subtitle { width: 100%; text-align: center; color: rgba(240,242,245,0.5); font-size: 14px; margin-bottom: 15px; }
+
+/* Header refinements for reference look */
+.header .backButton { left: 0; top: 0; }
+.header .closeButton { right: 0; top: 0; }
 
 /* Кнопка закрытия */
 .closeButton {

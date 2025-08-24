@@ -13,13 +13,9 @@ interface CaseCardProps {
 
 export const CaseCard: React.FC<CaseCardProps> = ({ caseData }) => {
   const { openCase } = useGameStore();
-  const { canAffordCase, isFreeCase } = useCase();
+  const { isFreeCase } = useCase();
 
   const handleOpenCase = () => {
-    if (!canAffordCase(caseData)) {
-      return;
-    }
-
     openCase(caseData, false);
   };
 

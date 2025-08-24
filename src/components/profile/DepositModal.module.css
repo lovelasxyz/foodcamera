@@ -1,0 +1,186 @@
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.subtitle {
+  color: rgba(255,255,255,0.75);
+  text-align: center;
+}
+
+.methodsGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.methodCard {
+  border: none;
+  border-radius: 14px;
+  padding: 16px;
+  color: #fff;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.methodIcon {
+  width: 26px;
+  height: 26px;
+  object-fit: contain;
+}
+
+.methodTitle { font-weight: 800; }
+
+.fullWidth { grid-column: 1 / span 2; }
+
+.ton { background: linear-gradient(180deg, #1A6BFF 0%, #24A8FF 100%); }
+.cryptobot { background: linear-gradient(180deg, #14B8FF 0%, #07A1F9 100%); }
+.gifts { background: linear-gradient(180deg, #27DB84 0%, #13C36E 100%); }
+
+.banner {
+  display: none;
+}
+
+.bannerTitle {
+  font-weight: 800;
+  color: #9af7c2;
+}
+
+.bannerNote {
+  color: rgba(255,255,255,0.65);
+  font-size: 12px;
+}
+
+.inputGroup {
+  position: relative;
+}
+
+.input {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.15);
+  background: rgba(255,255,255,0.06);
+  color: #fff;
+}
+
+.inlineIcon {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+}
+
+.qr { display: flex; justify-content: center; }
+.qrImage { width: 180px; height: 180px; }
+
+.addressRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.addressText {
+  font-family: monospace;
+  font-size: 12px;
+  opacity: 0.9;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mainCta {
+    background: #0075ff;
+    border-radius: 12px;
+    display: flex
+;
+    flex-direction: row;
+    gap: 8px;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 50px;
+    position: relative;
+    cursor: pointer;
+    transition: all .3s ease;
+    overflow: hidden;
+    border: none;
+    pointer-events: auto;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    z-index: 10;
+    flex-shrink: 0;
+}
+
+/* Reference-like promo badge and receive row */
+.promoRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(78, 255, 168, 0.18);
+  border: 1px solid rgba(111, 242, 160, 0.35);
+  border-radius: 12px;
+  padding: 10px 12px;
+  margin-top: 8px;
+}
+
+.promoCodeLabel { font-weight: 800; color: #fff; }
+.promoBonus { background: #1dbf73; color: #fff; font-weight: 800; padding: 6px 10px; border-radius: 10px; }
+
+.receiveRow {
+  height: 36px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  color: rgba(255,255,255,0.7);
+  font-weight: 700;
+}
+.receiveValue { color: #6ab8ff; }
+
+/* Promo input active state and tag */
+.inputPromoActive { border-color: rgba(111, 242, 160, 0.45); }
+.promoTag {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: #1dbf73;
+  color: #fff;
+  font-weight: 800;
+  padding: 6px 10px;
+  border-radius: 10px;
+}
+
+/* New: reference-like promo card and input container */
+.promoSection { display: flex; flex-direction: column; gap: 0; align-self: stretch; margin-bottom: 16px; }
+.promoCard { background: #23c265; border-radius: 12px; padding: 20px; display: flex; flex-direction: column; gap: 10px; align-items: flex-start; justify-content: flex-end; position: relative; overflow: hidden; }
+.promoImage { position: absolute; right: 12px; top: 19px; width: 140px; opacity: 0.9; }
+.promoTitle { color: #fff; text-align: left; font-size: 18px; letter-spacing: -0.4px; font-weight: 600; width: 186px; }
+.promoSubtitle { color: #fff; text-align: left; font-size: 12px; letter-spacing: -0.4px; font-weight: 500; width: 183px; line-height: 1.4; }
+.promoDots { width: 100%; height: 3px; opacity: .5; }
+.promoInputContainer { background: #23c265; border-radius: 12px; padding: 10px; display: flex; flex-direction: column; gap: 10px; align-items: flex-start; justify-content: flex-end; }
+.promoInputWrapper { border-radius: 12px; border: 1px solid rgba(255,255,255,.3); display: flex; flex-direction: row; align-items: center; justify-content: space-between; align-self: stretch; height: 50px; position: relative; padding: 0 7px 0 0; }
+.promoInput { background: transparent; border: none; outline: none; color: #fff; padding: 0 14px; width: 100%; height: 100%; font-size: 14px; }
+.bonusBadge { background: #ffffff; border-radius: 10px; padding: 8px 12px; color: #23c265; font-size: 14px; font-weight: 600; height: 36px; display: flex; align-items: center; justify-content: center; margin-right: 6px; }
+
+/* Amount group and coin */
+.amountGroup { position: relative; }
+.amountInput { width: 100%; height: 50px; padding: 0 42px 0 14px; border-radius: 12px; border: 1px solid rgba(255,255,255,.15); background: rgba(255,255,255,.06); color: #fff; }
+.coin { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); }
+
+/* Deposit button styles */
+.depositButton { background: #0075ff; border-radius: 12px; width: 100%; height: 50px; display: flex; align-items: center; justify-content: center; border: none; color: #fff; font-weight: 700; margin-bottom: 0; }
+.depositButtonDisabled { opacity: .6; cursor: not-allowed; }
+
+/* Error banner */
+.errorDisplay { background: rgba(255,68,68,.1); border-radius: 12px; padding: 8px 12px; display: flex; flex-direction: row; align-items: center; justify-content: center; height: 50px; margin-bottom: 16px; }
+.errorContent { display: flex; flex-direction: row; gap: 8px; align-items: center; justify-content: center; }
+.errorText { color: #f44; font-size: 14px; font-weight: 500; text-align: center; }
+

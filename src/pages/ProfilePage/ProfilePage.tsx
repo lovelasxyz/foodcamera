@@ -5,14 +5,16 @@ import { Button } from '@/components/ui/Button';
 import styles from './ProfilePage.module.css';
 import { SHARD_PRODUCTS } from '@/utils/constants';
 import { Modal } from '@/components/ui/Modal';
+import { DepositModal } from '@/components/profile/DepositModal';
 import { PrizeItem } from '@/domain/items/PrizeItem';
 import { ASSETS } from '@/constants/assets';
 
 export const ProfilePage: React.FC = () => {
-  const { user, disconnectWallet, craftFromShards, sellInventoryItem } = useUserStore();
-  const { setActivePage } = useUIStore();
+  const { user, disconnectWallet, craftFromShards, sellInventoryItem, receiveInventoryItem } = useUserStore();
+  const { setActivePage, isModalOpen, modalType, openModal, closeModal } = useUIStore();
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
   const [selectedShardKey, setSelectedShardKey] = useState<string | null>(null);
+  const [showOnlyAvailable, setShowOnlyAvailable] = useState<boolean>(true);
   const selectedInventoryItem = useMemo(() => user.inventory.find(i => i.id === selectedItemId) || null, [user.inventory, selectedItemId]);
 
   // Единая лента карточек: полноценные предметы + осколки вперемешку
@@ -57,6 +59,16 @@ export const ProfilePage: React.FC = () => {
     return combined;
   }, [user.inventory, user.shards, user.lastDrop]);
 
+  // Отфильтрованный список с учетом режима отображения
+  const visibleInventory = useMemo(() => {
+    const base = combinedInventory;
+    if (!showOnlyAvailable) return base;
+    return base.filter((card: any) => {
+      if (card.kind === 'shard') return true; // осколки всегда показываем
+      return card.item?.status !== 'sold';
+    });
+  }, [combinedInventory, showOnlyAvailable]);
+
   return (
     <div className={styles.profilePage}>
       {/* User Profile Section */}
@@ -88,7 +100,7 @@ export const ProfilePage: React.FC = () => {
              />
           </div>
         </div>
-        <Button className={styles.depositButton}>
+        <Button className={styles.depositButton} onClick={() => openModal('deposit')}>
           Deposit
         </Button>
       </div>
@@ -109,10 +121,16 @@ export const ProfilePage: React.FC = () => {
         </Button>
       </div>
 
+      {/* Deposit Modal */}
+      <DepositModal isOpen={isModalOpen && modalType === 'deposit'} onClose={closeModal} />
+
       {/* Invite Friends Section */}
       <div className={styles.inviteContainer}>
         <div className={styles.inviteContent}>
-          <div className={styles.inviteIcon}>👥</div>
+        <img 
+                src={ASSETS.ICONS.INVITE} 
+                style={{ width: '35px', height: '35px' }}
+              />
           <div className={styles.inviteText}>Invite Friends</div>
         </div>
         <Button className={styles.inviteButton}>
@@ -124,6 +142,9 @@ export const ProfilePage: React.FC = () => {
       <div className={styles.inventoryContainer}>
         <div className={styles.inventoryHeader}>
           <div className={styles.inventoryLabel}>Inventory:</div>
+          <Button className={styles.inventoryButton} onClick={() => setShowOnlyAvailable((v) => !v)}>
+            {showOnlyAvailable ? 'Show all' : 'Show available'}
+          </Button>
         </div>
         
         <div className={styles.inventorySection}>
@@ -138,19 +159,38 @@ export const ProfilePage: React.FC = () => {
             <>
               {/* Прогресс осколков */}
               <div className={styles.inventoryGrid}>
-                {combinedInventory.map((card) => {
+                {visibleInventory.map((card) => {
                   if (card.kind === 'item') {
+                    const isSold = card.item.status === 'sold';
+                    const isActive = card.item.status === 'active';
+                    const statusLabel = isSold ? 'Sold' : isActive ? 'Active' : 'Received';
                     return (
-                      <div key={card.id} className={styles.inventoryItem} onClick={() => setSelectedItemId(card.id)} style={{ cursor: 'pointer' }}>
+                      <div 
+                        key={card.id} 
+                        className={`${styles.inventoryItem} ${isSold ? styles.itemDisabled : ''}`} 
+                        data-rarity={(card.item.prize?.rarity) as any}
+                        onClick={() => { if (!isSold) setSelectedItemId(card.id); }} 
+                        style={{ cursor: isSold ? 'not-allowed' : 'pointer' }}
+                      >
                         <img src={card.image} alt="item" className={styles.itemImage} />
-                        <div className={styles.itemPriceTag}>{card.price.toFixed(2)}</div>
+                        <div className={`${styles.hint} ${styles.prizeHint}`}>
+                          <div className={styles.coinWrapper}>
+                            <div className={`${styles.coin} ${styles.small}`}>
+                              <img className={styles.coinImage} src={ASSETS.IMAGES.TON} alt="Coin" />
+                            </div>
+                          </div>
+                          <div className={styles.price}>{card.price.toFixed(2)}</div>
+                        </div>
+                        <div className={`${styles.statusBadge} ${isSold ? styles.statusSold : (isActive ? styles.statusActive : styles.statusReceived)}`}>
+                          {statusLabel}
+                        </div>
                       </div>
                     );
                   }
                   return (
                     <div key={card.id} className={styles.inventoryItem} onClick={() => setSelectedShardKey(card.shardKey)} style={{ cursor: 'pointer' }}>
                       <img src={card.image} alt="shard" className={styles.itemImage} />
-                      <div className={styles.itemPriceTag}>{card.label}</div>
+                      <div className={styles.shardBadge}>{card.label}</div>
                     </div>
                   );
                 })}
@@ -219,6 +259,9 @@ export const ProfilePage: React.FC = () => {
               <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
                 <Button className={styles.inventoryButton} onClick={() => { sellInventoryItem(selectedInventoryItem.id); setSelectedItemId(null); }}>
                   Sell ({selectedInventoryItem.prize.price.toFixed(2)})
+                </Button>
+                <Button className={styles.inventoryButton} onClick={() => { receiveInventoryItem(selectedInventoryItem.id); window.open('https://t.me/BotFather', '_blank'); }}>
+                  Receive
                 </Button>
                 <Button className={styles.inventoryButton} onClick={() => setSelectedItemId(null)}>
                   Close

@@ -285,10 +285,24 @@ background: linear-gradient(115.39deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255,
   width: 100%;
 }
 
+/* Responsive like home cases grid */
+@media (max-width: 380px) {
+  .inventoryGrid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+}
+@media (min-width: 381px) and (max-width: 480px) {
+  .inventoryGrid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+}
+@media (min-width: 769px) and (max-width: 1024px) {
+  .inventoryGrid { grid-template-columns: repeat(4, 1fr); gap: 18px; }
+}
+@media (min-width: 1025px) {
+  .inventoryGrid { grid-template-columns: repeat(5, 1fr); gap: 20px; }
+}
+
 .inventoryItem {
   position: relative;
   width: 100%;
-  height: 180px;
+  height: 200px;
   background: linear-gradient(115.39deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, .09) 100%);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 16px;
@@ -299,6 +313,31 @@ background: linear-gradient(115.39deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255,
   padding: 8px;
 }
 
+/* Rarity coloring */
+.inventoryItem::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 42%;
+  border-bottom-left-radius: 16px;
+  border-bottom-right-radius: 16px;
+  pointer-events: none;
+}
+
+.inventoryItem[data-rarity="common"] { border-bottom: 1px solid #5067E5; }
+.inventoryItem[data-rarity="common"]::after { background: linear-gradient(180deg, rgba(80,103,229,0) 0%, rgba(80,103,229,.45) 100%); }
+
+.inventoryItem[data-rarity="rare"] { border-bottom: 1px solid #C52F81; }
+.inventoryItem[data-rarity="rare"]::after { background: linear-gradient(180deg, rgba(197,47,129,0) 0%, rgba(197,47,129,.45) 100%); }
+
+.inventoryItem[data-rarity="epic"] { border-bottom: 1px solid #C03A42; }
+.inventoryItem[data-rarity="epic"]::after { background: linear-gradient(180deg, rgba(192,58,66,0) 0%, rgba(192,58,66,.45) 100%); }
+
+.inventoryItem[data-rarity="legendary"] { border-bottom: 1px solid #DC904B; }
+.inventoryItem[data-rarity="legendary"]::after { background: linear-gradient(180deg, rgba(220,144,75,0) 0%, rgba(220,144,75,.45) 100%); }
+
 .itemImage {
   width: 100%;
   height: 100%;
@@ -306,16 +345,43 @@ background: linear-gradient(115.39deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255,
   object-fit: contain;
 }
 
-.itemPriceTag {
+/* Price label with TON icon */
+/* Hint label like in roulette prizes */
+.hint {
+  background: rgba(163, 171, 187, .12);
+  border-radius: var(--radius-lg);
+  padding: 3px 12px 3px 3px;
+  display: flex;
+  flex-direction: row;
+  gap: 6px;
+  align-items: center;
+  justify-content: flex-start;
   position: absolute;
-  left: 10px;
-  bottom: 10px;
-  background: #0090FF;
-  color: #fff;
-  border-radius: 10px;
-  padding: 6px 10px;
-  font-weight: 700;
-  font-size: 14px;
+  left: 0;
+  top: 0;
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+.coinWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+}
+.coin {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.coin.small { width: 20px; height: 20px; }
+.coinImage { width: 100%; height: 100%; object-fit: contain; }
+.price {
+  color: var(--color-text);
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-sm);
+  font-weight: var(--font-weight-semibold);
 }
 
 .shardBadge {
@@ -328,6 +394,36 @@ background: linear-gradient(115.39deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255,
   padding: 6px 10px;
   font-weight: 700;
   font-size: 14px;
+}
+
+/* Status badges */
+.statusBadge {
+  position: absolute;
+  left: 8px;
+  bottom: 8px;
+  padding: 6px 10px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 12px;
+  border: 1px solid transparent;
+}
+
+.statusReceived {
+  background: rgba(0, 200, 83, 0.18);
+  color: #6FF2A0;
+  border-color: rgba(111, 242, 160, 0.35);
+}
+
+.statusActive {
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.9);
+  border-color: rgba(255, 255, 255, 0.22);
+}
+
+.statusSold {
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.7);
+  border-color: rgba(255, 255, 255, 0.12);
 }
 
 .inventoryHeader {

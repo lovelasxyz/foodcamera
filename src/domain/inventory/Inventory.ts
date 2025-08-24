@@ -10,10 +10,13 @@ export class Inventory {
 			id: `${Date.now()}-${prize.id}`,
 			prize,
 			obtainedAt: Date.now(),
-			fromCase
+			fromCase,
+			status: 'active'
 		};
 	}
 }
+
+
 
 
 

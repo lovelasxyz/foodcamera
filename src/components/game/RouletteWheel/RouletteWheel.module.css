@@ -96,20 +96,21 @@
 }
 
 .prizeHint {
-    background: rgba(163, 171, 187, .12);
-    border-radius: var(--radius-lg);
-    padding: 3px 12px 3px 3px;
-    display: flex
+  z-index: 3;
+  background: rgba(163, 171, 187, .12);
+  border-radius: var(--radius-lg);
+  padding: 3px 12px 3px 3px;
+  display: flex
 ;
-    flex-direction: row;
-    gap: 6px;
-    align-items: center;
-    justify-content: flex-start;
-    position: absolute;
-    left: 0;
-    top: 0;
-    box-shadow: 0 1px 2px #0003;
-    z-index: 3;
+  flex-direction: row;
+  gap: 6px;
+  align-items: center;
+  justify-content: flex-start;
+  position: absolute;
+  left: 0;
+  top: 0;
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
 }
 
 
@@ -402,7 +403,7 @@
 
 .prizesTitle {
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 300;
   color: rgba(255, 255, 255, 0.7);
 }
 
@@ -454,6 +455,39 @@
   gap: 2px;
   font-size: 10px;
   color: rgba(255, 255, 255, 0.7);
+}
+
+/* Rarity backgrounds – match reference exactly */
+.prizeItem[data-rarity="common"],
+.rouletteItem[data-rarity="common"],
+.prizeGridItem[data-rarity="common"] {
+  border-bottom: 1px solid #5067E5;
+  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(40, 57, 150, 0) 0%, rgba(40, 57, 150, .5) 100%), rgba(255, 255, 255, .05);
+}
+
+.prizeItem[data-rarity="rare"],
+.rouletteItem[data-rarity="rare"],
+.prizeGridItem[data-rarity="rare"] {
+  border-bottom: 1px solid #C52F81;
+  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(138, 37, 92, 0) 0%, rgba(138, 37, 92, .5) 100%), rgba(255, 255, 255, .05);
+}
+
+.prizeItem[data-rarity="epic"],
+.rouletteItem[data-rarity="epic"],
+.prizeGridItem[data-rarity="epic"] {
+  border-bottom: 1px solid #C03A42;
+  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(130, 48, 53, 0) 0%, rgba(130, 48, 53, .5) 100%), rgba(255, 255, 255, .05);
+}
+
+.prizeItem[data-rarity="legendary"],
+.rouletteItem[data-rarity="legendary"],
+.prizeGridItem[data-rarity="legendary"] {
+  border-bottom: 1px solid #DC904B;
+  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(140, 93, 50, 0) 0%, rgba(140, 93, 50, .5) 100%), rgba(255, 255, 255, .05);
 }
 
 @keyframes prizeGlow {
@@ -531,13 +565,19 @@
 
 .prizesTitle {
   color: var(--color-text);
-  padding-left: 1.4rem;
+  padding-left: 1.2rem;
   opacity: .5;
   font-size: var(--font-size-sm);
   line-height: var(--line-height-sm);
   letter-spacing: .01px;
 }
 @media (max-width: 420px) {
+  .prizeGridItem{
+      width: 100px;
+      height: 100px;
+  }
+}
+@media (max-width: 391px) {
   .prizeGridItem{
       width: 90px;
       height: 90px;

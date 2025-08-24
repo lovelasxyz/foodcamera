@@ -66,8 +66,8 @@ export const MULTIPLIERS: Multiplier[] = [
 ];
 
 export const RARITY_COLORS = {
-  common: '#23C265',
-  rare: '#0095EA',
-  epic: '#8A2BFF',
-  legendary: '#FFD700'
+  common: '#5067E5',
+  rare: '#C52F81',
+  epic: '#C03A42',
+  legendary: '#DC904B'
 } as const; 

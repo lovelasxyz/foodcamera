@@ -24,7 +24,7 @@ export const RouletteWheel: React.FC = () => {
     resetForNextSpin
   } = useGameStore();
   const { user, addToInventory, updateBalance } = useUserStore();
-  const { showWinModal, setShowWinModal } = useUIStore();
+  const { showWinModal, setShowWinModal, setActivePage, openModal } = useUIStore();
   const { playSound } = useSoundEffects();
 
   const [position, setPosition] = useState(0);
@@ -106,6 +106,12 @@ export const RouletteWheel: React.FC = () => {
       setPosition(result.position);
       setTargetReplicaIndex(result.targetDomIndex);
     });
+  };
+
+  const handleDepositRedirect = () => {
+    // Перенаправляем в профиль и открываем модалку депозита
+    setActivePage('profile');
+    openModal('deposit');
   };
 
   const handleClose = () => {
@@ -212,23 +218,38 @@ export const RouletteWheel: React.FC = () => {
 
           {/* Кнопки */}
           <div className={styles.actionButtons}>
-            <button 
-              className={styles.spinButton}
-              onClick={handleSpin}
-              disabled={isSpinning || !hasEnoughFunds}
-            >
-              <div className={styles.buttonLabel}>
-                {isSpinning ? 'Spinning...' : 'Spin'}
-              </div>
-              <div className={styles.priceTag}>
-                <div className={styles.priceValue}>{(currentCase?.price ?? 0).toFixed(2)}</div>
-                <div className={styles.coinSmall}>
-                  <div className={styles.coin}>
-                    <img className={styles.coinImage} src={ASSETS.IMAGES.TON} alt="Coin" />
+            {hasEnoughFunds ? (
+              <button 
+                className={styles.keepButton}
+                onClick={handleSpin}
+                disabled={isSpinning}
+              >
+                <div className={styles.buttonLabel}>
+                  {isSpinning ? 'Spinning...' : 'Spin'}
+                </div>
+                <div className={styles.priceTag}>
+                  <div className={styles.priceValue}>{(currentCase?.price ?? 0).toFixed(2)}</div>
+                  <div className={styles.coinSmall}>
+                    <div className={styles.coin}>
+                      <img className={styles.coinImage} src={ASSETS.IMAGES.TON} alt="Coin" />
+                    </div>
                   </div>
                 </div>
-              </div>
-            </button>
+              </button>
+            ) : (
+              <>
+                <div style={{ textAlign: 'center', color: 'rgba(255, 255, 255, 0.7)' }}>
+                  Not enough funds
+                </div>
+                <button 
+                  className={`${styles.spinButton} ${styles.centered}`}
+                  onClick={handleDepositRedirect}
+                  disabled={isSpinning}
+                >
+                  <div className={styles.buttonLabel}>Deposit</div>
+                </button>
+              </>
+            )}
           </div>
 
           <div style={{
@@ -249,25 +270,14 @@ export const RouletteWheel: React.FC = () => {
             <label htmlFor="show-win-modal">Показывать выигрыш</label>
           </div>
 
-          {!hasEnoughFunds && (
-            <div style={{ 
-              textAlign: 'center', 
-              color: 'rgba(255, 255, 255, 0.7)', 
-              fontSize: '14px',
-              marginTop: '12px'
-            }}>
-              Insufficient balance. Need {(currentCase?.price ?? 0).toFixed(2)} TON
-            </div>
-          )}
 
           {/* Возможные призы */}
           <div className={styles.prizesSection}>
             <div className={styles.prizesTitle}>Possible prizes:</div>
             <div className={styles.prizesGrid}>
               {sortedPrizes.map((item) => (
-                <div key={item.id} className={styles.prizeGridItem} onClick={() => setPreviewPrize(item)} style={{ cursor: 'pointer' }}>
+                <div key={item.id} className={styles.prizeGridItem} data-rarity={item.rarity} onClick={() => setPreviewPrize(item)} style={{ cursor: 'pointer' }}>
                   <img src={item.image} alt={item.name} />
-                  <div className={styles.prizePrice}>
                     <div className={styles.prizeHint}>
                       <img 
                         src={ASSETS.IMAGES.TON} 
@@ -276,7 +286,6 @@ export const RouletteWheel: React.FC = () => {
                       />
                       <div className={styles.price}> <span>{item.price}</span></div>
                     </div>
-                  </div>
                 </div>
               ))}
             </div>
@@ -359,7 +368,7 @@ export const RouletteWheel: React.FC = () => {
             <div className={styles.prizesTitle}>Possible prizes:</div>
             <div className={styles.prizesGrid}>
               {sortedPrizes.map((item) => (
-                <div key={item.id} className={styles.prizeGridItem} onClick={() => setPreviewPrize(item)} style={{ cursor: 'pointer' }}>
+                <div key={item.id} className={styles.prizeGridItem} data-rarity={item.rarity} onClick={() => setPreviewPrize(item)} style={{ cursor: 'pointer' }}>
                   <img src={item.image} alt={item.name} />
                   <div className={styles.prizePrice}>
                     <div className={styles.prizeHint}>

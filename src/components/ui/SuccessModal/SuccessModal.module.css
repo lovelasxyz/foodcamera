@@ -1,0 +1,44 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.animWrapper { width: 120px; height: 120px; }
+
+.checkSvg { width: 100%; height: 100%; }
+
+.checkCircle {
+  stroke: rgba(111, 242, 160, 0.5);
+  stroke-width: 2;
+  stroke-dasharray: 166;
+  stroke-dashoffset: 166;
+  animation: circle 0.6s ease-in-out forwards;
+}
+
+.checkMark {
+  stroke: #6FF2A0;
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 48;
+  stroke-dashoffset: 48;
+  animation: check 0.3s 0.6s ease-in-out forwards;
+}
+
+@keyframes circle { to { stroke-dashoffset: 0; } }
+@keyframes check { to { stroke-dashoffset: 0; } }
+
+.subtitle { color: rgba(255,255,255,0.75); text-align: center; }
+
+.okButton {
+  background: linear-gradient(135deg, #1677ff 0%, #31a8ff 100%);
+  border: none;
+  color: #fff;
+  border-radius: 10px;
+  padding: 10px 16px;
+  font-weight: 700;
+}
+
+

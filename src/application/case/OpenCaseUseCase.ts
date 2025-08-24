@@ -8,16 +8,14 @@ export class OpenCaseUseCase {
 	constructor(private readonly updateBalance: UpdateBalanceFn, private readonly notify: NotifyFn) {}
 
 	public tryOpen(caseData: Case, userBalance: number, insufficientMsg: string): boolean {
-		if (!CaseDomain.canAfford(caseData, userBalance)) {
-			this.notify({ type: 'error', message: insufficientMsg });
-			return false;
-		}
-		if (!CaseDomain.isFree(caseData)) {
-			this.updateBalance(-caseData.price);
-		}
+		// Вход в кейс не должен быть ограничен балансом и не должен списывать средства.
+		// Ограничение и списание происходят непосредственно на спине (SpinUseCase).
 		return true;
 	}
 }
+
+
+
 
 
 

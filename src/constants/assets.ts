@@ -6,7 +6,6 @@ export const ASSETS = {
 		DRAGON: '/assets/images/dragon.png',
 		FREE_CASE: '/assets/images/free-case.png',
         FREE_CASE_LABEL: '/assets/images/free_case_label.svg',
-
 		FROG: '/assets/images/frog.png',
 		GIFT: '/assets/images/gift.png',
 		HELMET: '/assets/images/helmet.png',
@@ -26,8 +25,14 @@ export const ASSETS = {
 	SHARDS: {
 		GIFT: '/images/gift.png',
 		GIFT_SHARD: '/images/gift_shard.png'
+	},
+	ICONS: {
+		INVITE: '/assets/images/invite_user.svg',
 	}
 } as const;
+
+
+
 
 
 

@@ -23,4 +23,5 @@ export interface InventoryItem {
   prize: Prize;
   obtainedAt: number;
   fromCase: string;
+  status?: 'active' | 'received' | 'sold';
 } 

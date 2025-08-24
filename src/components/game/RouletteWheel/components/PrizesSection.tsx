@@ -20,7 +20,7 @@ export const PrizesSection: React.FC<PrizesSectionProps> = ({
       <div className={styles.prizesTitle}>{MESSAGES.POSSIBLE_PRIZES}</div>
       <div className={styles.prizesGrid}>
         {displayItems.map((item) => (
-          <div key={item.id} className={styles.prizeItem}>
+          <div key={item.id} className={styles.prizeItem} data-rarity={item.rarity}>
             <img className={styles.prizeImage} src={item.image} alt="Prize" />
             <div className={`${styles.hint} ${styles.prizeHint}`}>
               <div className={styles.coinWrapper}>

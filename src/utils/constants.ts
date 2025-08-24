@@ -26,10 +26,10 @@ export const UI_CONFIG = {
 } as const;
 
 export const RARITY_COLORS = {
-  common: '#9ca3af',
-  rare: '#3b82f6',
-  epic: '#8b5cf6',
-  legendary: '#f59e0b'
+  common: '#5067E5',
+  rare: '#C52F81',
+  epic: '#C03A42',
+  legendary: '#DC904B'
 } as const;
 
 export const TOKEN_SYMBOL = 'T';

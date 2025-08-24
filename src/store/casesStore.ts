@@ -26,7 +26,7 @@ const mockCases: Case[] = [
     background: '#0088FF',
     items: [
       // Осколок подарка (5 шт. собирают полноценный Gift)
-      { id: 100, name: 'Gift Shard', price: 0, image: ASSETS.SHARDS.GIFT_SHARD, rarity: 'rare', isShard: true, shardKey: 'gift', shardsRequired: 5 } as Prize,
+      { id: 100, name: 'Gift Shard', price: 0, image: ASSETS.SHARDS.GIFT_SHARD, rarity: 'common', isShard: true, shardKey: 'gift', shardsRequired: 5 } as Prize,
       { id: 1, name: 'Teddy Bear', price: 10.91, image: ASSETS.IMAGES.TEDDY, rarity: 'common' },
       // { id: 2, name: 'Scroll', price: 24.06, image: ASSET_PATHS.IMAGES.SCROLL, rarity: 'common' },
       // { id: 3, name: 'TON', price: 5.50, image: ASSET_PATHS.IMAGES.TOKEN, rarity: 'common' },
@@ -49,7 +49,7 @@ const mockCases: Case[] = [
     background: '#8B4513',
     items: [
       { id: 1, name: 'Teddy Bear', price: 10.91, image: ASSETS.IMAGES.TEDDY, rarity: 'common' },
-      { id: 2, name: 'Scroll', price: 24.06, image: ASSETS.IMAGES.SCROLL, rarity: 'common' },
+      { id: 2, name: 'Scroll', price: 24.06, image: ASSETS.IMAGES.SCROLL, rarity: 'rare' },
       { id: 3, name: 'Frog', price: 1562, image: ASSETS.IMAGES.FROG, rarity: 'legendary' },
       { id: 4, name: 'Diamond', price: 48.15, image: ASSETS.IMAGES.DIAMOND, rarity: 'epic' },
       { id: 5, name: 'TON', price: 5.50, image: ASSETS.IMAGES.TOKEN, rarity: 'common' },
@@ -70,7 +70,7 @@ const mockCases: Case[] = [
     background: '#FF4500',
     items: [
       { id: 1, name: 'Teddy Bear', price: 10.91, image: ASSETS.IMAGES.TEDDY, rarity: 'common' },
-      { id: 2, name: 'Scroll', price: 24.06, image: ASSETS.IMAGES.SCROLL, rarity: 'common' },
+      { id: 2, name: 'Scroll', price: 24.06, image: ASSETS.IMAGES.SCROLL, rarity: 'rare' },
       { id: 3, name: 'TON', price: 5.50, image: ASSETS.IMAGES.TOKEN, rarity: 'common' },
       { id: 4, name: 'TON', price: 15.75, image: ASSETS.IMAGES.TOKEN_GOLD, rarity: 'rare' },
       { id: 5, name: 'Wizard Hat', price: 35.20, image: ASSETS.IMAGES.WIZARD_HAT, rarity: 'rare' },
@@ -91,7 +91,7 @@ const mockCases: Case[] = [
     background: '#FFD700',
     items: [
       { id: 1, name: 'Teddy Bear', price: 10.91, image: ASSETS.IMAGES.TEDDY, rarity: 'common' },
-      { id: 2, name: 'Scroll', price: 24.06, image: ASSETS.IMAGES.SCROLL, rarity: 'common' },
+      { id: 2, name: 'Scroll', price: 24.06, image: ASSETS.IMAGES.SCROLL, rarity: 'rare' },
       { id: 3, name: 'TON', price: 5.50, image: ASSETS.IMAGES.TOKEN, rarity: 'common' },
       { id: 4, name: 'TON', price: 15.75, image: ASSETS.IMAGES.TOKEN_GOLD, rarity: 'rare' },
       { id: 5, name: 'Wizard Hat', price: 35.20, image: ASSETS.IMAGES.WIZARD_HAT, rarity: 'rare' },
@@ -124,7 +124,7 @@ const mockCases: Case[] = [
     price: 3,
     background: '#4169E1',
     items: [
-      { id: 1, name: 'Scroll', price: 24.06, image: ASSETS.IMAGES.SCROLL, rarity: 'common' },
+      { id: 1, name: 'Scroll', price: 24.06, image: ASSETS.IMAGES.SCROLL, rarity: 'rare' },
       { id: 2, name: 'Wizard Hat', price: 35.20, image: ASSETS.IMAGES.WIZARD_HAT, rarity: 'rare' },
       { id: 3, name: 'Diamond', price: 48.15, image: ASSETS.IMAGES.DIAMOND, rarity: 'epic' },
     ]
