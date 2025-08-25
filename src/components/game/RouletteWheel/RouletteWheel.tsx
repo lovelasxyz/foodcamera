@@ -238,8 +238,20 @@ export const RouletteWheel: React.FC = () => {
               </button>
             ) : (
               <>
-                <div style={{ textAlign: 'center', color: 'rgba(255, 255, 255, 0.7)' }}>
-                  Not enough funds
+                <div className={styles.notFunds}>
+                  <svg
+                    className={styles.infoIcon}
+                    width="23"
+                    height="23"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                    aria-hidden="true"
+                  >
+                    <circle cx="12" cy="12" r="10" fill="#FFFFFF"/>
+                    <rect x="11" y="10" width="2" height="6" rx="1" fill="#0F1115"/>
+                    <circle cx="12" cy="7.25" r="1.25" fill="#0F1115"/>
+                  </svg>
+                  <span>Not enough funds</span>
                 </div>
                 <button 
                   className={`${styles.spinButton} ${styles.centered}`}

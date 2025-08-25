@@ -89,7 +89,7 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({
               className={styles.floatingLogo}
             />
           </div>
-          <h1 className={styles.loaderTitle}>Gift Cases</h1>
+          <h1 className={styles.loaderTitle}>RICK CASES</h1>
           <p className={styles.loaderCopyright}>Copyright © 2025</p>
         </header>
       </div>

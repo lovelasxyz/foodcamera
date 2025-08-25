@@ -53,7 +53,7 @@
   scrollbar-color: rgba(255, 255, 255, .2) rgba(255, 255, 255, .05);
   transition: transform 300ms ease, opacity 300ms ease;
 }
-.modalBottom { border-radius: 24px 24px 0 0; max-width: 95%; }
+.modalBottom { border-radius: 24px 24px 0 0; max-width: 95% !important; }
 .preEnter { transform: translateY(100%); }
 .slideIn { transform: translateY(0); opacity: 1; }
 .slideOut { transform: translateY(100%); opacity: 1; }

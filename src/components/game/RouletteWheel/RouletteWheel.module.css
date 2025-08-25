@@ -14,7 +14,23 @@
   border-radius: var(--radius-md);
   margin: 16px 0;
 }
+.notFunds{
+  color: rgb(255, 255, 255);
+  font-size: 14px;
+  line-height: 16px;
+  height: 35px;
+  letter-spacing: 0.01px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
 
+.infoIcon{
+  flex-shrink: 0;
+  filter: drop-shadow(0 1px 1px rgba(0,0,0,.25));
+  border-radius: 50%;
+}
 /* Градиентные тени по бокам */
 .rouletteViewport::before {
   content: '';
@@ -250,8 +266,8 @@
     filter: drop-shadow(0 0 3px rgba(10, 93, 201, .6));
 }
 .buttonLabel{
-  color: var(--color-text);
-  font-size: var(--font-size-md);
+  color: white;
+  font-size: 14px;
   line-height: var(--line-height-md);
   font-weight: var(--font-weight-semibold);
 }
@@ -300,7 +316,6 @@
   height: 50px;
   cursor: pointer;
   transition: all .2s ease;
-  box-shadow: 0 4px 8px #0075ff33;
   position: relative;
   overflow: hidden;
 }
@@ -365,7 +380,6 @@
   height: 50px;
   cursor: pointer;
   transition: all .2s ease;
-  box-shadow: 0 4px 8px #0075ff33;
   position: relative;
   overflow: hidden;
 }
