@@ -6,7 +6,7 @@
 
 /* Apply deposit-specific modal tweaks when used with bottomSheet variant */
 .depositModal {
-  padding-bottom: 15px;
+  padding-bottom: 20px !important;
   /* Ensure deposit modal relies on slide-up transform, not opacity */
   transition: transform 300ms ease !important;
 }

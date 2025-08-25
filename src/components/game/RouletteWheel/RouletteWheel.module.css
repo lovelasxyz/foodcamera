@@ -473,7 +473,6 @@
 
 /* Rarity backgrounds – match reference exactly */
 .prizeItem[data-rarity="common"],
-.rouletteItem[data-rarity="common"],
 .prizeGridItem[data-rarity="common"] {
   border-bottom: 1px solid #5067E5;
   border-radius: 16px;
@@ -481,7 +480,6 @@
 }
 
 .prizeItem[data-rarity="rare"],
-.rouletteItem[data-rarity="rare"],
 .prizeGridItem[data-rarity="rare"] {
   border-bottom: 1px solid #C52F81;
   border-radius: 16px;
@@ -489,7 +487,6 @@
 }
 
 .prizeItem[data-rarity="epic"],
-.rouletteItem[data-rarity="epic"],
 .prizeGridItem[data-rarity="epic"] {
   border-bottom: 1px solid #C03A42;
   border-radius: 16px;
@@ -497,7 +494,6 @@
 }
 
 .prizeItem[data-rarity="legendary"],
-.rouletteItem[data-rarity="legendary"],
 .prizeGridItem[data-rarity="legendary"] {
   border-bottom: 1px solid #DC904B;
   border-radius: 16px;
