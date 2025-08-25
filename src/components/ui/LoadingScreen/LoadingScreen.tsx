@@ -63,7 +63,7 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({
                   <div className={styles.logoInner}>V</div>
                 </div>
               </div>
-              <h1 className={styles.appName}>Gift Cases by TON</h1>
+              <h1 className={styles.appName}>Gift Cases</h1>
               <p className={styles.copyright}>Copyright © 2025</p>
             </div>
           )}
@@ -85,11 +85,11 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({
           <div className={styles.logoContainer}>
             <img 
               src={ASSETS.IMAGES.LOADING_LOGO} 
-              alt="Gift Cases by TON Logo" 
+              alt="Gift Cases Logo" 
               className={styles.floatingLogo}
             />
           </div>
-          <h1 className={styles.loaderTitle}>Gift Cases by TON</h1>
+          <h1 className={styles.loaderTitle}>Gift Cases</h1>
           <p className={styles.loaderCopyright}>Copyright © 2025</p>
         </header>
       </div>
@@ -114,7 +114,7 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({
         </div>
       )}
 
-      <div className={styles.loaderSocialHandle}>@case</div>
+      <div className={styles.loaderSocialHandle}>@casebot</div>
     </div>
   );
 }; 

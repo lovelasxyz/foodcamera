@@ -54,7 +54,7 @@ export const SHARD_PRODUCTS: Record<string, { id: number; name: string; price: n
     price: 25,
     image: ASSETS.SHARDS.GIFT,
     rarity: 'rare',
-    required: 5,
+    required: 10,
     shardImage: ASSETS.SHARDS.GIFT_SHARD
   }
 };
@@ -84,12 +84,24 @@ export const MESSAGES = {
   LOADING_CASES: 'Loading cases...',
   SPINNING: 'Spinning...',
   CHECK_NEWS: 'Check our news',
-  OPEN_CASE: 'Open @case',
+  OPEN_CASE: '@casebot',
   FREE_CASE: 'Free Case',
   POSSIBLE_PRIZES: 'Possible prizes:',
   INSUFFICIENT_BALANCE: 'Insufficient balance. Need',
   YOU_WON: 'You won!',
   KEEP_IT: 'Keep it',
   QUICK_SELL: 'Quick Sell',
-  UPGRADE: 'Upgrade'
+  UPGRADE: 'Upgrade',
+  FREE_BANNER_1: 'Check our news',
+  FREE_BANNER_2: 'Invite friends and get rewards',
+  FREE_BANNER_3: 'Open your Free Case today',
+  FREE_BANNER_4: 'Daily bonuses are waiting for you',
+  FREE_BANNER_5: 'Follow updates in our channel',
+  FREE_BANNER_6: 'Spin the wheel and win',
+  FREE_BANNER_7: 'Collect shards faster',
+  FREE_BANNER_8: 'Limited-time events every week',
+  FREE_BANNER_9: 'Boost your luck today',
+  FREE_BANNER_10: 'New cases added regularly',
+  FREE_BANNER_11: 'Complete tasks for extra rewards',
+  FREE_BANNER_12: 'Join the top winners board'
 } as const; 

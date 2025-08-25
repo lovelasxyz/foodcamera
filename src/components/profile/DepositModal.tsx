@@ -113,7 +113,7 @@ export const DepositModal: React.FC<DepositModalProps> = ({ isOpen, onClose }) =
         <div className={styles.promoCard}>
           <img className={styles.promoImage} src="/assets/images/discount_promo-min.png" alt="Promocode" />
           <div className={styles.promoTitle}>Get a bonus on your deposit</div>
-          <div className={styles.promoSubtitle}>Look for promo codes in <span className="text-semibold">@case</span><br />or in the channels of our partners.</div>
+          <div className={styles.promoSubtitle}>Look for promo codes in <span className="text-semibold">@casebot</span><br />or in the channels of our partners.</div>
           <svg className={styles.promoDots} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 337 3" fill="none">
             <path d="M0 1.5H337" stroke="white" strokeWidth="2" strokeDasharray="8 4" opacity="0.5" />
           </svg>
@@ -141,15 +141,43 @@ export const DepositModal: React.FC<DepositModalProps> = ({ isOpen, onClose }) =
       )}
       <div className={styles.amountGroup}>
         <input
-          type="number"
+          type="text"
           inputMode="decimal"
           value={amount}
-          onChange={(e) => setAmount(e.target.value)}
-          onKeyDown={(e) => { if (e.key === 'Enter') { handleSubmit(); } }}
+          onChange={(e) => {
+            const raw = e.target.value.replace(",", ".");
+            // allow only digits and one dot
+            const cleaned = raw
+              .replace(/[^0-9.]/g, '')
+              .replace(/(\..*)\./g, '$1');
+            // prevent leading zeros like 00, keep 0.x
+            const normalized = cleaned.startsWith('00') ? cleaned.replace(/^0+/, '0') : cleaned;
+            setAmount(normalized);
+          }}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') { handleSubmit(); }
+            // block minus, plus, exponent markers
+            if (e.key === '-' || e.key === '+' || e.key.toLowerCase() === 'e') {
+              e.preventDefault();
+            }
+          }}
           onFocus={() => setKeyboardActive(true)}
-          onBlur={() => setKeyboardActive(false)}
+          onBlur={() => {
+            setKeyboardActive(false);
+            // trim trailing dot and normalize to positive number
+            if (amount) {
+              let v = amount.replace(/\.$/, '');
+              const n = Number(v);
+              if (!Number.isFinite(n) || n <= 0) {
+                setAmount('');
+              } else {
+                setAmount(String(n));
+              }
+            }
+          }}
           placeholder="Enter amount"
           className={styles.amountInput}
+          aria-label="Enter amount"
         />
         <div className={styles.coin}>
           <img src={ASSETS.IMAGES.TON} alt="Coin" style={{ width: 20, height: 20 }} />

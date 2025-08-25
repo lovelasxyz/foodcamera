@@ -8,6 +8,7 @@ export const ASSETS = {
         FREE_CASE_LABEL: '/assets/images/free_case_label.svg',
 		FROG: '/assets/images/frog.png',
 		GIFT: '/assets/images/gift.png',
+		GIF: '/assets/images/gif.gif',
 		HELMET: '/assets/images/helmet.png',
 		JACKPOT: '/assets/images/jackpot.svg',
 		LIGHTNING: '/assets/images/lightning.svg',
@@ -28,6 +29,9 @@ export const ASSETS = {
 	},
 	ICONS: {
 		INVITE: '/assets/images/invite_user.svg',
+	},
+	VIDEOS: {
+		DARKSIDE: '/assets/images/darkside.mp4'
 	}
 } as const;
 

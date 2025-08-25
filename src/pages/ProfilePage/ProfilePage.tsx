@@ -35,10 +35,11 @@ export const ProfilePage: React.FC = () => {
         kind: 'shard' as const,
         id: `shard-${key}`,
         image: cfg?.shardImage || '/images/gift_shard.png',
-        label: `${count}/${cfg?.required ?? 5}`,
+        label: `${count}/${cfg?.required ?? 10}`,
         shardKey: key,
         count,
-        required: cfg?.required ?? 5
+        required: cfg?.required ?? 10,
+        rarity: 'common' as const
       };
     });
     // Базовый порядок: полноценные предметы, затем осколки
@@ -64,12 +65,12 @@ export const ProfilePage: React.FC = () => {
     const base = combinedInventory;
     if (!showOnlyAvailable) return base;
     return base.filter((card: any) => {
-      // В режиме available показываем только активные подарки
+      // В режиме available показываем активные предметы и осколки
       if (card.kind === 'item') {
         return card.item?.status === 'active';
       }
-      // Осколки скрываем в available
-      return false;
+      // Осколки считаем доступными
+      return true;
     });
   }, [combinedInventory, showOnlyAvailable]);
 
@@ -221,7 +222,7 @@ export const ProfilePage: React.FC = () => {
               return (
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
                   <img src={cfg?.shardImage || ASSETS.SHARDS.GIFT_SHARD} alt={`${key} shard`} style={{ width: 160, height: 160, objectFit: 'contain' }} />
-                  <div style={{ fontWeight: 700 }}>{count}/{cfg?.required ?? 5}</div>
+                  <div style={{ fontWeight: 700 }}>{count}/{cfg?.required ?? 10}</div>
                   <Button className={styles.inventoryButton} onClick={() => { if (canCraft) { craftFromShards(key, 'Craft'); setSelectedShardKey(null); } }}>
                     {canCraft ? 'Craft' : 'Need more shards'}
                   </Button>
