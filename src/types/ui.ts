@@ -14,6 +14,8 @@ export interface ModalProps {
   title?: string;
   children: React.ReactNode;
   size?: 'sm' | 'md' | 'lg' | 'xl';
+  className?: string;
+  overlayClassName?: string;
 }
 
 export interface CardProps {

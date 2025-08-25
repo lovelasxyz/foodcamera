@@ -221,6 +221,8 @@ export const DepositModal: React.FC<DepositModalProps> = ({ isOpen, onClose }) =
         variant="bottomSheet"
         bottomSheetAnimated
         keyboardActive={keyboardActive}
+        className={styles.depositModal}
+        overlayClassName={styles.depositOverlay}
       >
         {method === 'select' && renderSelection()}
         {method === 'ton' && renderTon()}

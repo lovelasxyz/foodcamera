@@ -293,10 +293,10 @@ background: linear-gradient(115.39deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255,
   .inventoryGrid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
 }
 @media (min-width: 769px) and (max-width: 1024px) {
-  .inventoryGrid { grid-template-columns: repeat(4, 1fr); gap: 18px; }
+  .inventoryGrid {  gap: 18px; }
 }
 @media (min-width: 1025px) {
-  .inventoryGrid { grid-template-columns: repeat(5, 1fr); gap: 20px; }
+  .inventoryGrid {  gap: 20px; }
 }
 
 .inventoryItem {

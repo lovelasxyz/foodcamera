@@ -347,7 +347,7 @@ export const RouletteWheel: React.FC = () => {
  <button 
           className={styles.quickSellButton}
           onClick={handleQuickSell}
-          disabled={isSpinning || !hasEnoughFunds}
+          disabled={isSpinning}
         >
                 <div className={styles.buttonLabel}> Quick Sell </div>
               

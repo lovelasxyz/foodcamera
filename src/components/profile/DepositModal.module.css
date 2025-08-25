@@ -4,6 +4,32 @@
   gap: 12px;
 }
 
+/* Apply deposit-specific modal tweaks when used with bottomSheet variant */
+.depositModal {
+  /* Ensure deposit modal relies on slide-up transform, not opacity */
+  transition: transform 300ms ease !important;
+}
+
+.depositOverlay {
+  /* Custom overlay for deposit: slightly lighter and with blur */
+  background-color: rgba(0, 0, 0, 0.5) !important;
+  backdrop-filter: blur(2px);
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #000c;
+  display: flex
+;
+  justify-content: center;
+  align-items: flex-end;
+  z-index: 1000;
+  transform: translateZ(0);
+  overscroll-behavior: contain;
+  padding: 0 10px!important;
+}
+
 .subtitle {
   color: rgba(255,255,255,0.75);
   text-align: center;

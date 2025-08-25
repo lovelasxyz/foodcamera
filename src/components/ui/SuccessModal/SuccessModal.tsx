@@ -18,22 +18,31 @@ export const SuccessModal: React.FC<SuccessModalProps> = ({
   autoCloseMs
 }) => {
   useEffect(() => {
-    if (!isOpen || !autoCloseMs) return;
-    const t = setTimeout(onClose, autoCloseMs);
-    return () => clearTimeout(t);
+    if (!isOpen) return;
+    if (!autoCloseMs) return;
+    const timer = window.setTimeout(() => {
+      onClose();
+    }, autoCloseMs);
+    return () => window.clearTimeout(timer);
   }, [isOpen, autoCloseMs, onClose]);
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title={title} size="md">
+    <Modal isOpen={isOpen} onClose={onClose} title={title} size="sm">
       <div className={styles.container}>
         <div className={styles.animWrapper}>
-          <svg className={styles.checkSvg} viewBox="0 0 52 52">
+          <svg className={styles.checkSvg} viewBox="0 0 52 52" aria-hidden="true">
             <circle className={styles.checkCircle} cx="26" cy="26" r="25" fill="none" />
-            <path className={styles.checkMark} fill="none" d="M14 27l7 7 17-17" />
+            <path
+              className={styles.checkMark}
+              fill="none"
+              d="M14 27 L22 34 L38 18"
+            />
           </svg>
         </div>
         {subtitle && <div className={styles.subtitle}>{subtitle}</div>}
-        <button className={styles.okButton} onClick={onClose}>OK</button>
+        {!autoCloseMs && (
+          <button className={styles.okButton} onClick={onClose}>OK</button>
+        )}
       </div>
     </Modal>
   );

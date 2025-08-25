@@ -24,7 +24,9 @@ export const Modal: React.FC<ExtendedModalProps> = ({
   onBack,
   variant = 'default',
   keyboardActive = false,
-  bottomSheetAnimated = false
+  bottomSheetAnimated = false,
+  className,
+  overlayClassName
 }) => {
   const ANIMATION_MS = 300;
   const [shouldRender, setShouldRender] = useState<boolean>(isOpen);
@@ -104,8 +106,10 @@ export const Modal: React.FC<ExtendedModalProps> = ({
       className={clsx(
         styles.overlay,
         { [styles.overlayBottom]: variant === 'bottomSheet' },
+        animationEnabled && { [styles.preEnter]: variant === 'bottomSheet' && !isClosing && !isEntering },
         animationEnabled && { [styles.overlayHidden]: isClosing || !isEntering },
-        animationEnabled && { [styles.overlayVisible]: !isClosing && isEntering }
+        animationEnabled && { [styles.overlayVisible]: !isClosing && isEntering },
+        overlayClassName
       )}
       onClick={onClose}
     >
@@ -114,9 +118,11 @@ export const Modal: React.FC<ExtendedModalProps> = ({
           styles.modal,
           styles[size],
           { [styles.modalBottom]: variant === 'bottomSheet' },
+          animationEnabled && { [styles.preEnter]: variant === 'bottomSheet' && !isClosing && !isEntering },
           animationEnabled && { [styles.slideIn]: variant === 'bottomSheet' && !isClosing && isEntering },
           animationEnabled && { [styles.slideOut]: variant === 'bottomSheet' && isClosing },
-          { [styles.keyboardActive]: keyboardActive }
+          { [styles.keyboardActive]: keyboardActive },
+          className
         )}
         onClick={(e) => e.stopPropagation()}
       >

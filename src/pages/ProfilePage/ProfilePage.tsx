@@ -64,8 +64,12 @@ export const ProfilePage: React.FC = () => {
     const base = combinedInventory;
     if (!showOnlyAvailable) return base;
     return base.filter((card: any) => {
-      if (card.kind === 'shard') return true; // осколки всегда показываем
-      return card.item?.status !== 'sold';
+      // В режиме available показываем только активные подарки
+      if (card.kind === 'item') {
+        return card.item?.status === 'active';
+      }
+      // Осколки скрываем в available
+      return false;
     });
   }, [combinedInventory, showOnlyAvailable]);
 
