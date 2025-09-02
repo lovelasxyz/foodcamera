@@ -186,7 +186,7 @@ export const HomePage: React.FC = () => {
       
       <div className={styles.casesContainer}>
         {/* Live status bar (hidden offline) */}
-        {isOnline ? <LiveStatusBar /> : null}
+        {isOnline ? <LiveStatusBar /> : <div style={{ width: '100%', height: '20px' }}></div>}
 
         {/* Free case banners slider */}
         <div
