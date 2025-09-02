@@ -8,6 +8,7 @@ import { Modal } from '@/components/ui/Modal';
 import { DepositModal } from '@/components/profile/DepositModal';
 import { PrizeItem } from '@/domain/items/PrizeItem';
 import { ASSETS } from '@/constants/assets';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 
 export const ProfilePage: React.FC = () => {
   const { user, disconnectWallet, craftFromShards, sellInventoryItem, receiveInventoryItem } = useUserStore();
@@ -15,6 +16,21 @@ export const ProfilePage: React.FC = () => {
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
   const [selectedShardKey, setSelectedShardKey] = useState<string | null>(null);
   const [showOnlyAvailable, setShowOnlyAvailable] = useState<boolean>(true);
+  const isOnline = useOnlineStatus();
+  const [hideInventoryError, setHideInventoryError] = useState<boolean>(false);
+  const [inventoryOfflinePhase, setInventoryOfflinePhase] = useState<'idle' | 'loading' | 'error'>('idle');
+
+  // Управляем показом: при офлайне сначала короткий прелоадер, затем ошибка
+  React.useEffect(() => {
+    if (!isOnline) {
+      setInventoryOfflinePhase('loading');
+      const t = setTimeout(() => setInventoryOfflinePhase('error'), 800);
+      return () => clearTimeout(t);
+    }
+    // Вернулись онлайн — сброс
+    setHideInventoryError(false);
+    setInventoryOfflinePhase('idle');
+  }, [isOnline]);
   const selectedInventoryItem = useMemo(() => user.inventory.find(i => i.id === selectedItemId) || null, [user.inventory, selectedItemId]);
 
   // Единая лента карточек: полноценные предметы + осколки вперемешку
@@ -131,6 +147,11 @@ export const ProfilePage: React.FC = () => {
 
       {/* Invite Friends Section */}
       <div className={styles.inviteContainer}>
+        <img
+          src={ASSETS.IMAGES.LIGHTNING_PNG}
+          alt="Decorative lightning"
+          className={styles.inviteLightning}
+        />
         <div className={styles.inviteContent}>
         <img 
                 src={ASSETS.ICONS.INVITE} 
@@ -153,14 +174,36 @@ export const ProfilePage: React.FC = () => {
         </div>
         
         <div className={styles.inventorySection}>
-          {combinedInventory.length === 0 ? (
+          {inventoryOfflinePhase === 'loading' && (
+            <div className={styles.inventoryLoadingContainer}>
+              <div className={styles.inventoryLoadingSpinner}></div>
+              <div className={styles.inventoryLoadingText}>Loading your inventory...</div>
+            </div>
+          )}
+          {inventoryOfflinePhase === 'error' && (
+            <div className={styles.errorWrapper}>
+              {!hideInventoryError && (
+                <div className={styles.errorMessageContainer}>
+                  <div className={styles.errorMessageContent}>You are offline. Some features are disabled.</div>
+                  <button className={styles.errorClose} onClick={() => setHideInventoryError(true)}>×</button>
+                </div>
+              )}
+              <div className={styles.errorState}>
+                <div className={styles.errorMessage}>Failed to load items. Please try again.</div>
+                <button className={styles.retryButton} onClick={() => window.location.reload()}>
+                  <div className={styles.buttonLabel}>Try Again</div>
+                </button>
+              </div>
+            </div>
+          )}
+          {inventoryOfflinePhase === 'idle' && combinedInventory.length === 0 ? (
             <div className={styles.emptyInventory}>
-              <p>You haven&apos;t opened any cases yet</p>
+              <p className={styles.titleInventory}>You haven&apos;t opened any cases yet</p>
               <Button className={styles.openCasesButton} onClick={() => setActivePage('main')}>
                 Open Cases
               </Button>
             </div>
-          ) : (
+          ) : inventoryOfflinePhase === 'idle' ? (
             <>
               {/* Прогресс осколков */}
               <div className={styles.inventoryGrid}>
@@ -201,7 +244,7 @@ export const ProfilePage: React.FC = () => {
                 })}
               </div>
             </>
-          )}
+          ) : null}
         </div>
       </div>
 

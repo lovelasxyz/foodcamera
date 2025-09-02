@@ -22,15 +22,20 @@
   transform: translateY(-2px);
 }
 
+.disabled {
+  pointer-events: none;
+  opacity: 0.6;
+  filter: grayscale(0.3);
+}
+
 .caseImageContainer {
   border-radius: 16px;
   align-self: stretch;
   height: 176px;
   position: relative;
   overflow: hidden;
-  /* Базовый градиент, будет перезаписан через style */
-  background: radial-gradient(61.63% 100.04% at 43.18% 123.86%, rgba(0, 117, 255, 0.4) 0%, rgba(0, 117, 255, 0) 100%), 
-              linear-gradient(rgba(20, 20, 21, 0) 0%, rgb(20, 20, 21) 100%);
+  /* Нейтральный фон, цветной оттенок добавляется инлайном после вычисления */
+  background: linear-gradient(rgba(20, 20, 21, 0) 0%, rgb(20, 20, 21) 100%);
 }
 
 .caseImage {
@@ -121,7 +126,7 @@
 
 /* Free Case Card - специальный стиль */
 .freeCaseCard {
-  background: linear-gradient(135deg, #0098EA 0%, #0075FF 100%);
+  background: rgb(0, 152, 234);
 }
 
 /* Free Case Image Container */
@@ -172,7 +177,7 @@
   color: #fff;
   text-align: center;
   font-family: var(--font-family, "Inter", sans-serif);
-  font-size: var(--font-size-md, 14px);
+  font-size: 15px;
   line-height: var(--line-height-md, 20px);
   font-weight: var(--font-weight-semibold, 600);
   position: relative;

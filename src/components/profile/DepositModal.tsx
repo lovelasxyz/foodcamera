@@ -6,6 +6,8 @@ import styles from './DepositModal.module.css';
 import { ASSETS } from '@/constants/assets';
 import { SuccessModal } from '@/components/ui/SuccessModal/SuccessModal';
 import { ErrorBanner } from '@/components/ui/ErrorBanner/ErrorBanner';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+import { ConnectivityGuard } from '@/services/ConnectivityGuard';
 
 type DepositMethod = 'select' | 'ton' | 'cryptobot' | 'gifts';
 
@@ -22,6 +24,8 @@ export const DepositModal: React.FC<DepositModalProps> = ({ isOpen, onClose }) =
   const [showSuccess, setShowSuccess] = useState<boolean>(false);
   const [promoError, setPromoError] = useState<string | null>(null);
   const [keyboardActive, setKeyboardActive] = useState<boolean>(false);
+  const isOnline = useOnlineStatus();
+  const [apiError, setApiError] = useState<string | null>(null);
 
   // Reset form when modal opens to avoid autofill/cached state
   useEffect(() => {
@@ -83,6 +87,12 @@ export const DepositModal: React.FC<DepositModalProps> = ({ isOpen, onClose }) =
   };
 
   const handleSubmit = () => {
+    ConnectivityGuard.ensureOnline();
+    // Офлайн: не выполняем депозит, показываем ошибку как на скриншоте
+    if (method === 'ton' && !isOnline) {
+      setApiError('Failed to prepare transaction. Please try again.');
+      return;
+    }
     performDeposit();
     openTonTransfer();
   };
@@ -109,6 +119,11 @@ export const DepositModal: React.FC<DepositModalProps> = ({ isOpen, onClose }) =
 
   const renderTon = () => (
     <div className={styles.section}>
+      {apiError && (
+        <div className={styles.apiErrorContainer}>
+          <div className={styles.apiError}>{apiError}</div>
+        </div>
+      )}
       <div className={styles.promoSection}>
         <div className={styles.promoCard}>
           <img className={styles.promoImage} src="/assets/images/discount_promo-min.png" alt="Promocode" />

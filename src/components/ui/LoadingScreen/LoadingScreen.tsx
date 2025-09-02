@@ -34,7 +34,7 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({
 
   const getLoadingStatus = () => {
     if (shouldUseGuestMode()) {
-      return 'Loading Gift Cases...';
+      return 'Connecting...';
     }
     
     switch (authStatus) {
@@ -70,7 +70,7 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({
           
           <div className={styles.loaderContainer}>
             <div className={styles.spinner}></div>
-            <p className={styles.status}>{shouldUseGuestMode() ? 'Loading Gift Cases...' : status}</p>
+            <p className={styles.status}>{shouldUseGuestMode() ? 'Connecting...' : status}</p>
           </div>
         </div>
       </div>
@@ -89,7 +89,7 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({
               className={styles.floatingLogo}
             />
           </div>
-          <h1 className={styles.loaderTitle}>Cases by Rick</h1>
+          <h1 className={styles.loaderTitle}>Cases by Portal</h1>
           <p className={styles.loaderCopyright}>Copyright © 2025</p>
         </header>
       </div>

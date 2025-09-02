@@ -12,6 +12,7 @@ export const ASSETS = {
 		HELMET: '/assets/images/helmet.png',
 		JACKPOT: '/assets/images/jackpot.svg',
 		LIGHTNING: '/assets/images/lightning.svg',
+		LIGHTNING_PNG: '/assets/images/Lightning.png',
 		PROFILE: '/assets/images/profile.svg',
 		SCROLL: '/assets/images/scroll.png',
 		TEDDY: '/assets/images/teddy.png',

@@ -5,13 +5,12 @@
 ;
     width: 100%;
     max-width: 99%;
-    overflow: hidden;
+    overflow: hidden; /* чтобы элементы не обрезались снизу при падении, ограничим только по контейнеру */
     position: relative;
 }
 
 /* Live индикатор */
 .liveIndicator {
-  padding: 0 var(--spacing-16);
   display: flex;
   flex-direction: column;
   gap: var(--spacing-4);
@@ -22,7 +21,6 @@
   transform: translateY(-50%);
   z-index: 2;
   border-radius: var(--radius-md);
-  padding: var(--spacing-8) var(--spacing-12);
 }
 
 .liveDot {
@@ -61,12 +59,13 @@
 .liveItems {
   display: flex;
   flex-direction: row;
-  gap: 3px;
+  gap: 6px;
   align-items: center;
   flex: 1;
-  margin-left: 30px;
-  overflow: hidden;
+  margin-left: 20px;
+  overflow: visible; /* позволяем анимации начинаться выше без обрезки, родитель ограничит */
   padding-left: 8px;
+  will-change: transform;
 }
 
 /* Individual live item */
@@ -74,37 +73,72 @@
   flex-shrink: 0;
   position: relative;
   overflow: hidden;
+  width: 50px; /* фиксируем ширину, чтобы не было скачков при расчётах */
+  height: 50px;
+  border-radius: 10px;
+  box-sizing: border-box;
+}
+
+.liveItemContent {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 50px;
+  height: 50px;
+}
+
+/* Редкость — повторяем prizeGridItem стили */
+.liveItem[data-rarity="common"] {
+  background: linear-gradient(180deg, rgba(40, 57, 150, 0) 0%, rgba(40, 57, 150, .5) 100%), rgba(255, 255, 255, .05);
+  border-bottom: 1px solid #5067E5;
+}
+.liveItem[data-rarity="rare"] {
+  background: linear-gradient(180deg, rgba(138, 37, 92, 0) 0%, rgba(138, 37, 92, .5) 100%), rgba(255, 255, 255, .05);
+  border-bottom: 1px solid #C52F81;
+}
+.liveItem[data-rarity="epic"] {
+  background: linear-gradient(180deg, rgba(130, 48, 53, 0) 0%, rgba(130, 48, 53, .5) 100%), rgba(255, 255, 255, .05);
+  border-bottom: 1px solid #C03A42;
+}
+.liveItem[data-rarity="legendary"] {
+  background: linear-gradient(180deg, rgba(140, 93, 50, 0) 0%, rgba(140, 93, 50, .5) 100%), rgba(255, 255, 255, .05);
+  border-bottom: 1px solid #DC904B;
+}
+
+.liveItemEnter {
   opacity: 0;
-  animation: liveItemSlideIn 0.5s ease forwards;
+  transform: translateY(-50px);
+  animation: liveItemFall 700ms ease forwards;
 }
 
 
 
 .liveImage {
-  margin-right: 5px;
-  width: 50px;
-  height: 50px;
-  object-fit: cover;
+  display: block;
+  margin: 0 auto;
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
   aspect-ratio: 1;
-  border-radius: var(--radius-sm);
+}
+
+/* Лёгкий бликовый слой сверху для глубины */
+.liveItem::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(255,255,255,.03) 0%, rgba(255,255,255,0) 60%);
 }
 
 /* Анимации */
-@keyframes liveItemSlideIn {
-  from {
+@keyframes liveItemFall {
+  0% {
     opacity: 0;
     transform: translateY(-50px);
   }
-  to {
-    opacity: 1;
+  100% {
     transform: translateY(0);
+    opacity: 1; /* остаётся видимым после падения */
   }
 }
-
-/* Медиа запросы */
-@media (max-width: 420px) {
-
-  .liveItems {
-    margin-left: 40px;
-  }
-} 

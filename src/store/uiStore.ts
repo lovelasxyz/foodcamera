@@ -16,6 +16,7 @@ interface UIState {
   loading: boolean;
   notifications: Notification[];
   showWinModal: boolean;
+  isOffline: boolean;
 }
 
 interface UIActions {
@@ -27,6 +28,7 @@ interface UIActions {
   removeNotification: (id: string) => void;
   clearNotifications: () => void;
   setShowWinModal: (show: boolean) => void;
+  setOffline: (offline: boolean) => void;
 }
 
 export const useUIStore = create<UIState & UIActions>()(
@@ -38,6 +40,7 @@ export const useUIStore = create<UIState & UIActions>()(
       loading: false,
       notifications: [],
       showWinModal: true,
+      isOffline: false,
 
       setActivePage: (activePage) => set({ activePage }),
 
@@ -74,6 +77,7 @@ export const useUIStore = create<UIState & UIActions>()(
       clearNotifications: () => set({ notifications: [] }),
 
       setShowWinModal: (show) => set({ showWinModal: show }),
+      setOffline: (offline) => set({ isOffline: offline }),
     }),
     {
       name: 'ui-storage', // unique name

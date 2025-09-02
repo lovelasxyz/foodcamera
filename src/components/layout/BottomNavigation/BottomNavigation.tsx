@@ -2,6 +2,7 @@ import React from 'react';
 import { useUIStore } from '@/store/uiStore';
 import { ASSETS } from '@/constants/assets';
 import styles from './BottomNavigation.module.css';
+import { ConnectivityGuard } from '@/services/ConnectivityGuard';
 
 interface NavigationTab {
   id: string;
@@ -44,6 +45,10 @@ export const BottomNavigation: React.FC = () => {
   const { activePage, setActivePage } = useUIStore();
 
   const handleTabClick = (tab: NavigationTab) => {
+    // централизованная проверка соединения на клике между вкладками
+    ConnectivityGuard.ensureOnline();
+    // При клике всегда проверяем онлайн; если офлайн, просто меняем вкладку на доступные (но спины и т.п. уже заблокированы),
+    // тут можно также показать уведомление при попытке перейти в Main.
     if (tab.id === 'jackpot') {
       if (window.Telegram && window.Telegram.WebApp) {
         window.Telegram.WebApp.openLink('https://www.speedtest.net/');

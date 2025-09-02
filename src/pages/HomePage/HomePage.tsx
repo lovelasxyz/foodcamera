@@ -5,13 +5,32 @@ import { LiveStatusBar } from '@/components/layout/LiveStatusBar';
 import { CaseCard } from '@/components/game/CaseCard';
 import { RouletteWheel } from '@/components/game/RouletteWheel';
 import { Button } from '@/components/ui/Button';
-import { Loader } from '@/components/ui/Loader';
 import { ASSETS } from '@/constants/assets';
 import { MESSAGES } from '@/utils/constants';
 import styles from './HomePage.module.css';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+import { ConnectivityGuard } from '@/services/ConnectivityGuard';
 
 export const HomePage: React.FC = () => {
   const { cases, isLoading } = useCasesStore();
+  const isOnline = useOnlineStatus();
+  const [hideCasesError, setHideCasesError] = React.useState(false);
+  const [casesPhase, setCasesPhase] = React.useState<'idle' | 'loading' | 'error'>('idle');
+
+  // Переходы для списка кейсов: во время реальной загрузки (isLoading) или при офлайне
+  React.useEffect(() => {
+    if (!isOnline) {
+      setCasesPhase('loading');
+      const t = setTimeout(() => setCasesPhase('error'), 800);
+      return () => clearTimeout(t);
+    }
+    if (isLoading) {
+      setCasesPhase('loading');
+    } else {
+      setCasesPhase('idle');
+      setHideCasesError(false);
+    }
+  }, [isOnline, isLoading]);
 
   const touchStartXRef = React.useRef<number>(0);
   const touchDeltaXRef = React.useRef<number>(0);
@@ -159,29 +178,20 @@ export const HomePage: React.FC = () => {
     touchDeltaXRef.current = 0;
   }, [slides.length]);
 
-  if (isLoading) {
-    return (
-      <div className={styles.homePage}>
-        <Header />
-        <div className={styles.loading}>
-          <Loader text={MESSAGES.LOADING_CASES} size="lg" />
-        </div>
-      </div>
-    );
-  }
+  // Страница всегда рендерится; лоадер/ошибка отображаются внутри списка кейсов
 
   return (
     <div className={styles.homePage}>
       <Header />
       
       <div className={styles.casesContainer}>
-        {/* Live status bar */}
-        <LiveStatusBar />
+        {/* Live status bar (hidden offline) */}
+        {isOnline ? <LiveStatusBar /> : null}
 
         {/* Free case banners slider */}
         <div
           className={styles.freeCaseSlider}
-          onTouchStart={handleTouchStart}
+          onTouchStart={(e) => { ConnectivityGuard.ensureOnline(); handleTouchStart(e); }}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
         >
@@ -248,27 +258,41 @@ export const HomePage: React.FC = () => {
               );
             })()
           )}
-          <div className={styles.freeCaseDots}>
-            {slides.map((_, i) => (
-              <span
-                key={i}
-                className={`${styles.dot} ${i === currentIndex ? styles.dotActive : ''}`}
-                onClick={() => setCurrentIndex(i)}
-              />
-            ))}
-          </div>
         </div>
+        {/* Offline/Loading for cases list positioned under banner */}
+        {(casesPhase === 'loading' || casesPhase === 'error') && (
+          <div className={styles.errorWrapper}>
+            {casesPhase === 'loading' && (
+              <div className={styles.loadingContainer}>
+                <div className={styles.loadingSpinner}></div>
+                <div className={styles.loadingText}>Loading case data...</div>
+              </div>
+            )}
+            {casesPhase === 'error' && !hideCasesError && (
+              <div className={styles.errorMessageContainer}>
+                <div className={styles.errorMessageContent}>You are offline. Some features are disabled.</div>
+                <button className={styles.errorClose} onClick={() => setHideCasesError(true)}>×</button>
+              </div>
+            )}
+            {casesPhase === 'error' && (
+              <div className={styles.errorState}>
+                <div className={styles.errorMessage}>Failed to load items. Please try again.</div>
+                <button className={styles.retryButton} onClick={() => window.location.reload()}>
+                  <div className={styles.buttonLabel}>Try Again</div>
+                </button>
+              </div>
+            )}
+          </div>
+        )}
         
         {/* Сетка кейсов */}
         <div className={styles.casesGrid}>
-          {cases.length > 0 ? (
+          {casesPhase === 'idle' && cases.length > 0 ? (
             cases.map((caseItem) => (
               <CaseCard key={caseItem.id} caseData={caseItem} />
             ))
           ) : (
-            <div className={styles.noCases}>
-              <Loader text={MESSAGES.LOADING_CASES} size="md" />
-            </div>
+            null
           )}
         </div>
       </div>

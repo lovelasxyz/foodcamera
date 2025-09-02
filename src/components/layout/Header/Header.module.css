@@ -62,6 +62,20 @@
   gap: var(--spacing-12);
 }
 
+.offlineBadge {
+  display: flex
+;
+  align-items: center;
+  gap: 8px;
+  color: #9CA3AF;
+}
+
+.wifiIcon {
+  width: 22px;
+  height: 22px;
+  display: inline-block;
+}
+
 .walletDropdownContainer {
   position: relative;
 }

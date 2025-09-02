@@ -10,12 +10,15 @@ import { LoadingScreen } from '@/components/ui/LoadingScreen';
 import { BottomNavigation } from '@/components/layout/BottomNavigation';
 import { shouldUseGuestMode } from '@/utils/environment';
 import './App.css';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+import { ConnectivityGuard } from '@/services/ConnectivityGuard';
 
 const AppContent: React.FC = () => {
   const { activePage } = useUIStore();
   const { setTelegramUser } = useUserStore();
   const { isExpanded, isAvailable } = useTelegramWebApp();
   const { user: telegramUser, status: authStatus, isWebAppAvailable } = useTelegramAuth();
+  useOnlineStatus();
   const [initializationComplete, setInitializationComplete] = useState(false);
   const [showLoadingPage, setShowLoadingPage] = useState(true);
 
@@ -59,6 +62,8 @@ const AppContent: React.FC = () => {
       return () => clearTimeout(timeoutId);
     }
   }, [telegramUser, authStatus, setTelegramUser, isWebAppAvailable, initializationComplete]);
+
+  useEffect(() => { ConnectivityGuard.start(); }, []);
 
   // Показываем LoadingPage если инициализация не завершена
   if (showLoadingPage) {

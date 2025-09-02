@@ -11,6 +11,8 @@ import { Prize } from '@/types/game';
 import { RouletteEngine } from '@/domain/roulette/RouletteEngine';
 import { SpinUseCase } from '@/application/roulette/SpinUseCase';
 import { ASSETS } from '@/constants/assets';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+import { ConnectivityGuard } from '@/services/ConnectivityGuard';
 
 export const RouletteWheel: React.FC = () => {
   const { 
@@ -26,6 +28,7 @@ export const RouletteWheel: React.FC = () => {
   const { user, addToInventory, updateBalance } = useUserStore();
   const { showWinModal, setShowWinModal, setActivePage, openModal } = useUIStore();
   const { playSound } = useSoundEffects();
+  const isOnline = useOnlineStatus();
 
   const [position, setPosition] = useState(0);
   const [instantPosition, setInstantPosition] = useState(false);
@@ -83,7 +86,12 @@ export const RouletteWheel: React.FC = () => {
   // Логика генерации результата вынесена в SpinUseCase / RouletteEngine
 
   const handleSpin = () => {
+    ConnectivityGuard.ensureOnline();
     if (!currentCase || isSpinning || clickLockRef.current) return;
+    if (!isOnline) {
+      // блокируем спин в офлайне
+      return;
+    }
     if (!spinUseCase.canAfford(currentCase, user.balance)) return;
 
     clickLockRef.current = true;
