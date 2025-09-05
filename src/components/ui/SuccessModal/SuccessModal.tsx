@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { Modal } from '@/components/ui/Modal';
 import styles from './SuccessModal.module.css';
+import { useI18n } from '@/i18n';
 
 interface SuccessModalProps {
   isOpen: boolean;
@@ -17,6 +18,7 @@ export const SuccessModal: React.FC<SuccessModalProps> = ({
   subtitle,
   autoCloseMs
 }) => {
+  const { t } = useI18n();
   useEffect(() => {
     if (!isOpen) return;
     if (!autoCloseMs) return;
@@ -27,7 +29,7 @@ export const SuccessModal: React.FC<SuccessModalProps> = ({
   }, [isOpen, autoCloseMs, onClose]);
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title={title} size="sm">
+    <Modal isOpen={isOpen} onClose={onClose} title={title || t('success.title')} size="sm">
       <div className={styles.container}>
         <div className={styles.animWrapper}>
           <svg className={styles.checkSvg} viewBox="0 0 52 52" aria-hidden="true">
@@ -41,7 +43,7 @@ export const SuccessModal: React.FC<SuccessModalProps> = ({
         </div>
         {subtitle && <div className={styles.subtitle}>{subtitle}</div>}
         {!autoCloseMs && (
-          <button className={styles.okButton} onClick={onClose}>OK</button>
+          <button className={styles.okButton} onClick={onClose}>{t('success.ok')}</button>
         )}
       </div>
     </Modal>

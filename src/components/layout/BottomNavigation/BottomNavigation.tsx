@@ -3,6 +3,7 @@ import { useUIStore } from '@/store/uiStore';
 import { ASSETS } from '@/constants/assets';
 import styles from './BottomNavigation.module.css';
 import { ConnectivityGuard } from '@/services/ConnectivityGuard';
+import { useI18n } from '@/i18n';
 
 interface NavigationTab {
   id: string;
@@ -43,6 +44,7 @@ const renderIcon = (iconType: string) => {
 
 export const BottomNavigation: React.FC = () => {
   const { activePage, setActivePage } = useUIStore();
+  const { t } = useI18n();
 
   const handleTabClick = (tab: NavigationTab) => {
     // централизованная проверка соединения на клике между вкладками
@@ -72,7 +74,12 @@ export const BottomNavigation: React.FC = () => {
           <div className={styles.footerIcon}>
             {renderIcon(tab.icon)}
           </div>
-          <div className={styles.footerLabel}>{tab.label}</div>
+          <div className={styles.footerLabel}>
+            {tab.id === 'main' && t('nav.main')}
+            {tab.id === 'jackpot' && t('nav.jackpot')}
+            {tab.id === 'upgrade' && t('nav.upgrade')}
+            {tab.id === 'profile' && t('nav.profile')}
+          </div>
         </div>
       ))}
     </nav>

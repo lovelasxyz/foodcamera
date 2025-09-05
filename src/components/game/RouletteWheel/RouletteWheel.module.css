@@ -320,10 +320,10 @@
   overflow: hidden;
 }
 
-.spinButton:hover:not(:disabled) {
+/* .spinButton:hover:not(:disabled) {
   background: linear-gradient(135deg, rgba(0, 117, 255, 1), rgba(0, 140, 255, 1));
   transform: translateY(-1px);
-}
+} */
 
 .spinButton:disabled {
   opacity: 0.6;

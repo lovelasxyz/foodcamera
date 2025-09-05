@@ -37,6 +37,7 @@ const defaultUser: User = {
   wallet: undefined,
   inventory: [],
   shards: {},
+  shardUpdatedAt: {},
   lastDrop: null
 };
 
@@ -50,6 +51,7 @@ const createUserFromTelegram = (telegramUser: ParsedTelegramUser): User => {
     wallet: undefined,
     inventory: [],
     shards: {},
+    shardUpdatedAt: {},
     lastDrop: null
   };
 };
@@ -91,10 +93,12 @@ export const useUserStore = create<UserState & UserActions>((set) => ({
         const shardKey = prize.shardKey;
         const currentCount = state.user.shards?.[shardKey] || 0;
         const newCount = currentCount + 1;
+        const now = Date.now();
         return {
           user: {
             ...state.user,
             shards: { ...state.user.shards, [shardKey]: newCount },
+            shardUpdatedAt: { ...(state.user.shardUpdatedAt || {}), [shardKey]: now },
             lastDrop: { kind: 'shard', id: shardKey }
           }
         };
@@ -144,17 +148,22 @@ export const useUserStore = create<UserState & UserActions>((set) => ({
 
       // Обновим карту осколков: если остаток 0 — удалим ключ, чтобы не показывать 0/5
       const nextShards = { ...(state.user.shards || {}) } as Record<string, number>;
+      const nextShardUpdatedAt = { ...(state.user.shardUpdatedAt || {}) } as Record<string, number>;
       if (remaining <= 0) {
         delete nextShards[shardKey];
+        delete nextShardUpdatedAt[shardKey];
       } else {
         nextShards[shardKey] = remaining;
+        nextShardUpdatedAt[shardKey] = Date.now();
       }
 
       return {
         user: {
           ...state.user,
           shards: nextShards,
-          inventory: [...state.user.inventory, newItem]
+          shardUpdatedAt: nextShardUpdatedAt,
+          inventory: [...state.user.inventory, newItem],
+          lastDrop: { kind: 'item', id: newItem.id }
         }
       };
     }),

@@ -388,15 +388,21 @@
 }
 
 /* Средние экраны */
-@media (min-width: 481px) and (max-width: 768px) {
+@media (min-width: 481px) {
+  .casesGrid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+}
+@media (min-width: 600px) and (max-width: 1024px) {
   .casesGrid {
     grid-template-columns: repeat(3, 1fr);
-    gap: 16px;
+    gap: 18px;
   }
 }
 
 /* Большие экраны */
-@media (min-width: 769px) and (max-width: 1024px) {
+@media (min-width: 1024) {
   .casesGrid {
     grid-template-columns: repeat(4, 1fr);
     gap: 18px;

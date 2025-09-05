@@ -5,6 +5,7 @@ import { useCase } from '@/hooks/useCase';
 import { ASSETS } from '@/constants/assets';
 import { useDominantColor } from '@/hooks/useDominantColor';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+import { useI18n } from '@/i18n';
 
 import styles from './CaseCard.module.css';
 
@@ -13,6 +14,7 @@ interface CaseCardProps {
 }
 
 export const CaseCard: React.FC<CaseCardProps> = ({ caseData }) => {
+  const { t } = useI18n();
   const { openCase } = useGameStore();
   const { isFreeCase } = useCase();
   const { colorHex, rgba } = useDominantColor(caseData.image);
@@ -40,16 +42,16 @@ export const CaseCard: React.FC<CaseCardProps> = ({ caseData }) => {
           <img 
             className={styles.freeCaseTextSvg} 
             src={ASSETS.IMAGES.FREE_CASE_LABEL} 
-            alt="Free Case"
+            alt={t('messages.freeCase')}
           />
           <img 
             className={styles.freeCaseImage} 
             src={caseData.image} 
-            alt="Free Case Image"
+            alt={t('messages.freeCase')}
           />
         </div>
         <div className={styles.freeCaseFooter}>
-          <div className={styles.freeCaseLabel}>Free Case</div>
+          <div className={styles.freeCaseLabel}>{t('messages.freeCase')}</div>
         </div>
       </div>
     );

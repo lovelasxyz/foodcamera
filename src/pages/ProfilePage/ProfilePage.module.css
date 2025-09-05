@@ -1,30 +1,36 @@
 .profilePage {
-  min-height: 100vh;
-  background: var(--color-background);
-  padding: var(--spacing-16);
-  display: flex;
+  padding: 12px 16px 0;
+  display: flex
+;
   flex-direction: column;
-  margin: 0 auto;
-
-  gap: var(--spacing-16);
+  gap: 16px;
+  align-items: center;
+  justify-content: flex-start;
+  width: 100%;
+  max-width: 361px;
+  box-sizing: border-box;
 }
-@media (min-width: 768px) {
+@media (min-width: 420px) {
   .profilePage {
-      max-width: 393px;
+      max-width: 424px !important;
   }
 }
 
-@media (min-width: 420px) and (max-width: 767px) {
-  .profile-container[data-v-47cb848d] {
-      max-width: 424px;
-  }
+.profileContainer {
+  padding: 0 0 90px;
+  display: flex
+;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 100%;
 }
+
 /* User Profile Section */
 .userProfile {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: var(--spacing-16) 0;
 }
 
 .profileInfo {
@@ -33,30 +39,56 @@
   align-items: center;
   gap: var(--spacing-12);
 }
+.avatars{
+  border-radius: 817.36px;
+  padding: 6.55px;
+  flex-shrink: 0;
+  width: 100px;
+  height: 100px;
+  position: relative;
+  aspect-ratio: 1;
+}
 
 .profileAvatar {
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
+  border-radius: var(--radius-round);
+  width: 100%;
+  height: 100%;
   object-fit: cover;
-  border: 2px solid rgba(255, 255, 255, 0.1);
+  aspect-ratio: 1;
+  
 }
 
 .profileDetails {
-  text-align: center;
+  display: flex
+  ;
+      flex-direction: row;
+      gap: 10px;
+      align-items: center;
 }
 
 .profileName {
-  font-size: var(--font-size-lg);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 250px;
   font-weight: var(--font-weight-bold);
   color: var(--color-text);
-  margin-bottom: var(--spacing-4);
+  font-size: 24px;
+  font-weight: var(--font-weight-semibold);
 }
 
 .profileId {
+  background: rgba(255, 255, 255, .05);
+  border-radius: 10px;
+  padding: 8px 16px;
   color: var(--color-text);
-  font-size: var(--font-size-md);
-  opacity: 0.7;
+  font-size: 12px;
+  line-height: 20px;
+  font-weight: var(--font-weight-semibold);
+  height: 36px;
+  display: flex
+;
+  align-items: center;
 }
 
 /* Balance Section */
@@ -84,13 +116,14 @@ background: linear-gradient(115.39deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255,
   color: var(--color-text);
   font-size: var(--font-size-md);
   opacity: 0.7;
+  
 }
 
 .balanceValue {
   display: flex;
   align-items: center;
   gap: var(--spacing-8);
-  font-size: 22px;
+  font-size: 20px;
   font-weight: var(--font-weight-bold);
   color: var(--color-text);
 }
@@ -111,7 +144,9 @@ background: linear-gradient(115.39deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255,
 .depositButton {
   background: #0090FF;
   color: white;
-  width: 125px;
+  width: 111px;
+  font-size: 14px;
+
   border: none;
   padding: var(--spacing-12) var(--spacing-16);
   border-radius: var(--radius-md);
@@ -160,6 +195,7 @@ background: linear-gradient(115.39deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255,
   border-radius: var(--radius-md);
   font-weight: var(--font-weight-semibold);
   cursor: pointer;
+  font-size: 14px;
   transition: all 0.2s ease;
 }
 
@@ -169,15 +205,18 @@ background: linear-gradient(115.39deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255,
 
 /* Invite Friends Section */
 .inviteContainer {
-  background: linear-gradient(135deg, #0090FF 0%, #00C9FF 100%);
-  border-radius: var(--radius-lg);
-  padding: var(--spacing-16);
-  box-shadow: rgba(63, 188, 255, 0.35) 0px 0px 20px;
-  display: flex;
+  background: linear-gradient(115.39deg, #0098EA 0%, #3FBCFF 100%);
+  border-radius: 16px;
+  padding: 15px;
+  display: flex
+;
+  flex-direction: row;
   align-items: center;
   justify-content: space-between;
   position: relative;
+  box-shadow: 0 0 20px #3fbcff59;
   overflow: hidden;
+  width: 100%;
 }
 
 .inviteContent {
@@ -217,6 +256,7 @@ background: linear-gradient(115.39deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255,
   font-weight: var(--font-weight-semibold);
   cursor: pointer;
   transition: all 0.2s ease;
+  font-size: 14px;
 }
 
 .inviteButton:hover {
@@ -226,9 +266,14 @@ background: linear-gradient(115.39deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255,
 /* Inventory Section */
 .inventoryContainer {
   border-radius: var(--radius-lg);
-  margin-bottom: 90px;
   margin-top: 5px;
-
+  padding: 0 0 16px;
+  display: flex
+;
+  flex-direction: column;
+  gap: 10px;
+  align-items: flex-start;
+  width: 100%;
 }
 .titleInventory{
   font-size: var(--font-size-md);
@@ -236,10 +281,15 @@ background: linear-gradient(115.39deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255,
   font-style: italic;
 }
 .inventoryHeader {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: var(--spacing-16);
+  display: flex
+  ;
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+      align-self: stretch;
+      flex-shrink: 0;
+      position: relative;
+      width: 100%;
 }
 
 .inventoryLabel {
@@ -279,6 +329,7 @@ background: linear-gradient(115.39deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255,
 .inventorySection {
   min-height: 150px;
   display: flex;
+  width: 100%;
   align-items: center;
   justify-content: center;
 }
@@ -428,7 +479,7 @@ background: linear-gradient(115.39deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255,
 .inventoryItem {
   position: relative;
   width: 100%;
-  height: 200px;
+  height: 195px;
   background: linear-gradient(115.39deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, .09) 100%);
   border-radius: 16px;
   display: flex;
@@ -437,6 +488,10 @@ background: linear-gradient(115.39deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255,
   overflow: hidden;
   padding: 8px;
 }
+@media (min-width: 420px) {
+  .inventoryItem {  height: 226px; }
+}
+
 
 /* Rarity coloring */
 .inventoryItem::after {
@@ -451,17 +506,13 @@ background: linear-gradient(115.39deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255,
   pointer-events: none;
 }
 
-.inventoryItem[data-rarity="common"] { border-bottom: 1px solid #5067E5; }
-.inventoryItem[data-rarity="common"]::after { background: linear-gradient(180deg, rgba(80,103,229,0) 0%, rgba(80,103,229,.45) 100%); }
+/* .inventoryItem[data-rarity="common"] { border-bottom: 1px solid #5067E5; }
 
 .inventoryItem[data-rarity="rare"] { border-bottom: 1px solid #C52F81; }
-.inventoryItem[data-rarity="rare"]::after { background: linear-gradient(180deg, rgba(197,47,129,0) 0%, rgba(197,47,129,.45) 100%); }
 
 .inventoryItem[data-rarity="epic"] { border-bottom: 1px solid #C03A42; }
-.inventoryItem[data-rarity="epic"]::after { background: linear-gradient(180deg, rgba(192,58,66,0) 0%, rgba(192,58,66,.45) 100%); }
 
-.inventoryItem[data-rarity="legendary"] { border-bottom: 1px solid #DC904B; }
-.inventoryItem[data-rarity="legendary"]::after { background: linear-gradient(180deg, rgba(220,144,75,0) 0%, rgba(220,144,75,.45) 100%); }
+.inventoryItem[data-rarity="legendary"] { border-bottom: 1px solid #DC904B; } */
 
 .itemImage {
   width: 100%;
@@ -482,6 +533,7 @@ background: linear-gradient(115.39deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255,
   align-items: center;
   justify-content: flex-start;
   position: absolute;
+  z-index: 10;
   left: 0;
   top: 0;
   -webkit-backdrop-filter: blur(10px);
@@ -513,43 +565,43 @@ background: linear-gradient(115.39deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255,
   position: absolute;
   right: 10px;
   bottom: 10px;
-  background: rgba(0,0,0,0.5);
+  background: rgba(163, 171, 187, .12);
   color: #fff;
   border-radius: 10px;
   padding: 6px 10px;
   font-weight: 700;
   font-size: 14px;
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+    border-color: rgba(177, 177, 177, 0.12);
+    
 }
 
 /* Status badges */
 .statusBadge {
   position: absolute;
-  left: 8px;
+  right: 8px;
       z-index: 2;
   bottom: 8px;
   padding: 6px 10px;
-  border-radius: 12px;
+  border-radius: 10px;
   font-weight: 700;
   font-size: 12px;
   border: 1px solid transparent;
+  backdrop-filter: blur(10px);
 }
 
 .statusReceived {
-  background: rgba(0, 200, 83, 0.18);
-  color: #6FF2A0;
-  border-color: rgba(111, 242, 160, 0.35);
+  color: rgb(35, 194, 101);  border-color:rgb(35, 194, 101);
 }
 
 .statusActive {
-  background: rgba(255, 255, 255, 0.08);
-  color: rgba(255, 255, 255, 0.9);
-  border-color: rgba(255, 255, 255, 0.22);
+  display: none;
 }
 
 .statusSold {
-  background: rgba(255, 255, 255, 0.08);
-  color: rgba(255, 255, 255, 0.7);
-  border-color: rgba(255, 255, 255, 0.12);
+  color:rgb(0, 117, 255);
+  border-color:rgb(0, 117, 255);
 }
 
 .inventoryHeader {
@@ -559,7 +611,7 @@ background: linear-gradient(115.39deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255,
   color: #333;
   font-weight: 600;
   font-size: 18px;
-  margin-bottom: 16px;
+  margin-bottom: 10px;
 }
 
 .inventoryCount {
@@ -592,8 +644,10 @@ background: linear-gradient(115.39deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255,
   transition: all 0.2s ease;
 }
 .itemImage {
-  width:100%;
-  height: 100%;
+  width: 140px;
+  height: 140px;
+  object-fit: cover;
+  aspect-ratio: 1;
   object-fit: contain;
 }
 

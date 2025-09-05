@@ -3,6 +3,7 @@ import { ASSETS } from '@/constants/assets';
 import { useTelegramAuth } from '@/hooks/useTelegramAuth';
 import { shouldUseGuestMode } from '@/utils/environment';
 import styles from './LoadingScreen.module.css';
+import { useI18n } from '@/i18n';
 
 interface LoadingScreenProps {
   // Режим работы
@@ -22,6 +23,7 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({
   showLogo = true,
   onRetry 
 }) => {
+  const { t } = useI18n();
   const { status: authStatus, error, authenticate } = useTelegramAuth();
 
   const handleRetry = () => {
@@ -34,20 +36,20 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({
 
   const getLoadingStatus = () => {
     if (shouldUseGuestMode()) {
-      return 'Connecting...';
+      return t('loading.connecting');
     }
     
     switch (authStatus) {
       case 'loading':
-        return 'Connecting to Telegram...';
+        return t('loading.connectingTelegram');
       case 'authenticated':
-        return 'Authentication successful';
+        return t('loading.authSuccess');
       case 'error':
-        return error || 'Authentication failed';
+        return error || t('loading.authFailed');
       case 'idle':
-        return 'Waiting for Telegram...';
+        return t('loading.waitingTelegram');
       default:
-        return 'Initializing...';
+        return t('loading.initializing');
     }
   };
 
@@ -63,14 +65,14 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({
                   <div className={styles.logoInner}>V</div>
                 </div>
               </div>
-              <h1 className={styles.appName}>Gift Cases</h1>
-              <p className={styles.copyright}>Copyright © 2025</p>
+              <h1 className={styles.appName}>{t('loading.appName')}</h1>
+              <p className={styles.copyright}>{t('loading.copyright')}</p>
             </div>
           )}
           
           <div className={styles.loaderContainer}>
             <div className={styles.spinner}></div>
-            <p className={styles.status}>{shouldUseGuestMode() ? 'Connecting...' : status}</p>
+            <p className={styles.status}>{shouldUseGuestMode() ? t('loading.connecting') : status}</p>
           </div>
         </div>
       </div>
@@ -89,20 +91,20 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({
               className={styles.floatingLogo}
             />
           </div>
-          <h1 className={styles.loaderTitle}>Cases by Portal</h1>
-          <p className={styles.loaderCopyright}>Copyright © 2025</p>
+          <h1 className={styles.loaderTitle}>{t('loading.casesByPortal')}</h1>
+          <p className={styles.loaderCopyright}>{t('loading.copyright')}</p>
         </header>
       </div>
 
       {!shouldUseGuestMode() && authStatus === 'error' && (
         <div className={styles.errorContainer}>
           <div className={styles.errorIcon}>⚠️</div>
-          <h2 className={styles.errorTitle}>Authentication Error</h2>
+          <h2 className={styles.errorTitle}>{t('loading.authErrorTitle')}</h2>
           <p className={styles.errorMessage}>
-            {error || 'No Telegram initialization data available'}
+            {error || t('loading.noTelegramData')}
           </p>
           <button className={styles.retryButton} onClick={handleRetry}>
-            Try Again
+            {t('common.tryAgain')}
           </button>
         </div>
       )}

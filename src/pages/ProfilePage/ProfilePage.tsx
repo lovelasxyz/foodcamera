@@ -9,8 +9,10 @@ import { DepositModal } from '@/components/profile/DepositModal';
 import { PrizeItem } from '@/domain/items/PrizeItem';
 import { ASSETS } from '@/constants/assets';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+import { useI18n } from '@/i18n';
 
 export const ProfilePage: React.FC = () => {
+  const { t } = useI18n();
   const { user, disconnectWallet, craftFromShards, sellInventoryItem, receiveInventoryItem } = useUserStore();
   const { setActivePage, isModalOpen, modalType, openModal, closeModal } = useUIStore();
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
@@ -33,8 +35,9 @@ export const ProfilePage: React.FC = () => {
   }, [isOnline]);
   const selectedInventoryItem = useMemo(() => user.inventory.find(i => i.id === selectedItemId) || null, [user.inventory, selectedItemId]);
 
-  // Единая лента карточек: полноценные предметы + осколки вперемешку
+  // Единая лента карточек: полноценные предметы + осколки, отсортированные по дате получения/обновления
   const combinedInventory = useMemo(() => {
+    // Карточки предметов с временем получения
     const items = user.inventory.map((inv) => {
       const dto = new PrizeItem(inv.prize);
       return {
@@ -42,39 +45,29 @@ export const ProfilePage: React.FC = () => {
         id: inv.id,
         image: dto.data.image,
         price: dto.price,
-        item: inv
+        item: inv,
+        updatedAt: inv.obtainedAt || 0
       };
     });
+    // Карточки осколков с последним временем изменения количества
     const shards = Object.entries(user.shards || {}).map(([key, count]) => {
       const cfg = SHARD_PRODUCTS[key as keyof typeof SHARD_PRODUCTS];
       return {
         kind: 'shard' as const,
         id: `shard-${key}`,
         image: cfg?.shardImage || '/images/gift_shard.png',
-        label: `${count}/${cfg?.required ?? 10}`,
+        label: `${count} of ${cfg?.required ?? 10}`,
         shardKey: key,
         count,
         required: cfg?.required ?? 10,
-        rarity: 'common' as const
+        rarity: 'common' as const,
+        updatedAt: (user as any).shardUpdatedAt?.[key] || 0
       };
     });
-    // Базовый порядок: полноценные предметы, затем осколки
-    const combined = [...items, ...shards];
-    // Если есть последний дроп — переместим его карточку в начало
-    const last = user.lastDrop;
-    if (last) {
-      const matchIndex = combined.findIndex((card: any) =>
-        last.kind === 'item'
-          ? (card.kind === 'item' && card.id === last.id)
-          : (card.kind === 'shard' && card.shardKey === last.id)
-      );
-      if (matchIndex > 0) {
-        const [match] = combined.splice(matchIndex, 1);
-        combined.unshift(match);
-      }
-    }
+    // Сортируем по updatedAt по убыванию, чтобы новые всегда сверху
+    const combined = [...items, ...shards].sort((a: any, b: any) => (b.updatedAt || 0) - (a.updatedAt || 0));
     return combined;
-  }, [user.inventory, user.shards, user.lastDrop]);
+  }, [user.inventory, user.shards, (user as any).shardUpdatedAt]);
 
   // Отфильтрованный список с учетом режима отображения
   const visibleInventory = useMemo(() => {
@@ -91,15 +84,17 @@ export const ProfilePage: React.FC = () => {
   }, [combinedInventory, showOnlyAvailable]);
 
   return (
+    <div className={styles.profileContainer}>
     <div className={styles.profilePage}>
       {/* User Profile Section */}
       <div className={styles.userProfile}>
         <div className={styles.profileInfo}>
+        <div className={styles.avatars}>
           <img 
             src={user.avatar} 
             alt="User avatar" 
             className={styles.profileAvatar} 
-          />
+          /> </div> 
           <div className={styles.profileDetails}>
             <div className={styles.profileName}>{user.name}</div>
             <div className={styles.profileId}>#{user.id}</div>
@@ -110,26 +105,26 @@ export const ProfilePage: React.FC = () => {
       {/* Balance Section */}
       <div className={styles.balanceContainer}>
         <div className={styles.balanceInfo}>
-          <div className={styles.balanceLabel}>Balance</div>
+          <div className={styles.balanceLabel}>{t('common.balance')}</div>
           <div className={styles.balanceValue}>
             {user.balance.toFixed(2)}
             
              <img 
                       src={ASSETS.IMAGES.TON} 
                       alt="TON" 
-                      style={{ width: '25px', height: '25px' }}
+                      style={{ width: '20px', height: '20px' }}
              />
           </div>
         </div>
         <Button className={styles.depositButton} onClick={() => openModal('deposit')}>
-          Deposit
+          {t('common.deposit')}
         </Button>
       </div>
 
       {/* Wallet Section */}
       <div className={styles.walletContainer}>
         <div className={styles.walletInfo}>
-          <div className={styles.walletLabel}>Connected wallet:</div>
+          <div className={styles.walletLabel}>{t('common.connectedWallet')}</div>
           <div className={styles.walletAddress}>
             {user.wallet ? user.wallet : 'UQDKd...hxwP'}
           </div>
@@ -138,7 +133,7 @@ export const ProfilePage: React.FC = () => {
           className={styles.disconnectButton}
           onClick={disconnectWallet}
         >
-          Disconnect
+          {t('common.disconnect')}
         </Button>
       </div>
 
@@ -157,19 +152,19 @@ export const ProfilePage: React.FC = () => {
                 src={ASSETS.ICONS.INVITE} 
                 style={{ width: '35px', height: '35px' }}
               />
-          <div className={styles.inviteText}>Invite Friends</div>
+          <div className={styles.inviteText}>{t('common.inviteTitle')}</div>
         </div>
         <Button className={styles.inviteButton}>
-          Invite
+          {t('common.inviteCta')}
         </Button>
       </div>
 
       {/* Inventory Section */}
       <div className={styles.inventoryContainer}>
         <div className={styles.inventoryHeader}>
-          <div className={styles.inventoryLabel}>Inventory:</div>
+          <div className={styles.inventoryLabel}>{t('common.inventory')}</div>
           <Button className={styles.inventoryButton} onClick={() => setShowOnlyAvailable((v) => !v)}>
-            {showOnlyAvailable ? 'Show all' : 'Show available'}
+            {showOnlyAvailable ? t('common.showAll') : t('common.showAvailable')}
           </Button>
         </div>
         
@@ -177,30 +172,30 @@ export const ProfilePage: React.FC = () => {
           {inventoryOfflinePhase === 'loading' && (
             <div className={styles.inventoryLoadingContainer}>
               <div className={styles.inventoryLoadingSpinner}></div>
-              <div className={styles.inventoryLoadingText}>Loading your inventory...</div>
+              <div className={styles.inventoryLoadingText}>{t('common.loadingInventory')}</div>
             </div>
           )}
           {inventoryOfflinePhase === 'error' && (
             <div className={styles.errorWrapper}>
               {!hideInventoryError && (
                 <div className={styles.errorMessageContainer}>
-                  <div className={styles.errorMessageContent}>You are offline. Some features are disabled.</div>
+                  <div className={styles.errorMessageContent}>{t('common.offlineFeatures')}</div>
                   <button className={styles.errorClose} onClick={() => setHideInventoryError(true)}>×</button>
                 </div>
               )}
               <div className={styles.errorState}>
-                <div className={styles.errorMessage}>Failed to load items. Please try again.</div>
+                <div className={styles.errorMessage}>{t('common.failedToLoad')}</div>
                 <button className={styles.retryButton} onClick={() => window.location.reload()}>
-                  <div className={styles.buttonLabel}>Try Again</div>
+                  <div className={styles.buttonLabel}>{t('common.tryAgain')}</div>
                 </button>
               </div>
             </div>
           )}
           {inventoryOfflinePhase === 'idle' && combinedInventory.length === 0 ? (
             <div className={styles.emptyInventory}>
-              <p className={styles.titleInventory}>You haven&apos;t opened any cases yet</p>
+              <p className={styles.titleInventory}>{t('common.emptyNoCases')}</p>
               <Button className={styles.openCasesButton} onClick={() => setActivePage('main')}>
-                Open Cases
+                {t('common.emptyOpenCases')}
               </Button>
             </div>
           ) : inventoryOfflinePhase === 'idle' ? (
@@ -211,7 +206,7 @@ export const ProfilePage: React.FC = () => {
                   if (card.kind === 'item') {
                     const isSold = card.item.status === 'sold';
                     const isActive = card.item.status === 'active';
-                    const statusLabel = isSold ? 'Sold' : isActive ? 'Active' : 'Received';
+                    const statusLabel = isSold ? t('common.sold') : isActive ? t('common.active') : t('common.received');
                     return (
                       <div 
                         key={card.id} 
@@ -238,7 +233,9 @@ export const ProfilePage: React.FC = () => {
                   return (
                     <div key={card.id} className={styles.inventoryItem} onClick={() => setSelectedShardKey(card.shardKey)} style={{ cursor: 'pointer' }}>
                       <img src={card.image} alt="shard" className={styles.itemImage} />
-                      <div className={styles.shardBadge}>{card.label}</div>
+                      <div className={styles.shardBadge}>
+                        {t('common.ofPattern', { count: card.count, total: card.required })}
+                      </div>
                     </div>
                   );
                 })}
@@ -252,7 +249,7 @@ export const ProfilePage: React.FC = () => {
       <Modal
         isOpen={!!selectedShardKey}
         onClose={() => setSelectedShardKey(null)}
-        title="Craft item"
+        title={t('modal.craftTitle')}
         size="md"
       >
         {selectedShardKey && (
@@ -267,7 +264,7 @@ export const ProfilePage: React.FC = () => {
                   <img src={cfg?.shardImage || ASSETS.SHARDS.GIFT_SHARD} alt={`${key} shard`} style={{ width: 160, height: 160, objectFit: 'contain' }} />
                   <div style={{ fontWeight: 700 }}>{count}/{cfg?.required ?? 10}</div>
                   <Button className={styles.inventoryButton} onClick={() => { if (canCraft) { craftFromShards(key, 'Craft'); setSelectedShardKey(null); } }}>
-                    {canCraft ? 'Craft' : 'Need more shards'}
+                    {canCraft ? t('modal.craft') : t('modal.needMoreShards')}
                   </Button>
                 </div>
               );
@@ -295,30 +292,30 @@ export const ProfilePage: React.FC = () => {
                 </div>
               )}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-                <div style={{ color: '#9CA3AF' }}>Model</div>
-                <div style={{ textAlign: 'right' }}>Basic (100%)</div>
-                <div style={{ color: '#9CA3AF' }}>Symbol</div>
+                <div style={{ color: '#9CA3AF' }}>{t('common.model')}</div>
+                <div style={{ textAlign: 'right' }}>{t('common.basic100')}</div>
+                <div style={{ color: '#9CA3AF' }}>{t('common.symbol')}</div>
                 <div style={{ textAlign: 'right' }}>Default</div>
-                <div style={{ color: '#9CA3AF' }}>Backdrop</div>
+                <div style={{ color: '#9CA3AF' }}>{t('common.backdrop')}</div>
                 <div style={{ textAlign: 'right' }}>—</div>
-                <div style={{ color: '#9CA3AF' }}>Mintable</div>
-                <div style={{ textAlign: 'right' }}>Yes</div>
+                <div style={{ color: '#9CA3AF' }}>{t('common.mintable')}</div>
+                <div style={{ textAlign: 'right' }}>{t('common.yes')}</div>
               </div>
               <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
                 <Button className={styles.inventoryButton} onClick={() => { sellInventoryItem(selectedInventoryItem.id); setSelectedItemId(null); }}>
-                  Sell ({selectedInventoryItem.prize.price.toFixed(2)})
+                  {t('common.sell')} ({selectedInventoryItem.prize.price.toFixed(2)})
                 </Button>
                 <Button className={styles.inventoryButton} onClick={() => { receiveInventoryItem(selectedInventoryItem.id); window.open('https://t.me/BotFather', '_blank'); }}>
-                  Receive
+                  {t('common.receive')}
                 </Button>
                 <Button className={styles.inventoryButton} onClick={() => setSelectedItemId(null)}>
-                  Close
+                  {t('common.close')}
                 </Button>
               </div>
             </div>
           </div>
         )}
       </Modal>
-    </div>
+    </div></div>
   );
 }; 

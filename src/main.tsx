@@ -1,6 +1,7 @@
 import React, { Suspense } from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App.tsx';
+import { I18nProvider } from '@/i18n';
 import { LoadingScreen } from '@/components/ui/LoadingScreen';
 import { shouldUseGuestMode } from '@/utils/environment';
 import './index.css';
@@ -43,7 +44,9 @@ const root = ReactDOM.createRoot(
 root.render(
   <React.StrictMode>
     <Suspense fallback={<LoadingScreen mode="simple" />}>
-      <App />
+      <I18nProvider>
+        <App />
+      </I18nProvider>
     </Suspense>
   </React.StrictMode>
 ); 

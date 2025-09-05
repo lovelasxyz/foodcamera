@@ -18,12 +18,21 @@ export const useTelegramWebApp = () => {
       tg.expand();
       setIsExpanded(tg.isExpanded);
       
-      // Настраиваем цвета
-      tg.setHeaderColor('#141415');
-      tg.setBackgroundColor('#141415');
-      
-      // Отключаем подтверждение закрытия
-      tg.disableClosingConfirmation();
+      // Определяем версию и наличие методов, чтобы избежать предупреждений на старых версиях
+      const version = parseFloat(((tg as any).version as string) || '0');
+
+      // Настраиваем цвета, если поддерживается
+      if (version >= 6.1 && typeof (tg as any).setHeaderColor === 'function') {
+        try { tg.setHeaderColor('#141415'); } catch {}
+      }
+      if (version >= 6.1 && typeof (tg as any).setBackgroundColor === 'function') {
+        try { tg.setBackgroundColor('#141415'); } catch {}
+      }
+
+      // Отключаем подтверждение закрытия, если поддерживается
+      if (version >= 6.2 && typeof (tg as any).disableClosingConfirmation === 'function') {
+        try { tg.disableClosingConfirmation(); } catch {}
+      }
       
       // Обновляем CSS переменные для viewport
       const updateViewportHeight = () => {

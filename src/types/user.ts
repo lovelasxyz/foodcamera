@@ -14,6 +14,8 @@ export interface User {
   inventory: InventoryItem[];
   // Прогресс по осколкам: ключ набора -> текущее количество
   shards?: Record<string, number>;
+  // Метка времени последнего изменения количества осколков по ключу
+  shardUpdatedAt?: Record<string, number>;
   // Последний полученный дроп, чтобы отображать его первым в инвентаре
   lastDrop?: LastDrop | null;
 }

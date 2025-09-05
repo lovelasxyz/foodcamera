@@ -8,6 +8,7 @@ import { SuccessModal } from '@/components/ui/SuccessModal/SuccessModal';
 import { ErrorBanner } from '@/components/ui/ErrorBanner/ErrorBanner';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { ConnectivityGuard } from '@/services/ConnectivityGuard';
+import { useI18n } from '@/i18n';
 
 type DepositMethod = 'select' | 'ton' | 'cryptobot' | 'gifts';
 
@@ -17,6 +18,7 @@ interface DepositModalProps {
 }
 
 export const DepositModal: React.FC<DepositModalProps> = ({ isOpen, onClose }) => {
+  const { t } = useI18n();
   const { user, updateBalance } = useUserStore();
   const [method, setMethod] = useState<DepositMethod>('select');
   const [amount, setAmount] = useState<string>('');
@@ -90,7 +92,7 @@ export const DepositModal: React.FC<DepositModalProps> = ({ isOpen, onClose }) =
     ConnectivityGuard.ensureOnline();
     // Офлайн: не выполняем депозит, показываем ошибку как на скриншоте
     if (method === 'ton' && !isOnline) {
-      setApiError('Failed to prepare transaction. Please try again.');
+      setApiError(t('deposit.apiError'));
       return;
     }
     performDeposit();
@@ -99,19 +101,19 @@ export const DepositModal: React.FC<DepositModalProps> = ({ isOpen, onClose }) =
 
   const renderSelection = () => (
     <div className={styles.section}>
-      <div className={styles.subtitle}>Select the method of deposit</div>
+      <div className={styles.subtitle}>{t('deposit.selectMethod')}</div>
       <div className={styles.methodsGrid}>
         <button className={`${styles.methodCard} ${styles.ton}`} onClick={() => setMethod('ton')}>
           <img src={ASSETS.IMAGES.TON} alt="Ton" className={styles.methodIcon} />
-          <div className={styles.methodTitle}>Ton</div>
+          <div className={styles.methodTitle}>{t('deposit.methodTon')}</div>
         </button>
         <button className={`${styles.methodCard} ${styles.cryptobot}`} onClick={() => setMethod('cryptobot')}>
           <img src={ASSETS.IMAGES.TOKEN} alt="CryptoBot" className={styles.methodIcon} />
-          <div className={styles.methodTitle}>CryptoBot</div>
+          <div className={styles.methodTitle}>{t('deposit.methodCryptoBot')}</div>
         </button>
         <button className={`${styles.methodCard} ${styles.gifts} ${styles.fullWidth}`} onClick={() => setMethod('gifts')}>
           <img src={ASSETS.IMAGES.GIFT} alt="Gifts" className={styles.methodIcon} />
-          <div className={styles.methodTitle}>Gifts</div>
+          <div className={styles.methodTitle}>{t('deposit.methodGifts')}</div>
         </button>
       </div>
     </div>
@@ -127,8 +129,8 @@ export const DepositModal: React.FC<DepositModalProps> = ({ isOpen, onClose }) =
       <div className={styles.promoSection}>
         <div className={styles.promoCard}>
           <img className={styles.promoImage} src="/assets/images/discount_promo-min.png" alt="Promocode" />
-          <div className={styles.promoTitle}>Get a bonus on your deposit</div>
-          <div className={styles.promoSubtitle}>Look for promo codes in <span className="text-semibold">@casebot</span><br />or in the channels of our partners.</div>
+          <div className={styles.promoTitle}>{t('deposit.promoTitle')}</div>
+          <div className={styles.promoSubtitle}>{t('deposit.promoSubtitle')}</div>
           <svg className={styles.promoDots} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 337 3" fill="none">
             <path d="M0 1.5H337" stroke="white" strokeWidth="2" strokeDasharray="8 4" opacity="0.5" />
           </svg>
@@ -140,10 +142,10 @@ export const DepositModal: React.FC<DepositModalProps> = ({ isOpen, onClose }) =
               type="text"
               value={promoCode}
               onChange={(e) => { setPromoCode(e.target.value); setPromoError(null); }}
-              placeholder="Promocode"
+              placeholder={t('deposit.promoPlaceholder')}
               className={styles.promoInput}
               onFocus={() => setKeyboardActive(true)}
-              onBlur={() => { setKeyboardActive(false); const c = promoCode.trim(); if (c && !isPromoValid(c)) setPromoError('Promocode not found or limit exceeded'); }}
+              onBlur={() => { setKeyboardActive(false); const c = promoCode.trim(); if (c && !isPromoValid(c)) setPromoError(t('deposit.promoInvalid')); }}
             />
               {promoCode.trim().toUpperCase() === 'CLAP' && (
               <div className={styles.bonusBadge}>+30%</div>
@@ -190,9 +192,9 @@ export const DepositModal: React.FC<DepositModalProps> = ({ isOpen, onClose }) =
               }
             }
           }}
-          placeholder="Enter amount"
+          placeholder={t('deposit.amountPlaceholder')}
           className={styles.amountInput}
-          aria-label="Enter amount"
+          aria-label={t('deposit.amountAria')}
         />
         <div className={styles.coin}>
           <img src={ASSETS.IMAGES.TON} alt="Coin" style={{ width: 20, height: 20 }} />
@@ -201,7 +203,7 @@ export const DepositModal: React.FC<DepositModalProps> = ({ isOpen, onClose }) =
       {/* To receive row: show only when valid promo is applied */}
       {isPromoValid(promoCode) && (
         <div className={styles.receiveRow}>
-          <span>To receive:</span>
+          <span>{t('deposit.toReceive')}</span>
           <span className={styles.receiveValue}>
             {(() => {
               const numericAmount = Number(amount) || 0;
@@ -219,36 +221,36 @@ export const DepositModal: React.FC<DepositModalProps> = ({ isOpen, onClose }) =
         <img
           className={styles.qrImage}
           src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(user.wallet || 'UQDKd...hxwP')}`}
-          alt="Wallet QR"
+          alt={t('deposit.walletQrAlt')}
         />
       </div>
       <div className={styles.addressRow}>
         <div className={styles.addressText}>{shortAddress}</div>
-        <Button onClick={() => navigator.clipboard.writeText(user.wallet || 'UQDKd...hxwP')}>Copy</Button>
+        <Button onClick={() => navigator.clipboard.writeText(user.wallet || 'UQDKd...hxwP')}>{t('deposit.copy')}</Button>
       </div>
       <button
         className={`${styles.depositButton} ${!amount ? styles.depositButtonDisabled : ''}`}
         onClick={handleSubmit}
         disabled={!amount}
       >
-        <div className={styles.buttonLabel}>Deposit</div>
+        <div className={styles.buttonLabel}>{t('deposit.buttonDeposit')}</div>
       </button>
     </div>
   );
 
   const renderCryptoBot = () => (
     <div className={styles.section}>
-      <div className={styles.subtitle}>You will be redirected to CryptoBot in Telegram.</div>
-      <Button onClick={() => window.open('https://t.me/CryptoBot', '_blank')}>Open CryptoBot</Button>
-      <Button variant="secondary" onClick={() => setMethod('select')}>Back</Button>
+      <div className={styles.subtitle}>{t('deposit.cryptoSubtitle')}</div>
+      <Button onClick={() => window.open('https://t.me/CryptoBot', '_blank')}>{t('deposit.openCrypto')}</Button>
+      <Button variant="secondary" onClick={() => setMethod('select')}>{t('deposit.back')}</Button>
     </div>
   );
 
   const renderGifts = () => (
     <div className={styles.section}>
-      <div className={styles.subtitle}>Use Gift cards to top up your balance.</div>
-      <Button disabled>Coming soon</Button>
-      <Button variant="secondary" onClick={() => setMethod('select')}>Back</Button>
+      <div className={styles.subtitle}>{t('deposit.giftsSubtitle')}</div>
+      <Button disabled>{t('deposit.comingSoon')}</Button>
+      <Button variant="secondary" onClick={() => setMethod('select')}>{t('deposit.back')}</Button>
     </div>
   );
 
@@ -257,8 +259,8 @@ export const DepositModal: React.FC<DepositModalProps> = ({ isOpen, onClose }) =
       <Modal
         isOpen={isOpen}
         onClose={() => { setMethod('select'); onClose(); }}
-        title={method === 'ton' ? 'TON Deposit' : 'Deposit'}
-        subtitle={method === 'ton' ? 'Enter the amount to deposit' : undefined}
+        title={method === 'ton' ? t('deposit.modalTitleTon') : t('deposit.modalTitleSelect')}
+        subtitle={method === 'ton' ? t('deposit.modalSubtitleTon') : undefined}
         size="md"
         onBack={method !== 'select' ? () => setMethod('select') : undefined}
         variant="bottomSheet"
@@ -275,8 +277,8 @@ export const DepositModal: React.FC<DepositModalProps> = ({ isOpen, onClose }) =
       <SuccessModal
         isOpen={showSuccess}
         onClose={() => setShowSuccess(false)}
-        title="Payment received"
-        subtitle="Your balance has been updated"
+        title={t('deposit.successTitle')}
+        subtitle={t('deposit.successSubtitle')}
         autoCloseMs={2000}
       />
     </>

@@ -13,8 +13,10 @@ import { SpinUseCase } from '@/application/roulette/SpinUseCase';
 import { ASSETS } from '@/constants/assets';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { ConnectivityGuard } from '@/services/ConnectivityGuard';
+import { useI18n } from '@/i18n';
 
 export const RouletteWheel: React.FC = () => {
+  const { t } = useI18n();
   const { 
     currentCase, 
     isSpinning, 
@@ -233,7 +235,7 @@ export const RouletteWheel: React.FC = () => {
                 disabled={isSpinning}
               >
                 <div className={styles.buttonLabel}>
-                  {isSpinning ? 'Spinning...' : 'Spin'}
+                  {isSpinning ? t('roulette.spinning') : t('roulette.spin')}
                 </div>
                 <div className={styles.priceTag}>
                   <div className={styles.priceValue}>{(currentCase?.price ?? 0).toFixed(2)}</div>
@@ -259,14 +261,14 @@ export const RouletteWheel: React.FC = () => {
                     <rect x="11" y="10" width="2" height="6" rx="1" fill="#0F1115"/>
                     <circle cx="12" cy="7.25" r="1.25" fill="#0F1115"/>
                   </svg>
-                  <span>Not enough funds</span>
+                  <span>{t('roulette.notEnoughFunds')}</span>
                 </div>
                 <button 
                   className={`${styles.spinButton} ${styles.centered}`}
                   onClick={handleDepositRedirect}
                   disabled={isSpinning}
                 >
-                  <div className={styles.buttonLabel}>Deposit</div>
+                  <div className={styles.buttonLabel}>{t('roulette.deposit')}</div>
                 </button>
               </>
             )}
@@ -287,13 +289,13 @@ export const RouletteWheel: React.FC = () => {
               onChange={(e) => setShowWinModal(e.target.checked)}
               style={{ marginRight: '8px' }}
             />
-            <label htmlFor="show-win-modal">Показывать выигрыш</label>
+            <label htmlFor="show-win-modal">{t('roulette.showWin')}</label>
           </div>
 
 
           {/* Возможные призы */}
           <div className={styles.prizesSection}>
-            <div className={styles.prizesTitle}>Possible prizes:</div>
+            <div className={styles.prizesTitle}>{t('roulette.possiblePrizes')}</div>
             <div className={styles.prizesGrid}>
               {sortedPrizes.map((item) => (
                 <div key={item.id} className={styles.prizeGridItem} data-rarity={item.rarity} onClick={() => setPreviewPrize(item)} style={{ cursor: 'pointer' }}>
@@ -362,14 +364,14 @@ export const RouletteWheel: React.FC = () => {
 
           <div className={styles.resultActions}>
             <button onClick={handleKeepPrize} className={`${styles.spinButton} ${styles.centered}`}>
-              <div className={styles.buttonLabel}>Keep it</div>
+              <div className={styles.buttonLabel}>{t('roulette.keepIt')}</div>
             </button>
  <button 
           className={styles.quickSellButton}
           onClick={handleQuickSell}
           disabled={isSpinning}
         >
-                <div className={styles.buttonLabel}> Quick Sell </div>
+                <div className={styles.buttonLabel}>{t('roulette.quickSell')}</div>
               
               <div className={styles.priceTag}>
                <div className={styles.priceValue}>{spinResult?.prize.price.toFixed(2)}</div>
@@ -385,7 +387,7 @@ export const RouletteWheel: React.FC = () => {
 
           {/* Возможные призы */}
           <div className={styles.prizesSection}>
-            <div className={styles.prizesTitle}>Possible prizes:</div>
+            <div className={styles.prizesTitle}>{t('roulette.possiblePrizes')}</div>
             <div className={styles.prizesGrid}>
               {sortedPrizes.map((item) => (
                 <div key={item.id} className={styles.prizeGridItem} data-rarity={item.rarity} onClick={() => setPreviewPrize(item)} style={{ cursor: 'pointer' }}>
@@ -427,9 +429,14 @@ export const RouletteWheel: React.FC = () => {
               </div>
             )}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-              <div style={{ color: '#9CA3AF' }}>Rarity</div>
-              <div style={{ textAlign: 'right', textTransform: 'capitalize' }}>{previewPrize.rarity}</div>
-              <div style={{ color: '#9CA3AF' }}>Price</div>
+              <div style={{ color: '#9CA3AF' }}>{t('roulette.rarity')}</div>
+              <div style={{ textAlign: 'right', textTransform: 'capitalize' }}>
+                {(() => {
+                  const r = previewPrize.rarity;
+                  return r === 'legendary' ? 'Легендарный' : r === 'epic' ? 'Эпический' : r === 'rare' ? 'Редкий' : 'Обычный';
+                })()}
+              </div>
+              <div style={{ color: '#9CA3AF' }}>{t('roulette.price')}</div>
               <div style={{ textAlign: 'right' }}>{previewPrize.price.toFixed(2)}</div>
             </div>
             <div style={{ display: 'flex', justifyContent: 'flex-end' }}>

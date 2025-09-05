@@ -6,12 +6,13 @@ import { CaseCard } from '@/components/game/CaseCard';
 import { RouletteWheel } from '@/components/game/RouletteWheel';
 import { Button } from '@/components/ui/Button';
 import { ASSETS } from '@/constants/assets';
-import { MESSAGES } from '@/utils/constants';
+import { useI18n } from '@/i18n';
 import styles from './HomePage.module.css';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { ConnectivityGuard } from '@/services/ConnectivityGuard';
 
 export const HomePage: React.FC = () => {
+  const { t } = useI18n();
   const { cases, isLoading } = useCasesStore();
   const isOnline = useOnlineStatus();
   const [hideCasesError, setHideCasesError] = React.useState(false);
@@ -41,7 +42,7 @@ export const HomePage: React.FC = () => {
   type Slide = { kind: 'text' | 'image' | 'video'; text?: string; image?: string; video?: string; href?: string };
   const slides = React.useMemo<Slide[]>(
     () => [
-      { kind: 'text', text: MESSAGES.FREE_BANNER_1 },
+      { kind: 'text', text: t('messages.freeBanner1') },
       //{ kind: 'image', image: ASSETS.IMAGES.DRAGON, href: 'https://t.me/BotFather' },
     //  { kind: 'text', text: MESSAGES.FREE_BANNER_2 },
     //  { kind: 'video', video: ASSETS.VIDEOS.DARKSIDE, href: 'https://t.me/BotFather' },
@@ -51,10 +52,10 @@ export const HomePage: React.FC = () => {
       //{ kind: 'image', image: ASSETS.IMAGES.GIFT },
     //  { kind: 'text', text: MESSAGES.FREE_BANNER_5 },
      // { kind: 'image', image: ASSETS.IMAGES.TEDDY, href: 'https://t.me/BotFather' },
-      { kind: 'text', text: MESSAGES.FREE_BANNER_6 },
-      { kind: 'text', text: MESSAGES.FREE_BANNER_7 },
+      { kind: 'text', text: t('messages.freeBanner6') },
+      { kind: 'text', text: t('messages.freeBanner7') },
     ],
-    []
+    [t]
   );
 
   const computeAverageColorFromImage = React.useCallback((src: string): Promise<string> => {
@@ -204,7 +205,7 @@ export const HomePage: React.FC = () => {
                 <div className={styles.bannerText}>{slides[currentIndex]?.text}</div>
               </div>
               <Button size="sm" className={styles.telegramButton}>
-                {MESSAGES.OPEN_CASE}
+                {t('messages.openCase')}
               </Button>
             </div>
           ) : slides[currentIndex]?.kind === 'image' ? (
@@ -265,20 +266,20 @@ export const HomePage: React.FC = () => {
             {casesPhase === 'loading' && (
               <div className={styles.loadingContainer}>
                 <div className={styles.loadingSpinner}></div>
-                <div className={styles.loadingText}>Loading case data...</div>
+                <div className={styles.loadingText}>{t('home.loadingCases')}</div>
               </div>
             )}
             {casesPhase === 'error' && !hideCasesError && (
               <div className={styles.errorMessageContainer}>
-                <div className={styles.errorMessageContent}>You are offline. Some features are disabled.</div>
+                <div className={styles.errorMessageContent}>{t('common.offlineFeatures')}</div>
                 <button className={styles.errorClose} onClick={() => setHideCasesError(true)}>×</button>
               </div>
             )}
             {casesPhase === 'error' && (
               <div className={styles.errorState}>
-                <div className={styles.errorMessage}>Failed to load items. Please try again.</div>
+                <div className={styles.errorMessage}>{t('common.failedToLoad')}</div>
                 <button className={styles.retryButton} onClick={() => window.location.reload()}>
-                  <div className={styles.buttonLabel}>Try Again</div>
+                  <div className={styles.buttonLabel}>{t('common.tryAgain')}</div>
                 </button>
               </div>
             )}

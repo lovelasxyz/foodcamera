@@ -27,6 +27,7 @@ html, body {
   height: 100%;
   margin: 0;
   padding: 0;
+  background-color: #141415;
   overflow-x: hidden;
   overflow-y: auto; /* Разрешаем вертикальный скролл */
   -webkit-user-select: none;

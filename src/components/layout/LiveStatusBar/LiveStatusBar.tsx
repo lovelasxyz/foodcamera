@@ -1,95 +1,17 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { ASSETS } from '@/constants/assets';
+import React, { useEffect, useRef, useState } from 'react';
 import styles from './LiveStatusBar.module.css';
-
-type Rarity = 'common' | 'rare' | 'epic' | 'legendary';
-
-interface LiveItem {
-  id: number;
-  image: string;
-  name: string;
-  price: number;
-  userName: string;
-  rarity: Rarity;
-}
+import { useLiveStore } from '@/store/liveStore';
 
 export const LiveStatusBar: React.FC = () => {
-  const [liveItems, setLiveItems] = useState<LiveItem[]>([]);
-  const lastAddedIdRef = useRef<number | null>(null);
+  const items = useLiveStore((s) => s.items);
+  const lastAddedId = useLiveStore((s) => s.lastAddedId);
+  const init = useLiveStore((s) => s.init);
   const liveItemsRef = useRef<HTMLDivElement | null>(null);
   const didInitRef = useRef<boolean>(false);
-
-  // Базовые предметы (без id/userName/rarity)
-  const baseMock: Array<{ image: string; name: string; price: number }> = [
-    { image: ASSETS.IMAGES.FROG, name: 'Mystic Frog', price: 1562 },
-    { image: ASSETS.IMAGES.DIAMOND, name: 'Diamond', price: 48.15 },
-    { image: ASSETS.IMAGES.DRAGON, name: 'Dragon', price: 89.99 },
-    { image: ASSETS.IMAGES.WIZARD_HAT, name: 'Wizard Hat', price: 35.20 },
-    { image: ASSETS.IMAGES.HELMET, name: 'Knight Helmet', price: 75.50 },
-    { image: ASSETS.IMAGES.SCROLL, name: 'Ancient Scroll', price: 120.00 },
-    { image: ASSETS.IMAGES.TEDDY, name: 'Cursed Teddy', price: 66.60 },
-    { image: ASSETS.IMAGES.GIFT, name: 'Mystery Gift', price: 25.00 },
-    { image: ASSETS.IMAGES.LIGHTNING, name: 'Lightning', price: 42.50 },
-    { image: ASSETS.IMAGES.BURGER, name: 'Burger', price: 12.3 },
-    { image: ASSETS.IMAGES.TON, name: 'TON', price: 5.5 },
-    { image: ASSETS.IMAGES.TOKEN, name: 'TON', price: 15.75 },
-  ];
-
-  // Детерминированная редкость по изображению (в синхроне со store)
-  const RARITY_BY_IMAGE: Record<string, Rarity> = {
-    [ASSETS.IMAGES.TEDDY]: 'common',
-    [ASSETS.IMAGES.BURGER]: 'common',
-    [ASSETS.IMAGES.SCROLL]: 'rare',
-    [ASSETS.IMAGES.WIZARD_HAT]: 'rare',
-    [ASSETS.IMAGES.HELMET]: 'rare',
-    [ASSETS.IMAGES.GIFT]: 'rare',
-    [ASSETS.IMAGES.DIAMOND]: 'epic',
-    [ASSETS.IMAGES.DRAGON]: 'epic',
-    [ASSETS.IMAGES.LIGHTNING]: 'epic',
-    [ASSETS.IMAGES.FROG]: 'legendary',
-    [ASSETS.IMAGES.TON]: 'common',
-  };
-  const resolveRarity = (image: string): Rarity => RARITY_BY_IMAGE[image] || 'common';
+  const [enterDoneId, setEnterDoneId] = useState<number | null>(null);
 
   useEffect(() => {
-    const MAX_VISIBLE = 18;
-
-    // Начальное заполнение, чтобы полоса не была пустой
-    const initialItems = Array.from({ length: MAX_VISIBLE - 2 }, (_, i) => {
-      const randomItem = baseMock[Math.floor(Math.random() * baseMock.length)];
-      return {
-        id: Date.now() + i,
-        image: randomItem.image,
-        name: randomItem.name,
-        price: randomItem.price,
-        userName: `User${Math.floor(Math.random() * 1000)}`,
-        rarity: resolveRarity(randomItem.image),
-      } as LiveItem;
-    });
-    setLiveItems(initialItems);
-
-    // Единичное добавление элемента с интервалом
-    const interval = setInterval(() => {
-      const randomItem = baseMock[Math.floor(Math.random() * baseMock.length)];
-      setLiveItems((prevItems) => {
-        const nextItem: LiveItem = {
-          id: Date.now(),
-          image: randomItem.image,
-          name: randomItem.name,
-          price: randomItem.price,
-          userName: `User${Math.floor(Math.random() * 1000)}`,
-          rarity: resolveRarity(randomItem.image),
-        };
-        lastAddedIdRef.current = nextItem.id;
-        const prepended = [nextItem, ...prevItems];
-        if (prepended.length > MAX_VISIBLE) {
-          prepended.pop();
-        }
-        return prepended;
-      });
-    }, 5000);
-
-    return () => clearInterval(interval);
+    init();
   }, []);
 
   // Плавное смещение списка вправо при добавлении нового элемента слева
@@ -100,10 +22,10 @@ export const LiveStatusBar: React.FC = () => {
     }
     const container = liveItemsRef.current;
     if (!container) return;
-    if (!liveItems.length) return;
+    if (!items.length) return;
 
     // Запускаем только если первый элемент — именно что добавленный
-    if (liveItems[0]?.id !== lastAddedIdRef.current) return;
+    if (items[0]?.id !== lastAddedId) return;
 
     const firstChild = container.firstElementChild as HTMLElement | null;
     const computed = getComputedStyle(container);
@@ -133,7 +55,14 @@ export const LiveStatusBar: React.FC = () => {
     return () => {
       container.removeEventListener('transitionend', handleEnd);
     };
-  }, [liveItems]);
+  }, [items]);
+  
+  // Сбрасываем флаг завершения, когда приходит новый элемент
+  useEffect(() => {
+    if (lastAddedId != null) {
+      setEnterDoneId(null);
+    }
+  }, [lastAddedId]);
 
   return (
     <div className={styles.liveStatusBar}>
@@ -143,13 +72,19 @@ export const LiveStatusBar: React.FC = () => {
       </div>
       
       <div className={styles.liveItems} ref={liveItemsRef}>
-        {liveItems.map((item) => {
-          const isNewlyAdded = item.id === lastAddedIdRef.current;
+        {items.map((item) => {
+          const isNewlyAdded = item.id === lastAddedId && item.id !== enterDoneId;
           return (
           <div 
             key={item.id} 
             data-rarity={item.rarity}
             className={`${styles.liveItem} ${isNewlyAdded ? styles.liveItemEnter : ''}`}
+            onAnimationEnd={(e) => {
+              if (e.currentTarget !== e.target) return; // игнорируем события от дочерних элементов
+              if (item.id === lastAddedId) {
+                setEnterDoneId(item.id);
+              }
+            }}
           >
             <div className={styles.liveItemContent}>
               <img 
