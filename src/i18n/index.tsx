@@ -218,9 +218,9 @@ const ru: TranslationDict = {
     upgrade: 'Апгрейд'
   },
   messages: {
-    freeBanner1: 'Следите за нашими новостями',
+    freeBanner1: 'Следите за новостями',
     freeBanner6: 'Крути рулетку и побеждай',
-    freeBanner7: 'Собирайте осколки быстрее',
+    freeBanner7: 'Собирайте осколки',
     openCase: '@casebot',
     freeCase: 'Free case'
   }

@@ -506,13 +506,14 @@ background: linear-gradient(115.39deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255,
   pointer-events: none;
 }
 
-/* .inventoryItem[data-rarity="common"] { border-bottom: 1px solid #5067E5; }
+.inventoryItem[data-rarity="common"] { border-bottom: 1px solid #5067E5; }
 
 .inventoryItem[data-rarity="rare"] { border-bottom: 1px solid #C52F81; }
 
 .inventoryItem[data-rarity="epic"] { border-bottom: 1px solid #C03A42; }
 
-.inventoryItem[data-rarity="legendary"] { border-bottom: 1px solid #DC904B; } */
+.inventoryItem[data-rarity="legendary"] { border-bottom: 1px solid #DC904B; }
+
 
 .itemImage {
   width: 100%;

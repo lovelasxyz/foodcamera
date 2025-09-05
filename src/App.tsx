@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { BrowserRouter as Router } from 'react-router-dom';
 import { useUIStore } from '@/store/uiStore';
 import { useUserStore } from '@/store/userStore';
@@ -21,6 +21,8 @@ const AppContent: React.FC = () => {
   useOnlineStatus();
   const [initializationComplete, setInitializationComplete] = useState(false);
   const [showLoadingPage, setShowLoadingPage] = useState(true);
+  const scrollPositionsRef = useRef<Record<string, number>>({});
+  const previousPageRef = useRef<string | null>(null);
 
   // Обрабатываем авторизацию пользователя
   useEffect(() => {
@@ -64,6 +66,25 @@ const AppContent: React.FC = () => {
   }, [telegramUser, authStatus, setTelegramUser, isWebAppAvailable, initializationComplete]);
 
   useEffect(() => { ConnectivityGuard.start(); }, []);
+
+  // Сохраняем и восстанавливаем позицию скролла отдельно для каждой страницы
+  useLayoutEffect(() => {
+    const container = document.querySelector('.app-container') as HTMLElement | null;
+    // Сохранить позицию предыдущей страницы
+    if (previousPageRef.current) {
+      const prevKey = previousPageRef.current;
+      const currentScroll = container ? container.scrollTop : window.scrollY;
+      scrollPositionsRef.current[prevKey] = currentScroll;
+    }
+    // Восстановить позицию для текущей страницы
+    const targetY = scrollPositionsRef.current[activePage] ?? 0;
+    if (container) {
+      container.scrollTo({ top: targetY, behavior: 'auto' });
+    } else {
+      window.scrollTo({ top: targetY, behavior: 'auto' });
+    }
+    previousPageRef.current = activePage;
+  }, [activePage]);
 
   // Показываем LoadingPage если инициализация не завершена
   if (showLoadingPage) {
