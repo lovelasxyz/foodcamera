@@ -222,7 +222,7 @@ const ru: TranslationDict = {
     freeBanner6: 'Крути рулетку и побеждай',
     freeBanner7: 'Собирайте осколки быстрее',
     openCase: '@casebot',
-    freeCase: 'Бесплатный кейс'
+    freeCase: 'Free case'
   }
 };
 
