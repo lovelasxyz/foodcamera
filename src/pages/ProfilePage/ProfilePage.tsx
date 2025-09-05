@@ -308,9 +308,9 @@ export const ProfilePage: React.FC = () => {
                 <Button className={styles.inventoryButton} onClick={() => { receiveInventoryItem(selectedInventoryItem.id); window.open('https://t.me/BotFather', '_blank'); }}>
                   {t('common.receive')}
                 </Button>
-                <Button className={styles.inventoryButton} onClick={() => setSelectedItemId(null)}>
+                {/* <Button className={styles.inventoryButton} onClick={() => setSelectedItemId(null)}>
                   {t('common.close')}
-                </Button>
+                </Button> */}
               </div>
             </div>
           </div>
