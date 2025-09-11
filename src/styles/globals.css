@@ -59,6 +59,16 @@ body {
   touch-action: manipulation;
 }
 
+/* Body scroll lock for modals (no scroll jump) */
+body.scroll-lock {
+  position: fixed;
+  top: var(--scroll-lock-top, 0);
+  left: 0;
+  right: 0;
+  width: 100%;
+  overflow: hidden;
+}
+
 button {
   font-family: inherit;
   border: none;

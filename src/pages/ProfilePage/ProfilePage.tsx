@@ -24,6 +24,11 @@ export const ProfilePage: React.FC = () => {
   const [inventoryOfflinePhase, setInventoryOfflinePhase] = useState<'idle' | 'loading' | 'error'>('idle');
   const [inventoryActionLock, setInventoryActionLock] = useState<boolean>(false);
 
+  // Reset action lock whenever modal target changes (open/close or switch item)
+  React.useEffect(() => {
+    setInventoryActionLock(false);
+  }, [selectedItemId]);
+
   // Управляем показом: при офлайне сначала короткий прелоадер, затем ошибка
   React.useEffect(() => {
     if (!isOnline) {
@@ -293,7 +298,6 @@ export const ProfilePage: React.FC = () => {
           <div className={styles.invActions}>
             <Button
               className={styles.receiveBtn}
-              disabled={inventoryActionLock}
               onClick={() => {
                 if (inventoryActionLock) return;
                 setInventoryActionLock(true);
@@ -309,7 +313,6 @@ export const ProfilePage: React.FC = () => {
             </Button>
             <Button
               className={styles.quickSellBtn}
-              disabled={inventoryActionLock}
               onClick={() => {
                 if (inventoryActionLock) return;
                 setInventoryActionLock(true);

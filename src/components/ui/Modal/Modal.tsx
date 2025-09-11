@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useBodyScrollLock } from '@/hooks/useBodyScrollLock';
 import { clsx } from 'clsx';
 import { X, ArrowLeft } from 'lucide-react';
 import { ModalProps } from '@/types/ui';
@@ -32,8 +33,8 @@ export const Modal: React.FC<ExtendedModalProps> = ({
   const [shouldRender, setShouldRender] = useState<boolean>(isOpen);
   const [isClosing, setIsClosing] = useState<boolean>(false);
   const [isEntering, setIsEntering] = useState<boolean>(false);
-
   const animationEnabled = variant === 'bottomSheet' && bottomSheetAnimated;
+  useBodyScrollLock(animationEnabled ? shouldRender : isOpen);
 
   // Keep mounted during exit animation
   useEffect(() => {
@@ -54,18 +55,7 @@ export const Modal: React.FC<ExtendedModalProps> = ({
     }
   }, [animationEnabled, isOpen, shouldRender]);
 
-  useEffect(() => {
-    const mounted = animationEnabled ? shouldRender : isOpen;
-    if (mounted) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = 'unset';
-    }
-
-    return () => {
-      document.body.style.overflow = 'unset';
-    };
-  }, [animationEnabled, shouldRender, isOpen]);
+  // Body scroll lock handled by hook above
 
   // Coordinate enter animation on next frame so CSS transitions run
   useEffect(() => {
