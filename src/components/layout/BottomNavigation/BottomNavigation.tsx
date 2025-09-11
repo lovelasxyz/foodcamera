@@ -14,7 +14,7 @@ interface NavigationTab {
 const navigationTabs: NavigationTab[] = [
   { id: 'main', label: 'Main', icon: 'main' },
   { id: 'jackpot', label: 'JackPot', icon: 'jackpot' },
-  { id: 'upgrade', label: 'Upgrade', icon: 'upgrade' },
+ // { id: 'upgrade', label: 'Upgrade', icon: 'upgrade' },
   { id: 'profile', label: 'Profile', icon: 'profile' },
 ];
 

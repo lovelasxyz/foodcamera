@@ -1,1 +1,2 @@
-export { PrizeCard } from './PrizeCard'; 
+export { PrizeCard } from './PrizeCard';
+export { PrizeModal } from './PrizeModal';

@@ -5,7 +5,7 @@
 ;
     width: 100%;
     max-width: 99%;
-    min-height: 50px;
+    min-height: 60px;
     overflow: hidden; /* чтобы элементы не обрезались снизу при падении, ограничим только по контейнеру */
     position: relative;
 }

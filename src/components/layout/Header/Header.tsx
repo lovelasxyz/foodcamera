@@ -1,20 +1,26 @@
 import React from 'react';
-import { ChevronDown } from 'lucide-react';
 import { useUserStore } from '@/store/userStore';
 import { useUIStore } from '@/store/uiStore';
 import { shouldUseGuestMode } from '@/utils/environment';
 import styles from './Header.module.css';
 import { ASSETS } from '@/constants/assets';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+import { useI18n } from '@/i18n';
 
 export const Header: React.FC = () => {
   const { user } = useUserStore();
-  const { setActivePage } = useUIStore();
+  const { setActivePage, openModal } = useUIStore();
   const isGuestMode = shouldUseGuestMode();
   const isOnline = useOnlineStatus();
+  const { t } = useI18n();
 
   const handleProfileClick = () => {
     setActivePage('profile');
+  };
+
+  const handleDepositClick = () => {
+    setActivePage('profile');
+    openModal('deposit');
   };
 
   return (
@@ -42,9 +48,8 @@ export const Header: React.FC = () => {
         {isOnline ? (
           <div className={styles.walletSection}>
             <div className={styles.walletDropdownContainer}>
-              <button className={styles.walletAddressButton}>
-                <span>{user.wallet || 'UQDKd...hxwP'}</span>
-                <ChevronDown size={10} />
+              <button className={styles.walletAddressButton} onClick={handleDepositClick}>
+                <span>{t('common.deposit')}</span>
               </button>
             </div>
             <div className={styles.coinCountContainer} onClick={handleProfileClick}>

@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/Button';
 import styles from './ProfilePage.module.css';
 import { SHARD_PRODUCTS } from '@/utils/constants';
 import { Modal } from '@/components/ui/Modal';
+import { PrizeModal } from '@/components/game/PrizeCard';
 import { DepositModal } from '@/components/profile/DepositModal';
 import { PrizeItem } from '@/domain/items/PrizeItem';
 import { ASSETS } from '@/constants/assets';
@@ -21,6 +22,7 @@ export const ProfilePage: React.FC = () => {
   const isOnline = useOnlineStatus();
   const [hideInventoryError, setHideInventoryError] = useState<boolean>(false);
   const [inventoryOfflinePhase, setInventoryOfflinePhase] = useState<'idle' | 'loading' | 'error'>('idle');
+  const [inventoryActionLock, setInventoryActionLock] = useState<boolean>(false);
 
   // Управляем показом: при офлайне сначала короткий прелоадер, затем ошибка
   React.useEffect(() => {
@@ -206,14 +208,15 @@ export const ProfilePage: React.FC = () => {
                   if (card.kind === 'item') {
                     const isSold = card.item.status === 'sold';
                     const isActive = card.item.status === 'active';
+                    const isDisabled = !isActive; // disable for sold and received
                     const statusLabel = isSold ? t('common.sold') : isActive ? t('common.active') : t('common.received');
                     return (
                       <div 
                         key={card.id} 
-                        className={`${styles.inventoryItem} ${isSold ? styles.itemDisabled : ''}`} 
+                        className={`${styles.inventoryItem} ${isDisabled ? '' : ''}`} 
                         data-rarity={(card.item.prize?.rarity) as any}
-                        onClick={() => { if (!isSold) setSelectedItemId(card.id); }} 
-                        style={{ cursor: isSold ? 'not-allowed' : 'pointer' }}
+                        onClick={() => { if (isActive) setSelectedItemId(card.id); }} 
+                        style={{ cursor: isDisabled ? 'not-allowed' : 'pointer' }}
                       >
                         <img src={card.image} alt="item" className={styles.itemImage} />
                         <div className={`${styles.hint} ${styles.prizeHint}`}>
@@ -274,48 +277,58 @@ export const ProfilePage: React.FC = () => {
       </Modal>
 
       {/* Modal: Inventory item actions */}
-      <Modal
+      <PrizeModal
         isOpen={!!selectedItemId}
         onClose={() => setSelectedItemId(null)}
         title={selectedInventoryItem?.prize.name}
-        size="md"
-      >
-        {selectedInventoryItem && (
-          <div style={{ width: '100%' }}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              <div style={{ display: 'flex', justifyContent: 'center' }}>
-                <img src={selectedInventoryItem.prize.image} alt={selectedInventoryItem.prize.name} style={{ width: 220, height: 220, objectFit: 'contain' }} />
-              </div>
-              {!!selectedInventoryItem.prize.description && (
-                <div style={{ color: 'rgba(255,255,255,0.75)', fontSize: 14, lineHeight: 1.4 }}>
-                  {selectedInventoryItem.prize.description}
-                </div>
-              )}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-                <div style={{ color: '#9CA3AF' }}>{t('common.model')}</div>
-                <div style={{ textAlign: 'right' }}>{t('common.basic100')}</div>
-                <div style={{ color: '#9CA3AF' }}>{t('common.symbol')}</div>
-                <div style={{ textAlign: 'right' }}>Default</div>
-                <div style={{ color: '#9CA3AF' }}>{t('common.backdrop')}</div>
-                <div style={{ textAlign: 'right' }}>—</div>
-                <div style={{ color: '#9CA3AF' }}>{t('common.mintable')}</div>
-                <div style={{ textAlign: 'right' }}>{t('common.yes')}</div>
-              </div>
-              <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
-                <Button className={styles.inventoryButton} onClick={() => { sellInventoryItem(selectedInventoryItem.id); setSelectedItemId(null); }}>
-                  {t('common.sell')} ({selectedInventoryItem.prize.price.toFixed(2)})
-                </Button>
-                <Button className={styles.inventoryButton} onClick={() => { receiveInventoryItem(selectedInventoryItem.id); window.open('https://t.me/BotFather', '_blank'); }}>
-                  {t('common.receive')}
-                </Button>
-                {/* <Button className={styles.inventoryButton} onClick={() => setSelectedItemId(null)}>
-                  {t('common.close')}
-                </Button> */}
-              </div>
-            </div>
+        image={selectedInventoryItem?.prize.image || ''}
+        description={selectedInventoryItem?.prize.description}
+        rows={selectedInventoryItem ? [
+          { label: t('roulette.rarity'), value: (() => {
+            const r = selectedInventoryItem.prize.rarity;
+            return t(`roulette.rarityNames.${r}`);
+          })() }
+        ] : undefined}
+        actions={selectedInventoryItem && (
+          <div className={styles.invActions}>
+            <Button
+              className={styles.receiveBtn}
+              disabled={inventoryActionLock}
+              onClick={() => {
+                if (inventoryActionLock) return;
+                setInventoryActionLock(true);
+                try {
+                  receiveInventoryItem(selectedInventoryItem.id);
+                } finally {
+                  setSelectedItemId(null);
+                  window.open('https://t.me/BotFather', '_blank');
+                }
+              }}
+            >
+              {t('common.receive')}
+            </Button>
+            <Button
+              className={styles.quickSellBtn}
+              disabled={inventoryActionLock}
+              onClick={() => {
+                if (inventoryActionLock) return;
+                setInventoryActionLock(true);
+                try {
+                  sellInventoryItem(selectedInventoryItem.id);
+                } finally {
+                  setSelectedItemId(null);
+                }
+              }}
+            >
+              <span style={{ color: 'white', fontSize: '14px' }}>{t('roulette.quickSell')}</span>
+              <span className={styles.quickSellRight}>
+                {selectedInventoryItem.prize.price.toFixed(2)}
+                <img src={ASSETS.IMAGES.TON} alt="TON" className={styles.tonIconSmall} />
+              </span>
+            </Button>
           </div>
         )}
-      </Modal>
+      />
     </div></div>
   );
 }; 

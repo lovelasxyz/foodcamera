@@ -1,0 +1,39 @@
+.container {
+  width: 100%;
+}
+
+.imageRow {
+  display: flex;
+  justify-content: center;
+}
+
+.image {
+  width: 220px;
+  height: 220px;
+  object-fit: contain;
+  margin-top: 10px;
+}
+
+.description {
+  color: rgba(255,255,255,0.75);
+  font-size: 14px;
+  line-height: 1.4;
+  margin: 20px 0;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.labelLeft { color: #9CA3AF; }
+.valueRight { text-align: right; }
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+
+

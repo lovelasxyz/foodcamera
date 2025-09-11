@@ -42,16 +42,16 @@ export const HomePage: React.FC = () => {
   type Slide = { kind: 'text' | 'image' | 'video'; text?: string; image?: string; video?: string; href?: string };
   const slides = React.useMemo<Slide[]>(
     () => [
-      { kind: 'text', text: t('messages.freeBanner1') },
-      //{ kind: 'image', image: ASSETS.IMAGES.DRAGON, href: 'https://t.me/BotFather' },
-    //  { kind: 'text', text: MESSAGES.FREE_BANNER_2 },
-    //  { kind: 'video', video: ASSETS.VIDEOS.DARKSIDE, href: 'https://t.me/BotFather' },
-    //  { kind: 'text', text: MESSAGES.FREE_BANNER_3 },
-      //{ kind: 'image', image: ASSETS.IMAGES.DIAMOND, href: 'https://t.me/BotFather' },
-     // { kind: 'text', text: MESSAGES.FREE_BANNER_4 },
-      //{ kind: 'image', image: ASSETS.IMAGES.GIFT },
-    //  { kind: 'text', text: MESSAGES.FREE_BANNER_5 },
-     // { kind: 'image', image: ASSETS.IMAGES.TEDDY, href: 'https://t.me/BotFather' },
+      { kind: 'text', text: t('Free case') },
+     { kind: 'image', image: ASSETS.IMAGES.DRAGON, href: 'https://t.me/BotFather' },
+    // { kind: 'text', text: "New cases. Welcome!" },
+     { kind: 'video', video: ASSETS.VIDEOS.DARKSIDE, href: 'https://t.me/BotFather' },
+    // { kind: 'text', text: "New cases. Welcome!" },
+     { kind: 'image', image: ASSETS.IMAGES.DIAMOND, href: 'https://t.me/BotFather' },
+    // { kind: 'text', text: "New cases. Welcome!" },
+      { kind: 'image', image: ASSETS.IMAGES.GIFT },
+   // { kind: 'text', text: "New cases. Welcome!" },
+     { kind: 'image', image: ASSETS.IMAGES.TEDDY, href: 'https://t.me/BotFather' },
       { kind: 'text', text: t('messages.freeBanner6') },
       { kind: 'text', text: t('messages.freeBanner7') },
     ],
@@ -154,7 +154,7 @@ export const HomePage: React.FC = () => {
   React.useEffect(() => {
     const interval = setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % slides.length);
-    }, 12000);
+    }, 6000);
     return () => clearInterval(interval);
   }, [slides.length]);
 
@@ -258,6 +258,22 @@ export const HomePage: React.FC = () => {
                 videoEl
               );
             })()
+          )}
+          {slides.length > 0 && (
+            <div className={styles.freeCaseDots}>
+              {[0, 1, 2].map((i) => {
+                const baseIndex = Math.floor(currentIndex / 3) * 3;
+                const idx = (baseIndex + i) % slides.length;
+                const isActive = idx === currentIndex;
+                return (
+                  <div
+                    key={i}
+                    className={`${styles.dot} ${isActive ? styles.dotActive : ''}`}
+                    onClick={() => setCurrentIndex(idx)}
+                  />
+                );
+              })}
+            </div>
           )}
         </div>
         {/* Offline/Loading for cases list positioned under banner */}

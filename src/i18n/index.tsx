@@ -99,12 +99,18 @@ const en: TranslationDict = {
     keepIt: 'Keep it',
     quickSell: 'Quick Sell',
     rarity: 'Rarity',
-    price: 'Price'
+    price: 'Price',
+    rarityNames: {
+      common: 'Common',
+      rare: 'Rare',
+      epic: 'Epic',
+      legendary: 'Legendary'
+    }
   },
   nav: {
     main: 'Main',
     profile: 'Profile',
-    jackpot: 'JackPot',
+    jackpot: 'Portal',
     upgrade: 'Upgrade'
   },
   messages: {
@@ -209,12 +215,18 @@ const ru: TranslationDict = {
     keepIt: 'Забрать',
     quickSell: 'Быстрая продажа',
     rarity: 'Редкость',
-    price: 'Цена'
+    price: 'Цена',
+    rarityNames: {
+      common: 'Обычный',
+      rare: 'Редкий',
+      epic: 'Эпический',
+      legendary: 'Легендарный'
+    }
   },
   nav: {
     main: 'Главная',
     profile: 'Профиль',
-    jackpot: 'Джекпот',
+    jackpot: 'Портал',
     upgrade: 'Апгрейд'
   },
   messages: {

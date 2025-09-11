@@ -111,10 +111,10 @@ export const DepositModal: React.FC<DepositModalProps> = ({ isOpen, onClose }) =
           <img src={ASSETS.IMAGES.TOKEN} alt="CryptoBot" className={styles.methodIcon} />
           <div className={styles.methodTitle}>{t('deposit.methodCryptoBot')}</div>
         </button>
-        <button className={`${styles.methodCard} ${styles.gifts} ${styles.fullWidth}`} onClick={() => setMethod('gifts')}>
+        {/* <button className={`${styles.methodCard} ${styles.gifts} ${styles.fullWidth}`} onClick={() => setMethod('gifts')}>
           <img src={ASSETS.IMAGES.GIFT} alt="Gifts" className={styles.methodIcon} />
           <div className={styles.methodTitle}>{t('deposit.methodGifts')}</div>
-        </button>
+        </button> */}
       </div>
     </div>
   );

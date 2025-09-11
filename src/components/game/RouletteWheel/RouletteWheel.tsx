@@ -4,6 +4,7 @@ import { useGameStore } from '@/store/gameStore';
 import { useUserStore } from '@/store/userStore';
 import { useUIStore } from '@/store/uiStore';
 import { Modal } from '@/components/ui/Modal';
+import { PrizeModal } from '@/components/game/PrizeCard';
 import styles from './RouletteWheel.module.css';
 import useSoundEffects from '@/hooks/useSoundEffects';
 import { ROULETTE_CONFIG } from '@/types/game';
@@ -152,6 +153,23 @@ export const RouletteWheel: React.FC = () => {
     }
   };
 
+  const handleSkipSpin = () => {
+    if (!isSpinning) return;
+    // Отключаем анимацию и мгновенно переносим на финальную позицию
+    setInstantPosition(true);
+    // Повторная установка позиции не требуется — уже установлена при старте спина
+    if (!showWinModal && spinResult && currentCase) {
+      // Автовыдача без показа результата (как в handleAnimationEnd)
+      addToInventory(spinResult.prize, currentCase.name);
+      awardedRef.current = true;
+      useGameStore.setState({ isSpinning: false });
+    } else {
+      // Переход к экрану результата
+      endSpin();
+    }
+    clickLockRef.current = false;
+  };
+
   // Сброс после закрытия
   useEffect(() => {
     if (!showResult && !isSpinning) {
@@ -231,8 +249,8 @@ export const RouletteWheel: React.FC = () => {
             {hasEnoughFunds ? (
               <button 
                 className={styles.keepButton}
-                onClick={handleSpin}
-                disabled={isSpinning}
+                onClick={isSpinning ? handleSkipSpin : handleSpin}
+                disabled={false}
               >
                 <div className={styles.buttonLabel}>
                   {isSpinning ? t('roulette.spinning') : t('roulette.spin')}
@@ -410,42 +428,22 @@ export const RouletteWheel: React.FC = () => {
       )}
     </Modal>
     {/* Preview prize modal */}
-    <Modal
+    <PrizeModal
       key="preview"
       isOpen={!!previewPrize}
       onClose={() => setPreviewPrize(null)}
       title={previewPrize?.name}
-      size="md"
-    >
-      {previewPrize && (
-        <div style={{ width: '100%' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            <div style={{ display: 'flex', justifyContent: 'center' }}>
-              <img src={previewPrize.image} alt={previewPrize.name} style={{ width: 220, height: 220, objectFit: 'contain' }} />
-            </div>
-            {!!previewPrize.description && (
-              <div style={{ color: 'rgba(255,255,255,0.75)', fontSize: 14, lineHeight: 1.4 }}>
-                {previewPrize.description}
-              </div>
-            )}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-              <div style={{ color: '#9CA3AF' }}>{t('roulette.rarity')}</div>
-              <div style={{ textAlign: 'right', textTransform: 'capitalize' }}>
-                {(() => {
-                  const r = previewPrize.rarity;
-                  return r === 'legendary' ? 'Легендарный' : r === 'epic' ? 'Эпический' : r === 'rare' ? 'Редкий' : 'Обычный';
-                })()}
-              </div>
-              <div style={{ color: '#9CA3AF' }}>{t('roulette.price')}</div>
-              <div style={{ textAlign: 'right' }}>{previewPrize.price.toFixed(2)}</div>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-            
-            </div>
-          </div>
-        </div>
-      )}
-    </Modal>
+      image={previewPrize?.image || ''}
+      description={previewPrize?.description}
+      rarityLabelLeft={t('roulette.rarity')}
+      rarityValue={(() => {
+        const r = previewPrize?.rarity;
+        if (!r) return undefined;
+        return t(`roulette.rarityNames.${r}`);
+      })()}
+      priceLabelLeft={t('roulette.price')}
+      priceValue={previewPrize ? previewPrize.price.toFixed(2) : undefined}
+    />
     </>
   );
 };
