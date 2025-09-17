@@ -2,7 +2,8 @@ import React from 'react';
 import { useCasesStore } from '@/store/casesStore';
 import { Header } from '@/components/layout/Header';
 import { LiveStatusBar } from '@/components/layout/LiveStatusBar';
-import { CaseCard } from '@/components/game/CaseCard';
+// import { CaseCard } from '@/components/game/CaseCard';
+import { CaseGrid } from '@/components/widgets/CaseGrid/CaseGrid';
 import { RouletteWheel } from '@/components/game/RouletteWheel';
 import { Button } from '@/components/ui/Button';
 import { ASSETS } from '@/constants/assets';
@@ -10,13 +11,25 @@ import { useI18n } from '@/i18n';
 import styles from './HomePage.module.css';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { ConnectivityGuard } from '@/services/ConnectivityGuard';
+import { imageCache } from '@/services/ImageCache';
 
 export const HomePage: React.FC = () => {
   const { t } = useI18n();
-  const { cases, isLoading } = useCasesStore();
+  const { cases, isLoading, loadCases } = useCasesStore();
   const isOnline = useOnlineStatus();
   const [hideCasesError, setHideCasesError] = React.useState(false);
   const [casesPhase, setCasesPhase] = React.useState<'idle' | 'loading' | 'error'>('idle');
+  // Preload critical assets for banner to avoid flicker on low-tier devices
+  React.useEffect(() => {
+    const bannerAssets: string[] = [
+      ASSETS.IMAGES.LIGHTNING,
+      ASSETS.IMAGES.DRAGON,
+      ASSETS.IMAGES.DIAMOND,
+      ASSETS.IMAGES.GIFT,
+      ASSETS.IMAGES.TEDDY,
+    ];
+    imageCache.preload(bannerAssets, { concurrency: 3 });
+  }, []);
 
   // Переходы для списка кейсов: во время реальной загрузки (isLoading) или при офлайне
   React.useEffect(() => {
@@ -158,6 +171,31 @@ export const HomePage: React.FC = () => {
     return () => clearInterval(interval);
   }, [slides.length]);
 
+  // Always refresh cases on mount when online (lightweight server-side caching recommended)
+  React.useEffect(() => {
+    if (!isOnline) return;
+    // Preload case images ahead of showing the grid
+    const caseImages = cases.map((c) => c.image);
+    if (caseImages.length > 0) {
+      imageCache.preload(caseImages, { concurrency: 3 });
+    }
+    if (!isLoading) {
+      loadCases();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOnline]);
+
+  // Refresh on tab visibility regain
+  React.useEffect(() => {
+    function onVisible() {
+      if (document.visibilityState === 'visible') {
+        if (isOnline && !isLoading) loadCases();
+      }
+    }
+    document.addEventListener('visibilitychange', onVisible);
+    return () => document.removeEventListener('visibilitychange', onVisible);
+  }, [isOnline, isLoading, loadCases]);
+
   const handleTouchStart = React.useCallback((e: React.TouchEvent<HTMLDivElement>) => {
     touchStartXRef.current = e.touches[0].clientX;
     touchDeltaXRef.current = 0;
@@ -276,42 +314,38 @@ export const HomePage: React.FC = () => {
             </div>
           )}
         </div>
-        {/* Offline/Loading for cases list positioned under banner */}
-        {(casesPhase === 'loading' || casesPhase === 'error') && (
-          <div className={styles.errorWrapper}>
-            {casesPhase === 'loading' && (
-              <div className={styles.loadingContainer}>
-                <div className={styles.loadingSpinner}></div>
-                <div className={styles.loadingText}>{t('home.loadingCases')}</div>
-              </div>
-            )}
-            {casesPhase === 'error' && !hideCasesError && (
+        {!isOnline && casesPhase === 'loading' && (
+          <div className={styles.loadingContainer}>
+            <div className={styles.loadingSpinner}></div>
+            <div className={styles.loadingText}>{t('home.loadingCases')}</div>
+          </div>
+        )}
+        {!isOnline && casesPhase === 'error' && (
+          <>
+            {!hideCasesError && (
               <div className={styles.errorMessageContainer}>
                 <div className={styles.errorMessageContent}>{t('common.offlineFeatures')}</div>
                 <button className={styles.errorClose} onClick={() => setHideCasesError(true)}>×</button>
               </div>
             )}
-            {casesPhase === 'error' && (
-              <div className={styles.errorState}>
-                <div className={styles.errorMessage}>{t('common.failedToLoad')}</div>
-                <button className={styles.retryButton} onClick={() => window.location.reload()}>
-                  <div className={styles.buttonLabel}>{t('common.tryAgain')}</div>
-                </button>
-              </div>
-            )}
-          </div>
+            <div className={styles.errorState}>
+              <div className={styles.errorMessage}>{t('common.failedToLoad')}</div>
+              <button className={styles.retryButton} onClick={() => window.location.reload()}>
+                <div className={styles.buttonLabel}>{t('common.tryAgain')}</div>
+              </button>
+            </div>
+          </>
         )}
-        
-        {/* Сетка кейсов */}
-        <div className={styles.casesGrid}>
-          {casesPhase === 'idle' && cases.length > 0 ? (
-            cases.map((caseItem) => (
-              <CaseCard key={caseItem.id} caseData={caseItem} />
-            ))
-          ) : (
-            null
-          )}
-        </div>
+        {isOnline && (
+          <CaseGrid
+            cases={cases}
+            loading={isLoading && casesPhase === 'idle'}
+            showErrorBanner={false}
+            showErrorState={false}
+            onHideErrorBanner={() => setHideCasesError(true)}
+            onRetry={() => window.location.reload()}
+          />
+        )}
       </div>
       
       {/* Компонент рулетки */}

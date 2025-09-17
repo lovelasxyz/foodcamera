@@ -1,13 +1,13 @@
-import React, { Suspense } from 'react';
+import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App.tsx';
 import { I18nProvider } from '@/i18n';
-import { LoadingScreen } from '@/components/ui/LoadingScreen';
 import { shouldUseGuestMode } from '@/utils/environment';
 import './index.css';
 
 // Импортируем типы из нового файла
 import '@/types/telegram';
+import '@/services/events/EventSubscriptions';
 
 // Инициализация Telegram Web App (только в продакшене)
 if (!shouldUseGuestMode() && window.Telegram?.WebApp) {
@@ -26,15 +26,15 @@ if (!shouldUseGuestMode() && window.Telegram?.WebApp) {
     
     // Отключаем подтверждение закрытия для лучшего UX
     tg.disableClosingConfirmation();
-    
-    console.log('Telegram WebApp initialized successfully');
+        
+    // Telegram WebApp initialized successfully (removed in production)
   } catch (error) {
     console.error('Error initializing Telegram WebApp:', error);
   }
 } else if (shouldUseGuestMode()) {
-  console.log('Guest mode - skipping Telegram WebApp initialization');
+  // Guest mode - skipping Telegram WebApp initialization (removed in production)
 } else {
-  console.log('Telegram WebApp not available - running in fallback mode');
+  // Telegram WebApp not available - running in fallback mode (removed in production)
 }
 
 const root = ReactDOM.createRoot(
@@ -43,10 +43,8 @@ const root = ReactDOM.createRoot(
 
 root.render(
   <React.StrictMode>
-    <Suspense fallback={<LoadingScreen mode="simple" />}>
-      <I18nProvider>
-        <App />
-      </I18nProvider>
-    </Suspense>
+    <I18nProvider>
+      <App />
+    </I18nProvider>
   </React.StrictMode>
-); 
+);

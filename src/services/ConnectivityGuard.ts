@@ -2,6 +2,7 @@ import { useUIStore } from '@/store/uiStore';
 
 class ConnectivityGuardImpl {
   private listenersAttached = false;
+  private boundUpdate: (() => void) | null = null;
 
   private isForcedOffline(): boolean {
     if (typeof window === 'undefined') return false;
@@ -28,12 +29,22 @@ class ConnectivityGuardImpl {
 
   public start(): void {
     if (this.listenersAttached || typeof window === 'undefined') return;
-    this.listenersAttached = true;
-    const update = () => this.ensureOnline();
-    window.addEventListener('online', update);
-    window.addEventListener('offline', update);
+  this.listenersAttached = true;
+  this.boundUpdate = () => this.ensureOnline();
+  window.addEventListener('online', this.boundUpdate);
+  window.addEventListener('offline', this.boundUpdate);
     // initial sync
     this.ensureOnline();
+  }
+
+  public stop(): void {
+    if (!this.listenersAttached || typeof window === 'undefined') return;
+    if (this.boundUpdate) {
+      window.removeEventListener('online', this.boundUpdate);
+      window.removeEventListener('offline', this.boundUpdate);
+      this.boundUpdate = null;
+    }
+    this.listenersAttached = false;
   }
 }
 

@@ -26,14 +26,7 @@
     align-items: center;
 }
 
-.errorWrapper {
-  display: flex
-;
-  flex-direction: column;
-  gap: 12px;
-  width: 100%;
-  align-items: center;
-}
+/* .errorWrapper - removed (unused in HomePage) */
 
 /* Live status bar */
 .liveStatusBar {
@@ -116,9 +109,7 @@
     position: relative;
 }
 
-.freeCaseViewport { display: none; }
-
-.freeCaseTrack { display: none; }
+/* .freeCaseViewport, .freeCaseTrack - removed (unused) */
 
 .freeCaseSlide {
     padding: 12px;
@@ -278,6 +269,8 @@
 }
 
 /* Offline preloader styles */
+/* loadingContainer/loadingSpinner/loadingText - removed (replaced by item-level skeletons) */
+/* Offline/initial loading spinner (matches profile style) */
 .loadingContainer {
   display: flex
 ;
@@ -317,6 +310,10 @@
   width: 100%;
   position: relative;
   margin-top: 8px;
+  display: flex
+;
+    justify-content: space-between;
+    align-items: center;
 }
 
 .errorMessageContent {
@@ -326,9 +323,6 @@
 }
 
 .errorClose {
-  position: absolute;
-  top: 10px;
-  right: 12px;
   background: transparent;
   border: none;
   color: #ff3b30;

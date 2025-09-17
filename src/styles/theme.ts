@@ -11,3 +11,27 @@ export const THEME_COLORS = {
   surfaceTransparent: 'rgba(255, 255, 255, 0.05)',
   overlay: 'rgba(0, 0, 0, 0.8)',
 } as const; 
+
+export const THEME = {
+  colors: {
+    ...THEME_COLORS,
+    rarity: {
+      common: '#5067E5',
+      rare: '#C52F81',
+      epic: '#C03A42',
+      legendary: '#DC904B'
+    }
+  },
+  spacing: {
+    xs: 4,
+    sm: 8,
+    md: 12,
+    lg: 16,
+    xl: 24
+  },
+  radius: {
+    sm: 6,
+    md: 10,
+    lg: 14
+  }
+} as const;

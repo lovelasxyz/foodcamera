@@ -20,12 +20,12 @@ class TelegramAuthService {
    */
   getTelegramUser(): TelegramWebAppUser | null {
     if (!this.webApp) {
-      console.warn('Telegram WebApp is not available');
+      if (process.env.NODE_ENV === 'development') console.warn('Telegram WebApp is not available');
       return null;
     }
 
     if (!this.webApp.initDataUnsafe?.user) {
-      console.warn('No user data in initDataUnsafe');
+      if (process.env.NODE_ENV === 'development') console.warn('No user data in initDataUnsafe');
       return null;
     }
 
@@ -33,7 +33,7 @@ class TelegramAuthService {
     
     // Проверяем минимальную валидность данных пользователя
     if (!user.id || !user.first_name) {
-      console.warn('Invalid user data:', user);
+      if (process.env.NODE_ENV === 'development') console.warn('Invalid user data:', user);
       return null;
     }
 
@@ -107,13 +107,13 @@ class TelegramAuthService {
    */
   async authenticate(): Promise<ParsedTelegramUser | null> {
     if (!this.isAvailable()) {
-      console.warn('Telegram WebApp is not available');
+      if (process.env.NODE_ENV === 'development') console.warn('Telegram WebApp is not available');
       return null;
     }
 
     const telegramUser = this.getTelegramUser();
     if (!telegramUser) {
-      console.warn('No user data available from Telegram WebApp');
+      if (process.env.NODE_ENV === 'development') console.warn('No user data available from Telegram WebApp');
       return null;
     }
 

@@ -7,18 +7,26 @@ import { SHARD_PRODUCTS } from '@/utils/constants';
 import { Modal } from '@/components/ui/Modal';
 import { PrizeModal } from '@/components/game/PrizeCard';
 import { DepositModal } from '@/components/profile/DepositModal';
+import { ProfileHeader } from './components/ProfileHeader';
+import { WalletCard } from './components/WalletCard';
+import { InviteBanner } from './components/InviteBanner';
+import { BalanceSection } from './components/BalanceSection';
+import { InventorySection } from './components/InventorySection';
+import { ShardProgress } from './components/ShardProgress';
 import { PrizeItem } from '@/domain/items/PrizeItem';
 import { ASSETS } from '@/constants/assets';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { useI18n } from '@/i18n';
+// import { InventoryItemSkeleton } from '@/components/profile/InventoryItemSkeleton';
+// import { InventoryGrid } from '@/components/widgets/InventoryGrid/InventoryGrid';
 
 export const ProfilePage: React.FC = () => {
   const { t } = useI18n();
-  const { user, disconnectWallet, craftFromShards, sellInventoryItem, receiveInventoryItem } = useUserStore();
+  const { user, disconnectWallet, craftFromShards, sellInventoryItem, receiveInventoryItem, isLoading, loadInventory, inventoryFetched } = useUserStore();
   const { setActivePage, isModalOpen, modalType, openModal, closeModal } = useUIStore();
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
   const [selectedShardKey, setSelectedShardKey] = useState<string | null>(null);
-  const [showOnlyAvailable, setShowOnlyAvailable] = useState<boolean>(true);
+  const [showOnlyAvailable, setShowOnlyAvailable] = useState<boolean>(false);
   const isOnline = useOnlineStatus();
   const [hideInventoryError, setHideInventoryError] = useState<boolean>(false);
   const [inventoryOfflinePhase, setInventoryOfflinePhase] = useState<'idle' | 'loading' | 'error'>('idle');
@@ -33,12 +41,18 @@ export const ProfilePage: React.FC = () => {
   React.useEffect(() => {
     if (!isOnline) {
       setInventoryOfflinePhase('loading');
-      const t = setTimeout(() => setInventoryOfflinePhase('error'), 800);
+      const t = window.setTimeout(() => setInventoryOfflinePhase('error'), 800);
       return () => clearTimeout(t);
     }
     // Вернулись онлайн — сброс
     setHideInventoryError(false);
     setInventoryOfflinePhase('idle');
+    // подгрузим инвентарь только один раз при первом заходе
+    if (!inventoryFetched && !isLoading) {
+      // На слабых девайсах даём кадр отрисоваться
+      const id = window.requestIdleCallback ? window.requestIdleCallback(() => loadInventory()) : window.setTimeout(() => loadInventory(), 0);
+      return () => { if (typeof id === 'number') clearTimeout(id); };
+    }
   }, [isOnline]);
   const selectedInventoryItem = useMemo(() => user.inventory.find(i => i.id === selectedItemId) || null, [user.inventory, selectedItemId]);
 
@@ -94,163 +108,51 @@ export const ProfilePage: React.FC = () => {
     <div className={styles.profileContainer}>
     <div className={styles.profilePage}>
       {/* User Profile Section */}
-      <div className={styles.userProfile}>
-        <div className={styles.profileInfo}>
-        <div className={styles.avatars}>
-          <img 
-            src={user.avatar} 
-            alt="User avatar" 
-            className={styles.profileAvatar} 
-          /> </div> 
-          <div className={styles.profileDetails}>
-            <div className={styles.profileName}>{user.name}</div>
-            <div className={styles.profileId}>#{user.id}</div>
-          </div>
-        </div>
-      </div>
+      <ProfileHeader user={user} />
 
-      {/* Balance Section */}
-      <div className={styles.balanceContainer}>
-        <div className={styles.balanceInfo}>
-          <div className={styles.balanceLabel}>{t('common.balance')}</div>
-          <div className={styles.balanceValue}>
-            {user.balance.toFixed(2)}
-            
-             <img 
-                      src={ASSETS.IMAGES.TON} 
-                      alt="TON" 
-                      style={{ width: '20px', height: '20px' }}
-             />
-          </div>
-        </div>
-        <Button className={styles.depositButton} onClick={() => openModal('deposit')}>
-          {t('common.deposit')}
-        </Button>
-      </div>
+      <BalanceSection balance={user.balance} onDeposit={() => openModal('deposit')} />
 
       {/* Wallet Section */}
-      <div className={styles.walletContainer}>
-        <div className={styles.walletInfo}>
-          <div className={styles.walletLabel}>{t('common.connectedWallet')}</div>
-          <div className={styles.walletAddress}>
-            {user.wallet ? user.wallet : 'UQDKd...hxwP'}
-          </div>
-        </div>
-        <Button 
-          className={styles.disconnectButton}
-          onClick={disconnectWallet}
-        >
-          {t('common.disconnect')}
-        </Button>
-      </div>
+      <WalletCard address={user.wallet} onDisconnect={disconnectWallet} label={t('common.connectedWallet')} disconnectText={t('common.disconnect')} />
 
       {/* Deposit Modal */}
       <DepositModal isOpen={isModalOpen && modalType === 'deposit'} onClose={closeModal} />
 
       {/* Invite Friends Section */}
-      <div className={styles.inviteContainer}>
-        <img
-          src={ASSETS.IMAGES.LIGHTNING_PNG}
-          alt="Decorative lightning"
-          className={styles.inviteLightning}
-        />
-        <div className={styles.inviteContent}>
-        <img 
-                src={ASSETS.ICONS.INVITE} 
-                style={{ width: '35px', height: '35px' }}
-              />
-          <div className={styles.inviteText}>{t('common.inviteTitle')}</div>
-        </div>
-        <Button className={styles.inviteButton}>
-          {t('common.inviteCta')}
-        </Button>
-      </div>
+      <InviteBanner title={t('common.inviteTitle')} cta={t('common.inviteCta')} />
 
-      {/* Inventory Section */}
+      {/* Inventory Section: hide in offline mode, show only error and retry */}
       <div className={styles.inventoryContainer}>
-        <div className={styles.inventoryHeader}>
-          <div className={styles.inventoryLabel}>{t('common.inventory')}</div>
-          <Button className={styles.inventoryButton} onClick={() => setShowOnlyAvailable((v) => !v)}>
-            {showOnlyAvailable ? t('common.showAll') : t('common.showAvailable')}
-          </Button>
-        </div>
-        
-        <div className={styles.inventorySection}>
-          {inventoryOfflinePhase === 'loading' && (
-            <div className={styles.inventoryLoadingContainer}>
-              <div className={styles.inventoryLoadingSpinner}></div>
-              <div className={styles.inventoryLoadingText}>{t('common.loadingInventory')}</div>
-            </div>
-          )}
-          {inventoryOfflinePhase === 'error' && (
-            <div className={styles.errorWrapper}>
-              {!hideInventoryError && (
-                <div className={styles.errorMessageContainer}>
-                  <div className={styles.errorMessageContent}>{t('common.offlineFeatures')}</div>
-                  <button className={styles.errorClose} onClick={() => setHideInventoryError(true)}>×</button>
-                </div>
-              )}
-              <div className={styles.errorState}>
-                <div className={styles.errorMessage}>{t('common.failedToLoad')}</div>
-                <button className={styles.retryButton} onClick={() => window.location.reload()}>
-                  <div className={styles.buttonLabel}>{t('common.tryAgain')}</div>
-                </button>
+        {inventoryOfflinePhase === 'error' && (
+          <div className={styles.errorWrapper}>
+            {!hideInventoryError && (
+              <div className={styles.errorMessageContainer}>
+                <div className={styles.errorMessageContent}>{t('common.offlineFeatures')}</div>
+                <button className={styles.errorClose} onClick={() => setHideInventoryError(true)}>×</button>
               </div>
+            )}
+            <div className={styles.errorState}>
+              <div className={styles.errorMessage}>{t('common.failedToLoad')}</div>
+              <button className={styles.retryButton} onClick={() => window.location.reload()}>
+                <div className={styles.buttonLabel}>{t('common.tryAgain')}</div>
+              </button>
             </div>
-          )}
-          {inventoryOfflinePhase === 'idle' && combinedInventory.length === 0 ? (
-            <div className={styles.emptyInventory}>
-              <p className={styles.titleInventory}>{t('common.emptyNoCases')}</p>
-              <Button className={styles.openCasesButton} onClick={() => setActivePage('main')}>
-                {t('common.emptyOpenCases')}
-              </Button>
-            </div>
-          ) : inventoryOfflinePhase === 'idle' ? (
-            <>
-              {/* Прогресс осколков */}
-              <div className={styles.inventoryGrid}>
-                {visibleInventory.map((card) => {
-                  if (card.kind === 'item') {
-                    const isSold = card.item.status === 'sold';
-                    const isActive = card.item.status === 'active';
-                    const isDisabled = !isActive; // disable for sold and received
-                    const statusLabel = isSold ? t('common.sold') : isActive ? t('common.active') : t('common.received');
-                    return (
-                      <div 
-                        key={card.id} 
-                        className={`${styles.inventoryItem} ${isDisabled ? '' : ''}`} 
-                        data-rarity={(card.item.prize?.rarity) as any}
-                        onClick={() => { if (isActive) setSelectedItemId(card.id); }} 
-                        style={{ cursor: isDisabled ? 'not-allowed' : 'pointer' }}
-                      >
-                        <img src={card.image} alt="item" className={styles.itemImage} />
-                        <div className={`${styles.hint} ${styles.prizeHint}`}>
-                          <div className={styles.coinWrapper}>
-                            <div className={`${styles.coin} ${styles.small}`}>
-                              <img className={styles.coinImage} src={ASSETS.IMAGES.TON} alt="Coin" />
-                            </div>
-                          </div>
-                          <div className={styles.price}>{card.price.toFixed(2)}</div>
-                        </div>
-                        <div className={`${styles.statusBadge} ${isSold ? styles.statusSold : (isActive ? styles.statusActive : styles.statusReceived)}`}>
-                          {statusLabel}
-                        </div>
-                      </div>
-                    );
-                  }
-                  return (
-                    <div key={card.id} className={styles.inventoryItem} onClick={() => setSelectedShardKey(card.shardKey)} style={{ cursor: 'pointer' }}>
-                      <img src={card.image} alt="shard" className={styles.itemImage} />
-                      <div className={styles.shardBadge}>
-                        {t('common.ofPattern', { count: card.count, total: card.required })}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </>
-          ) : null}
-        </div>
+          </div>
+        )}
+        {isOnline && (
+          <InventorySection
+            combined={combinedInventory as any}
+            visible={visibleInventory as any}
+            isOnline={isOnline}
+            isLoading={isLoading}
+            inventoryFetched={inventoryFetched}
+            showOnlyAvailable={showOnlyAvailable}
+            setShowOnlyAvailable={(v) => setShowOnlyAvailable(v)}
+            setActivePage={setActivePage}
+            onSelectItem={(id) => setSelectedItemId(id)}
+            onSelectShard={(key) => setSelectedShardKey(key)}
+          />
+        )}
       </div>
 
       {/* Modal: Shard crafting */}
@@ -260,25 +162,12 @@ export const ProfilePage: React.FC = () => {
         title={t('modal.craftTitle')}
         size="md"
       >
-        {selectedShardKey && (
-          <div style={{ width: '100%' }}>
-            {(() => {
-              const key = selectedShardKey;
-              const cfg = SHARD_PRODUCTS[key as keyof typeof SHARD_PRODUCTS];
-              const count = user.shards?.[key] || 0;
-              const canCraft = !!cfg && count >= cfg.required;
-              return (
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
-                  <img src={cfg?.shardImage || ASSETS.SHARDS.GIFT_SHARD} alt={`${key} shard`} style={{ width: 160, height: 160, objectFit: 'contain' }} />
-                  <div style={{ fontWeight: 700 }}>{count}/{cfg?.required ?? 10}</div>
-                  <Button className={styles.inventoryButton} onClick={() => { if (canCraft) { craftFromShards(key, 'Craft'); setSelectedShardKey(null); } }}>
-                    {canCraft ? t('modal.craft') : t('modal.needMoreShards')}
-                  </Button>
-                </div>
-              );
-            })()}
-          </div>
-        )}
+        <ShardProgress
+          selectedShardKey={selectedShardKey}
+          setSelectedShardKey={setSelectedShardKey}
+          shards={user.shards || {}}
+          onCraft={(key) => craftFromShards(key, 'Craft')}
+        />
       </Modal>
 
       {/* Modal: Inventory item actions */}

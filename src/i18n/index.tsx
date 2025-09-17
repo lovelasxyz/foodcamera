@@ -128,13 +128,13 @@ const ru: TranslationDict = {
     deposit: 'Пополнить',
     connectedWallet: 'Подключённый кошелёк:',
     disconnect: 'Отключить',
-    inviteTitle: 'Пригласить друзей',
+    inviteTitle: 'Пригласи друзей',
     inviteCta: 'Пригласить',
     inventory: 'Инвентарь:',
     showAll: 'Показать все',
     showAvailable: 'Показать доступные',
     loadingInventory: 'Загружаем ваш инвентарь...',
-    offlineFeatures: 'Вы офлайн. Некоторые функции недоступны.',
+    offlineFeatures: 'Упс! Нет интернета.',
     failedToLoad: 'Не удалось загрузить элементы. Попробуйте ещё раз.',
     tryAgain: 'Повторить',
     emptyNoCases: 'Вы ещё не открывали кейсы',
@@ -186,7 +186,7 @@ const ru: TranslationDict = {
     successSubtitle: 'Ваш баланс обновлён'
   },
   home: {
-    loadingCases: 'Загрузка данных кейсов...'
+    loadingCases: 'Загружаем ваши кейсы...'
   },
   success: {
     title: 'Готово',

@@ -75,23 +75,29 @@ export function useDominantColor(imageUrl?: string): { colorHex: string | null; 
 				setColorHex(cached);
 			}
 		} catch {}
-		img.addEventListener('load', () => {
+
+		const onLoad = () => {
 			if (cancelled) return;
 			const color = getDominantColorFromImage(img);
 			setColorHex(color);
 			if (color) {
-				try {
-					localStorage.setItem(storageKey, color);
-				} catch {}
+				try { localStorage.setItem(storageKey, color); } catch {}
 			}
-		});
-		img.addEventListener('error', () => {
+		};
+
+		const onError = () => {
 			if (cancelled) return;
 			setColorHex(null);
-		});
+		};
+
+		img.addEventListener('load', onLoad);
+		img.addEventListener('error', onError);
 
 		return () => {
 			cancelled = true;
+			img.removeEventListener('load', onLoad);
+			img.removeEventListener('error', onError);
+			try { img.src = ''; } catch {}
 		};
 	}, [imageUrl]);
 

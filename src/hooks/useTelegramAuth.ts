@@ -23,14 +23,14 @@ export const useTelegramAuth = (): UseTelegramAuthReturn => {
   const authenticate = useCallback(async () => {
     // В guest режиме не пытаемся авторизоваться
     if (shouldUseGuestMode()) {
-      console.log('Guest mode - skipping Telegram authentication');
+      if (process.env.NODE_ENV === 'development') console.log('Guest mode - skipping Telegram authentication');
       setStatus('idle');
       return;
     }
 
     if (!isWebAppAvailable) {
       // Если Telegram WebApp недоступен, просто завершаем без ошибки
-      console.log('Telegram WebApp is not available - running in fallback mode');
+      if (process.env.NODE_ENV === 'development') console.log('Telegram WebApp is not available - running in fallback mode');
       setStatus('idle');
       return;
     }
@@ -43,19 +43,19 @@ export const useTelegramAuth = (): UseTelegramAuthReturn => {
       
       if (authenticatedUser) {
         setUser(authenticatedUser);
-        setStatus('authenticated');
-        console.log('User authenticated successfully:', authenticatedUser);
+  setStatus('authenticated');
+  if (process.env.NODE_ENV === 'development') console.log('User authenticated successfully:', authenticatedUser);
       } else {
-        // Если нет данных пользователя, но WebApp доступен, это ошибка
-        console.warn('No user data available from Telegram WebApp');
+  // Если нет данных пользователя, но WebApp доступен, это ошибка
+  if (process.env.NODE_ENV === 'development') console.warn('No user data available from Telegram WebApp');
         setStatus('error');
         setError('No Telegram initialization data available');
       }
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Authentication failed';
+  const errorMessage = err instanceof Error ? err.message : 'Authentication failed';
       setStatus('error');
       setError(errorMessage);
-      console.error('Authentication error:', err);
+  if (process.env.NODE_ENV === 'development') console.error('Authentication error:', err);
     }
   }, [isWebAppAvailable]);
 

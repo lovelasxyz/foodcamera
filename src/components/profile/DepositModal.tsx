@@ -9,6 +9,8 @@ import { ErrorBanner } from '@/components/ui/ErrorBanner/ErrorBanner';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { ConnectivityGuard } from '@/services/ConnectivityGuard';
 import { useI18n } from '@/i18n';
+import { DomainEventBus } from '@/domain/events/EventBus';
+import { DomainEventNames } from '@/domain/events/DomainEvents';
 
 type DepositMethod = 'select' | 'ton' | 'cryptobot' | 'gifts';
 
@@ -77,6 +79,7 @@ export const DepositModal: React.FC<DepositModalProps> = ({ isOpen, onClose }) =
     const percentBonus = getBonusMultiplier();
     const total = numericAmount + flatBonus + numericAmount * percentBonus;
     updateBalance(total);
+    DomainEventBus.emit(DomainEventNames.DepositMade, { type: 'DepositMade', amount: total, method, timestamp: Date.now() });
     setShowSuccess(true);
     onClose();
   };

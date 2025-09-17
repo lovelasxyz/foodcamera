@@ -82,7 +82,7 @@ const useSoundEffects = () => {
     try {
       sounds[soundType]();
     } catch (error) {
-      console.log('Sound not supported');
+      if (process.env.NODE_ENV === 'development') console.log('Sound not supported');
     }
   };
 

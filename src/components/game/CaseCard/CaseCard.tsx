@@ -8,6 +8,7 @@ import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { useI18n } from '@/i18n';
 
 import styles from './CaseCard.module.css';
+import { ProgressiveImg } from '@/components/ui/ProgressiveImg';
 
 interface CaseCardProps {
   caseData: Case;
@@ -39,16 +40,8 @@ export const CaseCard: React.FC<CaseCardProps> = ({ caseData }) => {
     return (
       <div className={`${styles.caseCard} ${styles.freeCaseCard} ${!isOnline ? styles.disabled : ''}`} onClick={handleOpenCase}>
         <div className={styles.freeCaseImageContainer}>
-          <img 
-            className={styles.freeCaseTextSvg} 
-            src={ASSETS.IMAGES.FREE_CASE_LABEL} 
-            alt={t('messages.freeCase')}
-          />
-          <img 
-            className={styles.freeCaseImage} 
-            src={caseData.image} 
-            alt={t('messages.freeCase')}
-          />
+          <img className={styles.freeCaseTextSvg} src={ASSETS.IMAGES.FREE_CASE_LABEL} alt={t('messages.freeCase')} />
+          <ProgressiveImg className={styles.freeCaseImage} src={caseData.image} cacheKey={String(caseData.id)} alt={t('messages.freeCase')} />
         </div>
         <div className={styles.freeCaseFooter}>
           <div className={styles.freeCaseLabel}>{t('messages.freeCase')}</div>
@@ -70,11 +63,7 @@ export const CaseCard: React.FC<CaseCardProps> = ({ caseData }) => {
             <div className={styles.caseNewLabel}>NEW</div>
           </div>
         )}
-        <img 
-          className={styles.caseImage} 
-          src={caseData.image} 
-          alt="Case Image"
-        />
+        <ProgressiveImg className={styles.caseImage} src={caseData.image} cacheKey={String(caseData.id)} alt="Case Image" />
       </div>
       <div className={styles.caseFooter}>
         <div className={styles.casePrice}>{caseData.price}</div>

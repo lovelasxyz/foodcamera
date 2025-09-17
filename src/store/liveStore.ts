@@ -1,7 +1,5 @@
 import { create } from 'zustand';
-import { ASSETS } from '@/constants/assets';
-
-export type LiveRarity = 'common' | 'rare' | 'epic' | 'legendary';
+import { baseMock, resolveRarity, type LiveRarity } from '@/mocks/live.mock';
 
 export interface LiveItem {
   id: number;
@@ -12,38 +10,6 @@ export interface LiveItem {
   rarity: LiveRarity;
 }
 
-// Базовые предметы (без id/userName/rarity)
-const baseMock: Array<{ image: string; name: string; price: number }> = [
-  { image: ASSETS.IMAGES.FROG, name: 'Mystic Frog', price: 1562 },
-  { image: ASSETS.IMAGES.DIAMOND, name: 'Diamond', price: 48.15 },
-  { image: ASSETS.IMAGES.DRAGON, name: 'Dragon', price: 89.99 },
-  { image: ASSETS.IMAGES.WIZARD_HAT, name: 'Wizard Hat', price: 35.20 },
-  { image: ASSETS.IMAGES.HELMET, name: 'Knight Helmet', price: 75.50 },
-  { image: ASSETS.IMAGES.SCROLL, name: 'Ancient Scroll', price: 120.00 },
-  { image: ASSETS.IMAGES.TEDDY, name: 'Cursed Teddy', price: 66.60 },
-  { image: ASSETS.IMAGES.GIFT, name: 'Mystery Gift', price: 25.00 },
-  { image: ASSETS.IMAGES.LIGHTNING, name: 'Lightning', price: 42.50 },
-  { image: ASSETS.IMAGES.BURGER, name: 'Burger', price: 12.3 },
-  { image: ASSETS.IMAGES.TON, name: 'TON', price: 5.5 },
-  { image: ASSETS.IMAGES.TOKEN, name: 'TON', price: 15.75 },
-];
-
-const RARITY_BY_IMAGE: Record<string, LiveRarity> = {
-  [ASSETS.IMAGES.TEDDY]: 'common',
-  [ASSETS.IMAGES.BURGER]: 'common',
-  [ASSETS.IMAGES.SCROLL]: 'rare',
-  [ASSETS.IMAGES.WIZARD_HAT]: 'rare',
-  [ASSETS.IMAGES.HELMET]: 'rare',
-  [ASSETS.IMAGES.GIFT]: 'rare',
-  [ASSETS.IMAGES.DIAMOND]: 'epic',
-  [ASSETS.IMAGES.DRAGON]: 'epic',
-  [ASSETS.IMAGES.LIGHTNING]: 'epic',
-  [ASSETS.IMAGES.FROG]: 'legendary',
-  [ASSETS.IMAGES.TON]: 'common',
-};
-
-const resolveRarity = (image: string): LiveRarity => RARITY_BY_IMAGE[image] || 'common';
-
 interface LiveState {
   items: LiveItem[];
   lastAddedId: number | null;
@@ -52,12 +18,13 @@ interface LiveState {
 
 interface LiveActions {
   init: () => void;
+  stop: () => void;
 }
 
-const MAX_VISIBLE = 18;
+const MAX_VISIBLE = 30;
 
 class LiveFeed {
-  private timerId: number | null = null;
+  private timerId: ReturnType<typeof setInterval> | null = null;
   private readonly intervalMs: number;
   private readonly setState: (partial: Partial<LiveState>) => void;
   private readonly getState: () => LiveState;
@@ -75,7 +42,15 @@ class LiveFeed {
       this.setState({ items: initialItems, started: true });
     }
     if (this.timerId == null) {
-      this.timerId = setInterval(() => this.addRandomItem(), this.intervalMs) as unknown as number;
+      this.timerId = setInterval(() => this.addRandomItem(), this.intervalMs);
+    }
+  }
+
+  // Stop the feed and clear timer
+  public stop(): void {
+    if (this.timerId != null) {
+      clearInterval(this.timerId);
+      this.timerId = null;
     }
   }
 
@@ -119,6 +94,7 @@ export const useLiveStore = create<LiveState & LiveActions>((set, get) => {
     lastAddedId: null,
     started: false,
     init: () => feed.ensureStarted(),
+    stop: () => feed.stop(),
   };
 });
 

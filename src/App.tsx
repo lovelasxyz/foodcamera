@@ -1,6 +1,6 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { BrowserRouter as Router } from 'react-router-dom';
 import { useUIStore } from '@/store/uiStore';
+import { useGameStore } from '@/store/gameStore';
 import { useUserStore } from '@/store/userStore';
 import { useTelegramWebApp } from '@/hooks/useTelegramWebApp';
 import { useTelegramAuth } from '@/hooks/useTelegramAuth';
@@ -11,11 +11,13 @@ import { BottomNavigation } from '@/components/layout/BottomNavigation';
 import { shouldUseGuestMode } from '@/utils/environment';
 import './App.css';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
-import { ConnectivityGuard } from '@/services/ConnectivityGuard';
+import AppInitializer from '@/application/AppInitializer';
+import ErrorBoundary from '@/components/ui/ErrorBoundary';
 
-const AppContent: React.FC = () => {
+const AppContentInner: React.FC = () => {
   const { activePage } = useUIStore();
-  const { setTelegramUser } = useUserStore();
+  const { closeCase } = useGameStore();
+  const { setTelegramUser, loadUser } = useUserStore();
   const { isExpanded, isAvailable } = useTelegramWebApp();
   const { user: telegramUser, status: authStatus, isWebAppAvailable } = useTelegramAuth();
   useOnlineStatus();
@@ -24,11 +26,17 @@ const AppContent: React.FC = () => {
   const scrollPositionsRef = useRef<Record<string, number>>({});
   const previousPageRef = useRef<string | null>(null);
 
+  // Close case when switching between main sections
+  useEffect(() => {
+    if (activePage === 'profile' || activePage === 'main') {
+      try { closeCase(); } catch {}
+    }
+  }, [activePage, closeCase]);
+
   // Обрабатываем авторизацию пользователя
   useEffect(() => {
     if (shouldUseGuestMode()) {
       // В guest режиме показываем быстрый загрузочный экран
-      console.log('Running in guest mode (development or no Telegram WebApp)');
       setTimeout(() => {
         setInitializationComplete(true);
         setShowLoadingPage(false);
@@ -55,7 +63,7 @@ const AppContent: React.FC = () => {
       // Если статус idle более 3 секунд, показываем приложение
       const timeoutId = setTimeout(() => {
         if (!initializationComplete) {
-          console.log('Auth timeout - proceeding without Telegram auth');
+          if (process.env.NODE_ENV === 'development') console.log('Auth timeout - proceeding without Telegram auth');
           setInitializationComplete(true);
           setShowLoadingPage(false);
         }
@@ -65,7 +73,20 @@ const AppContent: React.FC = () => {
     }
   }, [telegramUser, authStatus, setTelegramUser, isWebAppAvailable, initializationComplete]);
 
-  useEffect(() => { ConnectivityGuard.start(); }, []);
+  useEffect(() => {
+    const initializer = new AppInitializer();
+    initializer.start();
+    return () => {
+      try { initializer.stop(); } catch {}
+    };
+  }, []);
+
+  // Initial user load in guest mode
+  useEffect(() => {
+    if (shouldUseGuestMode()) {
+      loadUser();
+    }
+  }, [loadUser]);
 
   // Сохраняем и восстанавливаем позицию скролла отдельно для каждой страницы
   useLayoutEffect(() => {
@@ -100,6 +121,7 @@ const AppContent: React.FC = () => {
     );
   }
 
+
   const renderPage = () => {
     switch (activePage) {
       case 'main':
@@ -127,9 +149,9 @@ const AppContent: React.FC = () => {
 
 const App: React.FC = () => {
   return (
-    <Router>
-      <AppContent />
-    </Router>
+    <ErrorBoundary>
+      <AppContentInner />
+    </ErrorBoundary>
   );
 };
 
