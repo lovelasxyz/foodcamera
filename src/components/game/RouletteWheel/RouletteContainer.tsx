@@ -30,8 +30,9 @@ export const RouletteContainer: React.FC = () => {
   React.useEffect(() => {
     if (!currentCase) return;
     const prizeImages = currentCase.items.map((p) => p.image);
-    imageCache.preload([...prizeImages, ASSETS.IMAGES.TON, ASSETS.IMAGES.UNION], { concurrency: 3 });
-  }, [currentCase]);
+    // Preload in background; do not block render
+    imageCache.preload([...prizeImages, ASSETS.IMAGES.TON, ASSETS.IMAGES.UNION], { concurrency: 4, force: true });
+  }, [currentCase?.id]);
 
   const handleSpin = () => api.handleSpin(rouletteItems.length);
   const handleDepositRedirect = () => {
@@ -44,6 +45,8 @@ export const RouletteContainer: React.FC = () => {
     if (!currentCase) return [];
     return [...currentCase.items].sort((a, b) => b.price - a.price);
   }, [currentCase]);
+
+  if (!currentCase) return null;
 
   return (
     <RouletteView

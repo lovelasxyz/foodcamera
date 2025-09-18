@@ -5,6 +5,8 @@
 type PreloadOptions = {
 	concurrency?: number;
 	priority?: 'high' | 'normal' | 'low';
+	// When true, re-fetch even if URL was previously loaded/cached
+	force?: boolean;
 };
 
 class ImageCacheService {
@@ -41,8 +43,8 @@ class ImageCacheService {
 		const worker = async () => {
 			while (index < unique.length) {
 				const current = unique[index++];
-				if (this.loadedUrls.has(current)) continue;
-				await this.preloadOne(current);
+				if (!options.force && this.loadedUrls.has(current)) continue;
+				await this.preloadOne(current, options.force === true);
 			}
 		};
 
@@ -50,14 +52,23 @@ class ImageCacheService {
 		return Promise.all(workers).then(() => void 0);
 	}
 
-	private preloadOne(url: string): Promise<void> {
-		if (this.loadedUrls.has(url)) return Promise.resolve();
+	private preloadOne(url: string, force = false): Promise<void> {
+		if (!force && this.loadedUrls.has(url)) return Promise.resolve();
 		const existing = this.inFlight.get(url);
 		if (existing) return existing;
 
+		if (force) {
+			const oldObj = this.objectUrls.get(url);
+			if (oldObj) {
+				URL.revokeObjectURL(oldObj);
+				this.objectUrls.delete(url);
+			}
+			this.loadedUrls.delete(url);
+		}
+
 		const p = (async () => {
 			try {
-				const resp = await fetch(url, { mode: 'cors' });
+				const resp = await fetch(url, { mode: 'cors', cache: force ? 'reload' : 'default' });
 				if (!resp.ok) throw new Error('Network response not ok');
 				const blob = await resp.blob();
 				const objectUrl = URL.createObjectURL(blob);

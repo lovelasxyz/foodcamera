@@ -1,6 +1,7 @@
 import React from 'react';
 import styles from '../RouletteWheel.module.css';
 import { ASSETS } from '@/constants/assets';
+import { ProgressiveImg } from '@/components/ui/ProgressiveImg';
 
 interface PrizeDisplayProps {
   name?: string;
@@ -56,7 +57,7 @@ export const PrizeDisplay: React.FC<PrizeDisplayProps> = ({
             padding: '20px',
             position: 'relative'
           }}>
-            <img 
+            <ProgressiveImg 
               src={image} 
               alt={name || 'Prize'}
               style={{ 
@@ -64,6 +65,7 @@ export const PrizeDisplay: React.FC<PrizeDisplayProps> = ({
                 height: '120px', 
                 objectFit: 'contain',
               }}
+              cacheKey={String(price ?? '')}
             />
           </div>
         )}

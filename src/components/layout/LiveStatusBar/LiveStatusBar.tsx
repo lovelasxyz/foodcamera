@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import styles from './LiveStatusBar.module.css';
 import { useLiveStore } from '@/store/liveStore';
+import { ProgressiveImg } from '@/components/ui/ProgressiveImg';
 
 export const LiveStatusBar: React.FC = () => {
   const items = useLiveStore((s) => s.items);
@@ -128,14 +129,11 @@ export const LiveStatusBar: React.FC = () => {
             }}
           >
             <div className={styles.liveItemContent}>
-              <img 
+              <ProgressiveImg 
                 src={item.image} 
                 alt={item.name} 
                 className={styles.liveImage}
-                onError={(e) => {
-                  const target = e.target as HTMLImageElement;
-                  target.style.display = 'none';
-                }}
+                cacheKey={String(item.id)}
               />
             </div>
           </div>
