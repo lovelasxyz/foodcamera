@@ -12,6 +12,7 @@ import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { ConnectivityGuard } from '@/services/ConnectivityGuard';
 import { DomainEventBus } from '@/domain/events/EventBus';
 import { DomainEventNames } from '@/domain/events/DomainEvents';
+import { imageCache } from '@/services/ImageCache';
 
 export interface SpinLogicState {
   position: number;
@@ -91,6 +92,17 @@ export const useSpinLogic = (): [SpinLogicState, SpinLogicApi] => {
     if (!currentCase || isSpinning || clickLockRef.current) return;
     if (!isOnline) return;
     if (!spinUseCase.canAfford(currentCase, user.balance)) return;
+
+    // Preload images for roulette prizes to avoid flashes/missing images during spin animation
+    try {
+      const prizes: any[] = (currentCase as any).prizes ?? (currentCase as any).items ?? (currentCase as any).entries ?? [];
+      prizes.forEach((p) => {
+        const src = p?.image || p?.imageUrl || p?.icon || p?.img || p?.src;
+        if (src) imageCache.preload(src);
+      });
+    } catch (e) {
+      // ignore preload errors — shouldn't block spin
+    }
 
     clickLockRef.current = true;
     awardedRef.current = false;
