@@ -23,7 +23,7 @@
 
 .liveDot {
   color: var(--color-live, #23c265);
-  font-size: 10px;
+  font-size: 8px;
   font-weight: var(--font-weight-semibold);
   height: 10px;
   animation: pulse 2s infinite;
