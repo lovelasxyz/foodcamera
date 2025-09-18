@@ -68,7 +68,7 @@ class ImageCacheService {
 
 		const p = (async () => {
 			try {
-				const resp = await fetch(url, { mode: 'cors', cache: force ? 'reload' : 'default' });
+				const resp = await fetch(url, { mode: 'cors', cache: force ? 'reload' : 'force-cache' });
 				if (!resp.ok) throw new Error('Network response not ok');
 				const blob = await resp.blob();
 				const objectUrl = URL.createObjectURL(blob);

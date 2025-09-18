@@ -83,6 +83,8 @@ export const ProgressiveImg: React.FC<ProgressiveImgProps> = ({ previewSrc, src,
         {...rest}
         ref={imgRef}
         src={currentSrc || src}
+        loading={(rest as any).loading ?? 'lazy'}
+        decoding={(rest as any).decoding ?? 'async'}
         style={finalStyle}
         onLoad={() => {
           if (cacheId) loadedCache.add(cacheId);
