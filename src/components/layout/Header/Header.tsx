@@ -1,6 +1,8 @@
 import React from 'react';
 import { useUserStore } from '@/store/userStore';
 import { useUIStore } from '@/store/uiStore';
+import { useNavigate } from 'react-router-dom';
+import { ROUTES } from '@/utils/constants';
 import { shouldUseGuestMode } from '@/utils/environment';
 import styles from './Header.module.css';
 import { ASSETS } from '@/constants/assets';
@@ -9,17 +11,18 @@ import { useI18n } from '@/i18n';
 
 export const Header: React.FC = () => {
   const { user } = useUserStore();
-  const { setActivePage, openModal } = useUIStore();
+  const { /* setActivePage, */ openModal } = useUIStore();
+  const navigate = useNavigate();
   const isGuestMode = shouldUseGuestMode();
   const isOnline = useOnlineStatus();
   const { t } = useI18n();
 
   const handleProfileClick = () => {
-    setActivePage('profile');
+    navigate(ROUTES.profile);
   };
 
   const handleDepositClick = () => {
-    setActivePage('profile');
+    navigate(ROUTES.profile);
     openModal('deposit');
   };
 

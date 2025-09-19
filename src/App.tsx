@@ -4,8 +4,7 @@ import { useGameStore } from '@/store/gameStore';
 import { useUserStore } from '@/store/userStore';
 import { useTelegramWebApp } from '@/hooks/useTelegramWebApp';
 import { useTelegramAuth } from '@/hooks/useTelegramAuth';
-import { HomePage } from '@/pages/HomePage';
-import { ProfilePage } from '@/pages/ProfilePage';
+import AppRouter from '@/router/AppRouter';
 import { LoadingScreen } from '@/components/ui/LoadingScreen';
 import { BottomNavigation } from '@/components/layout/BottomNavigation';
 import { shouldUseGuestMode } from '@/utils/environment';
@@ -15,7 +14,9 @@ import AppInitializer from '@/application/AppInitializer';
 import ErrorBoundary from '@/components/ui/ErrorBoundary';
 
 const AppContentInner: React.FC = () => {
-  const { activePage } = useUIStore();
+  const { /* activePage unused when using router */ } = useUIStore();
+  const getRouteKey = () => window.location.pathname || '/';
+  const [routeKey, setRouteKey] = useState<string>(getRouteKey());
   const { closeCase } = useGameStore();
   const { setTelegramUser, loadUser } = useUserStore();
   const { isExpanded, isAvailable } = useTelegramWebApp();
@@ -28,10 +29,15 @@ const AppContentInner: React.FC = () => {
 
   // Close case when switching between main sections
   useEffect(() => {
-    if (activePage === 'profile' || activePage === 'main') {
+    // Close case when navigating to main sections (home/profile)
+    const key = getRouteKey();
+    if (key === '/' || key === '/profile') {
       try { closeCase(); } catch {}
     }
-  }, [activePage, closeCase]);
+    const onPop = () => setRouteKey(getRouteKey());
+    window.addEventListener('popstate', onPop);
+    return () => window.removeEventListener('popstate', onPop);
+  }, [closeCase]);
 
   // Обрабатываем авторизацию пользователя
   useEffect(() => {
@@ -98,14 +104,15 @@ const AppContentInner: React.FC = () => {
       scrollPositionsRef.current[prevKey] = currentScroll;
     }
     // Восстановить позицию для текущей страницы
-    const targetY = scrollPositionsRef.current[activePage] ?? 0;
+    const currentKey = getRouteKey();
+    const targetY = scrollPositionsRef.current[currentKey] ?? 0;
     if (container) {
       container.scrollTo({ top: targetY, behavior: 'auto' });
     } else {
       window.scrollTo({ top: targetY, behavior: 'auto' });
     }
-    previousPageRef.current = activePage;
-  }, [activePage]);
+    previousPageRef.current = currentKey;
+  }, [routeKey]);
 
   // Показываем LoadingPage если инициализация не завершена
   if (showLoadingPage) {
@@ -122,26 +129,11 @@ const AppContentInner: React.FC = () => {
   }
 
 
-  const renderPage = () => {
-    switch (activePage) {
-      case 'main':
-        return <HomePage />;
-      case 'profile':
-        return <ProfilePage />;
-      case 'weekly':
-        return <div className="page-container"><h2>Weekly Page</h2><p>Coming soon...</p></div>;
-      case 'jackpot':
-        return <div className="page-container"><h2>JackPot Page</h2><p>Coming soon...</p></div>;
-      case 'upgrade':
-        return <div className="page-container"><h2>Upgrade Page</h2><p>Coming soon...</p></div>;
-      default:
-        return <HomePage />;
-    }
-  };
+  // Routes are handled by React Router via `AppRouter`
 
   return (
     <div className={`app-container ${isAvailable ? 'tg-viewport' : ''} ${isExpanded ? 'tg-expanded' : ''}`}>
-      {renderPage()}
+  <AppRouter />
       <BottomNavigation />
     </div>
   );

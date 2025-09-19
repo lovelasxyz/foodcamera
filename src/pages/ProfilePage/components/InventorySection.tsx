@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/Button';
 import { ASSETS } from '@/constants/assets';
 import { PrizeItem } from '@/domain/items/PrizeItem';
 import { useI18n } from '@/i18n';
+import { useNavigate } from 'react-router-dom';
+import { ROUTES } from '@/utils/constants';
 
 interface InventoryItemDTO {
   kind: 'item' | 'shard';
@@ -26,7 +28,6 @@ interface InventorySectionProps {
   inventoryFetched?: boolean;
   showOnlyAvailable?: boolean;
   setShowOnlyAvailable: (v: boolean) => void;
-  setActivePage: (p: any) => void;
   onSelectItem: (id: string) => void;
   onSelectShard: (key: string) => void;
 }
@@ -39,11 +40,11 @@ export const InventorySection: React.FC<InventorySectionProps> = ({
   inventoryFetched,
   showOnlyAvailable = false,
   setShowOnlyAvailable,
-  setActivePage,
   onSelectItem,
   onSelectShard
 }) => {
   const { t } = useI18n();
+  const navigate = useNavigate();
   return (
     <div className={styles.inventoryContainer}>
       <div className={styles.inventoryHeader}>
@@ -59,7 +60,7 @@ export const InventorySection: React.FC<InventorySectionProps> = ({
           renderEmpty={() => (
             <div className={styles.emptyInventory}>
               <p className={styles.titleInventory}>{t('common.emptyNoCases')}</p>
-              <Button className={styles.openCasesButton} onClick={() => setActivePage('main')}>
+              <Button className={styles.openCasesButton} onClick={() => navigate(ROUTES.home)}>
                 {t('common.emptyOpenCases')}
               </Button>
             </div>

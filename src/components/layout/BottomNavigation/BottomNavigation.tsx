@@ -1,5 +1,7 @@
 import React from 'react';
 import { useUIStore } from '@/store/uiStore';
+import { Link, useLocation } from 'react-router-dom';
+import { ROUTES } from '@/utils/constants';
 import { ASSETS } from '@/constants/assets';
 import styles from './BottomNavigation.module.css';
 import { ConnectivityGuard } from '@/services/ConnectivityGuard';
@@ -43,45 +45,50 @@ const renderIcon = (iconType: string) => {
 };
 
 export const BottomNavigation: React.FC = () => {
-  const { activePage, setActivePage } = useUIStore();
+  const { /* activePage, setActivePage */ } = useUIStore();
+  const location = useLocation();
   const { t } = useI18n();
 
-  const handleTabClick = (tab: NavigationTab) => {
-    // централизованная проверка соединения на клике между вкладками
+  const handleExternal = (tab: NavigationTab) => {
     ConnectivityGuard.ensureOnline();
-    // При клике всегда проверяем онлайн; если офлайн, просто меняем вкладку на доступные (но спины и т.п. уже заблокированы),
-    // тут можно также показать уведомление при попытке перейти в Main.
     if (tab.id === 'jackpot') {
       if (window.Telegram && window.Telegram.WebApp) {
         window.Telegram.WebApp.openLink('https://www.speedtest.net/');
       } else {
-        // Fallback for when not in Telegram
         window.open('https://www.speedtest.net/', '_blank', 'noopener,noreferrer');
       }
-    } else {
-      setActivePage(tab.id as any);
     }
   };
 
   return (
     <nav className={styles.footerMenu}>
-      {navigationTabs.map((tab) => (
-        <div
-          key={tab.id}
-          className={`${styles.footerTab} ${activePage === tab.id ? styles.footerTabActive : ''}`}
-          onClick={() => handleTabClick(tab)}
-        >
-          <div className={styles.footerIcon}>
-            {renderIcon(tab.icon)}
-          </div>
-          <div className={styles.footerLabel}>
-            {tab.id === 'main' && t('nav.main')}
-            {tab.id === 'jackpot' && t('nav.jackpot')}
-            {tab.id === 'upgrade' && t('nav.upgrade')}
-            {tab.id === 'profile' && t('nav.profile')}
-          </div>
-        </div>
-      ))}
+      {navigationTabs.map((tab) => {
+        const to = tab.id === 'main' ? ROUTES.home : tab.id === 'profile' ? ROUTES.profile : `/${tab.id}`;
+        const isActive = location.pathname === to;
+        if (tab.id === 'jackpot') {
+          return (
+            <div
+              key={tab.id}
+              className={`${styles.footerTab} ${isActive ? styles.footerTabActive : ''}`}
+              onClick={() => handleExternal(tab)}
+            >
+              <div className={styles.footerIcon}>{renderIcon(tab.icon)}</div>
+              <div className={styles.footerLabel}>{t('nav.jackpot')}</div>
+            </div>
+          );
+        }
+        return (
+          <Link key={tab.id} to={to} className={`${styles.footerTab} ${isActive ? styles.footerTabActive : ''}`}>
+            <div className={styles.footerIcon}>{renderIcon(tab.icon)}</div>
+            <div className={styles.footerLabel}>
+              {tab.id === 'main' && t('nav.main')}
+              {tab.id === 'jackpot' && t('nav.jackpot')}
+              {tab.id === 'upgrade' && t('nav.upgrade')}
+              {tab.id === 'profile' && t('nav.profile')}
+            </div>
+          </Link>
+        );
+      })}
     </nav>
   );
 }; 

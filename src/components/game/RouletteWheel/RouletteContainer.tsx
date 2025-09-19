@@ -2,6 +2,8 @@ import React, { useMemo } from 'react';
 import { useGameStore } from '@/store/gameStore';
 import { useUIStore } from '@/store/uiStore';
 import { useI18n } from '@/i18n';
+import { useNavigate } from 'react-router-dom';
+import { ROUTES } from '@/utils/constants';
 import { imageCache } from '@/services/ImageCache';
 import { ASSETS } from '@/constants/assets';
 import { useSpinLogic } from './hooks/useSpinLogic';
@@ -10,7 +12,8 @@ import RouletteView from './RouletteView';
 export const RouletteContainer: React.FC = () => {
   const { t } = useI18n();
   const { currentCase, isSpinning, spinResult, showResult } = useGameStore();
-  const { showWinModal, setShowWinModal, setActivePage, openModal } = useUIStore();
+  const { showWinModal, setShowWinModal, /* setActivePage, */ openModal } = useUIStore();
+  const navigate = useNavigate();
   const [state, api] = useSpinLogic();
 
   const rouletteItems = useMemo(() => {
@@ -36,7 +39,7 @@ export const RouletteContainer: React.FC = () => {
 
   const handleSpin = () => api.handleSpin(rouletteItems.length);
   const handleDepositRedirect = () => {
-    setActivePage('profile');
+    navigate(ROUTES.profile);
     openModal('deposit');
   };
   const handleClose = () => api.handleCloseCase();

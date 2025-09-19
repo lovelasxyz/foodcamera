@@ -23,7 +23,7 @@ import { useI18n } from '@/i18n';
 export const ProfilePage: React.FC = () => {
   const { t } = useI18n();
   const { user, disconnectWallet, craftFromShards, sellInventoryItem, receiveInventoryItem, isLoading, loadInventory, inventoryFetched } = useUserStore();
-  const { setActivePage, isModalOpen, modalType, openModal, closeModal } = useUIStore();
+  const { isModalOpen, modalType, openModal, closeModal } = useUIStore();
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
   const [selectedShardKey, setSelectedShardKey] = useState<string | null>(null);
   const [showOnlyAvailable, setShowOnlyAvailable] = useState<boolean>(false);
@@ -148,7 +148,6 @@ export const ProfilePage: React.FC = () => {
             inventoryFetched={inventoryFetched}
             showOnlyAvailable={showOnlyAvailable}
             setShowOnlyAvailable={(v) => setShowOnlyAvailable(v)}
-            setActivePage={setActivePage}
             onSelectItem={(id) => setSelectedItemId(id)}
             onSelectShard={(key) => setSelectedShardKey(key)}
           />

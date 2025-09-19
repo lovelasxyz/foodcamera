@@ -35,6 +35,20 @@ export const ProgressiveImg: React.FC<ProgressiveImgProps> = ({ previewSrc, src,
       return;
     }
 
+    // Quick synchronous check whether the browser already has the image cached
+    try {
+      const testImg = new Image();
+      testImg.src = srcStr;
+      if (testImg.complete) {
+        // Browser cache hit — avoid flicker
+        setCurrentSrc(srcStr);
+        setLoaded(true);
+        return;
+      }
+    } catch {
+      // ignore
+    }
+
     // Subscribe to cache updates so when preload finishes we switch to object URL
     const unsub = imageCache.subscribe(srcStr, () => {
       if (!mountedRef.current) return;
@@ -43,7 +57,7 @@ export const ProgressiveImg: React.FC<ProgressiveImgProps> = ({ previewSrc, src,
       setLoaded(true);
     });
 
-    // Lazy-load when element becomes visible
+  // Lazy-load when element becomes visible
     let observer: IntersectionObserver | null = null;
     const el = imgRef.current;
     if (el && 'IntersectionObserver' in window) {

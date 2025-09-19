@@ -175,7 +175,7 @@ export const HomePage: React.FC = () => {
   React.useEffect(() => {
     if (!isOnline) return;
     // Preload case images ahead of showing the grid
-    const caseImages = cases.map((c) => c.image);
+    const caseImages = cases.map((c) => c.image).filter(Boolean);
     if (caseImages.length > 0) {
       imageCache.preload(caseImages, { concurrency: 3 });
     }
@@ -184,6 +184,13 @@ export const HomePage: React.FC = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOnline]);
+
+  // Also trigger preloads whenever the `cases` array changes (new images)
+  React.useEffect(() => {
+    if (!isOnline) return;
+    const caseImages = cases.map((c) => c.image).filter(Boolean);
+    if (caseImages.length > 0) imageCache.preload(caseImages, { concurrency: 3 });
+  }, [cases, isOnline]);
 
   // Refresh on tab visibility regain
   React.useEffect(() => {
