@@ -3,7 +3,7 @@ import { imageCache } from '@/services/ImageCache';
 
 interface ProgressiveImgProps extends React.ImgHTMLAttributes<HTMLImageElement> {
   previewSrc?: string;
-  cacheKey?: string; // optional external version to invalidate local blur cache
+  cacheKey?: string;
 }
 
 const loadedCache = new Set<string>();
@@ -17,22 +17,26 @@ function getOptimalRootMargin(): string {
     const memory = (anyNav as any)?.deviceMemory ?? 4;
     
     // Более консервативные настройки для слабых устройств
-    if (downlink < 1.5 || memory < 2) return '50px';  // Загружаем только когда очень близко
-    if (downlink < 3 || memory < 4) return '100px';   // Средняя дистанция
-    return '200px';                                    // Агрессивная предзагрузка для мощных устройств
+    if (downlink < 1.5 || memory < 2) return '50px';
+    if (downlink < 3 || memory < 4) return '100px';
+    return '200px';
   } catch {
-    return '100px'; // Безопасное значение по умолчанию
+    return '100px';
   }
 }
 
 export const ProgressiveImg: React.FC<ProgressiveImgProps> = ({ previewSrc, src, cacheKey, style, ...rest }) => {
   const srcStr = typeof src === 'string' ? src : undefined;
   const cacheId = srcStr ? `${srcStr}${cacheKey ? `?v=${cacheKey}` : ''}` : '';
-  const initialLoaded = cacheId ? (loadedCache.has(cacheId) || imageCache.isLoaded(srcStr)) : false;
-  const [loaded, setLoaded] = React.useState(initialLoaded);
+  
+  // Простая проверка начального состояния
+  const isInitiallyLoaded = React.useMemo(() => {
+    if (!srcStr) return false;
+    return (cacheId && loadedCache.has(cacheId)) || imageCache.isLoaded(srcStr);
+  }, [srcStr, cacheId]);
+
+  const [loaded, setLoaded] = React.useState(isInitiallyLoaded);
   const [error, setError] = React.useState(false);
-  const [currentSrc, setCurrentSrc] = React.useState<string | undefined>(() => (srcStr ? imageCache.getCachedSrc(srcStr) : undefined));
-  const mountedRef = React.useRef(true);
   const imgRef = React.useRef<HTMLImageElement | null>(null);
 
   // Отключаем blur на слабых устройствах для экономии ресурсов
@@ -40,9 +44,9 @@ export const ProgressiveImg: React.FC<ProgressiveImgProps> = ({ previewSrc, src,
     try {
       const anyNav: any = navigator as any;
       const memory = (anyNav as any)?.deviceMemory ?? 4;
-      return memory >= 2; // Используем blur только на устройствах с 2GB+ RAM
+      return memory >= 2;
     } catch {
-      return true; // По умолчанию включаем blur
+      return true;
     }
   }, []);
 
@@ -52,95 +56,88 @@ export const ProgressiveImg: React.FC<ProgressiveImgProps> = ({ previewSrc, src,
     transition: shouldUseBlur ? 'filter 300ms ease' : 'opacity 300ms ease',
   };
 
+  // Единый эффект для управления lazy loading
   React.useEffect(() => {
-    mountedRef.current = true;
-    if (!srcStr) return;
-    // If already cached as object URL, use it immediately
-    const cached = imageCache.getCachedSrc(srcStr);
-    if (cached && cached !== srcStr) {
-      setCurrentSrc(cached);
-      setLoaded(true);
-      return;
-    }
+    if (!srcStr || loaded) return;
 
-    // Quick synchronous check whether the browser already has the image cached
-    try {
-      const testImg = new Image();
-      testImg.src = srcStr;
-      if (testImg.complete) {
-        // Browser cache hit — avoid flicker
-        setCurrentSrc(srcStr);
-        setLoaded(true);
-        return;
-      }
-    } catch {
-      // ignore
-    }
+    const img = imgRef.current;
+    if (!img) return;
 
-    // Subscribe to cache updates so when preload finishes we switch to object URL
-    const unsub = imageCache.subscribe(srcStr, () => {
-      if (!mountedRef.current) return;
-      const updated = imageCache.getCachedSrc(srcStr);
-      setCurrentSrc(updated);
+    // Подписка на обновления кэша
+    const unsubscribe = imageCache.subscribe(srcStr, () => {
       setLoaded(true);
+      if (cacheId) loadedCache.add(cacheId);
     });
 
-  // Lazy-load when element becomes visible
+    // Настройка IntersectionObserver
     let observer: IntersectionObserver | null = null;
-    const el = imgRef.current;
-    if (el && 'IntersectionObserver' in window) {
-      // Адаптивный rootMargin в зависимости от производительности устройства
+    
+    if ('IntersectionObserver' in window) {
       const rootMargin = getOptimalRootMargin();
-      observer = new IntersectionObserver((entries) => {
-        for (const entry of entries) {
-          if (entry.isIntersecting) {
-            imageCache.preloadOneLazy(srcStr);
-            observer?.unobserve(entry.target);
+      observer = new IntersectionObserver(
+        (entries) => {
+          for (const entry of entries) {
+            if (entry.isIntersecting) {
+              imageCache.preloadOneLazy(srcStr);
+              observer?.unobserve(entry.target);
+            }
           }
-        }
-      }, { rootMargin });
-      observer.observe(el);
-    } else if (el) {
-      // No observer support: preload immediately
+        },
+        { rootMargin }
+      );
+      observer.observe(img);
+    } else {
+      // Fallback для старых браузеров
       imageCache.preloadOneLazy(srcStr);
     }
 
     return () => {
-      mountedRef.current = false;
-      unsub();
-      if (observer && imgRef.current) observer.unobserve(imgRef.current);
+      unsubscribe();
+      if (observer && img) {
+        observer.unobserve(img);
+      }
     };
-  }, [srcStr]);
+  }, [srcStr, loaded, cacheId]);
 
+  // Сброс состояния при изменении src
   React.useEffect(() => {
-    // Keep loaded state in sync if parent passes a different src
-    if (!srcStr) return;
-    if (imageCache.isLoaded(srcStr)) setLoaded(true);
-  }, [srcStr]);
+    if (!srcStr) {
+      setLoaded(false);
+      setError(false);
+      return;
+    }
+
+    const newLoaded = (cacheId && loadedCache.has(cacheId)) || imageCache.isLoaded(srcStr);
+    setLoaded(newLoaded);
+    setError(false);
+  }, [srcStr, cacheId]);
+
+  const currentSrc = srcStr ? imageCache.getCachedSrc(srcStr) : src;
 
   return (
     <>
       {previewSrc && !loaded && !error && (
-        <img src={previewSrc} style={{ ...finalStyle, position: 'absolute' }} aria-hidden />
+        <img 
+          src={previewSrc} 
+          style={{ ...finalStyle, position: 'absolute' }} 
+          aria-hidden 
+        />
       )}
       <img
         {...rest}
         ref={imgRef}
-        src={currentSrc || src}
-        loading={(rest as any).loading ?? 'lazy'}
-        decoding={(rest as any).decoding ?? 'async'}
+        src={currentSrc}
+        loading="lazy"
+        decoding="async"
         style={finalStyle}
         onLoad={() => {
-          if (cacheId) loadedCache.add(cacheId);
-          if (typeof src === 'string') imageCache.markLoaded(src);
           setLoaded(true);
-          // touch LRU
-          if (typeof src === 'string') imageCache.getCachedSrc(src);
+          setError(false);
+          if (cacheId) loadedCache.add(cacheId);
+          if (srcStr) imageCache.markLoaded(srcStr);
         }}
         onError={() => setError(true)}
       />
     </>
   );
 };
-
-

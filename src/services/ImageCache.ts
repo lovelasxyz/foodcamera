@@ -95,9 +95,9 @@ class ImageCacheService {
 				this.inFlight.delete(url);
 				this.notifySubscribers(url);
 			} catch (e) {
-				// Fallback: try to mark as loaded so components can continue using original URL
+				// Не добавляем в loadedUrls при ошибке - это может привести к ложному кэшированию
 				this.inFlight.delete(url);
-				this.loadedUrls.add(url);
+				console.warn('Failed to preload image:', url, e);
 			}
 		})();
 
@@ -171,7 +171,11 @@ class ImageCacheService {
 			const idx = this.lruList.indexOf(url);
 			if (idx !== -1) this.lruList.splice(idx, 1);
 		}
+		this.loadedUrls.delete(url);
+		this.inFlight.delete(url);
+		this.subscribers.delete(url);
 	}
+
 
 	private getRecommendedConcurrency(): number {
 		try {
