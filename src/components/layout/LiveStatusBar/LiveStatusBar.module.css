@@ -1,23 +1,26 @@
 /* Live Status Bar */
 .liveStatusBar {
-  border-radius: var(--radius-md);
-  display: flex;
-  align-items: center;
-  width: 100%;
-  max-width: 99%;
-  min-height: 60px;
-  overflow: hidden; /* клип всего содержимого внутри бара */
+    border-radius: var(--radius-md);
+    display: flex
+;
+    width: 100%;
+    max-width: 99%;
+    min-height: 60px;
+    overflow: hidden; /* чтобы элементы не обрезались снизу при падении, ограничим только по контейнеру */
+    position: relative;
 }
 
 /* Live индикатор */
 .liveIndicator {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-2);
+  gap: var(--spacing-4);
   align-items: center;
-  justify-content: center;
-  width: 22px;
-  padding: 6px 2px;
+  position: absolute;
+  left: -2px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2;
   border-radius: var(--radius-md);
 }
 
@@ -55,15 +58,17 @@
 
 /* Live items container */
 .liveItems {
-  display: flex;
-  flex-direction: row;
-  gap: 6px;
-  align-items: center;
-  flex: 1;
-  margin-left: 8px;
-  overflow: hidden; /* чтобы падение не вылезало на индикатор */
-  will-change: transform;
-  min-height: 50px;
+  display: flex
+  ;
+      flex-direction: row;
+      gap: 3px;
+      align-items: center;
+      flex: 1;
+      margin-left: 15px;
+      overflow: visible;
+      padding-left: 8px;
+      will-change: transform;
+      min-height: 50px;
 }
 
 /* Individual live item */

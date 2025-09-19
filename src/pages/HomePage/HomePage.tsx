@@ -6,6 +6,7 @@ import { LiveStatusBar } from '@/components/layout/LiveStatusBar';
 import { CaseGrid } from '@/components/widgets/CaseGrid/CaseGrid';
 import { RouletteWheel } from '@/components/game/RouletteWheel';
 import { Button } from '@/components/ui/Button';
+import { ProgressiveImg } from '@/components/ui/ProgressiveImg';
 import { ASSETS } from '@/constants/assets';
 import { useI18n } from '@/i18n';
 import styles from './HomePage.module.css';
@@ -75,7 +76,12 @@ export const HomePage: React.FC = () => {
     return new Promise((resolve) => {
       const image = new Image();
       image.crossOrigin = 'anonymous';
-      image.src = src;
+      const resolved = imageCache.getCachedSrc(src);
+      if (resolved === src) {
+        // warm up if not in cache yet
+        imageCache.preloadOneLazy(src);
+      }
+      image.src = resolved;
       image.onload = () => {
         try {
           const canvas = document.createElement('canvas');
@@ -258,7 +264,7 @@ export const HomePage: React.FC = () => {
               const slide = slides[currentIndex];
               const content = (
                 <div className={`${styles.freeCaseSlide} ${styles.imageSlide}`} style={{ boxShadow: `0 0 20px ${shadowColor}` }}>
-                  <img className={styles.imageSlideImage} src={slide?.image || ''} alt="Slide" />
+                  <ProgressiveImg className={styles.imageSlideImage} src={slide?.image || ''} alt="Slide" />
                 </div>
               );
               return slide?.href ? (

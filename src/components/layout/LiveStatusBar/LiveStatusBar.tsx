@@ -10,7 +10,6 @@ export const LiveStatusBar: React.FC = () => {
   const liveItemsRef = useRef<HTMLDivElement | null>(null);
   const didInitRef = useRef<boolean>(false);
   const [enterDoneId, setEnterDoneId] = useState<number | null>(null);
-  const [minVisibleCount, setMinVisibleCount] = useState<number>(0);
 
   useEffect(() => {
     init();
@@ -66,46 +65,6 @@ export const LiveStatusBar: React.FC = () => {
     }
   }, [lastAddedId]);
 
-  // Обеспечиваем заполнение контейнера элементами на широких экранах
-  useEffect(() => {
-    const container = liveItemsRef.current;
-    if (!container) return;
-
-    const computeRequired = () => {
-      const computed = getComputedStyle(container);
-      const gapStr = (computed as any).columnGap || (computed as any).gap || '0px';
-      const gap = parseFloat(gapStr) || 0;
-      const firstChild = container.firstElementChild as HTMLElement | null;
-      const itemWidth = firstChild ? firstChild.getBoundingClientRect().width : 50;
-      const total = itemWidth + gap;
-      const width = container.getBoundingClientRect().width;
-      if (total > 0 && width > 0) {
-        const required = Math.ceil(width / total) + 1; // +1 чтобы гарантированно покрыть правый край
-        setMinVisibleCount(required);
-      }
-    };
-
-    computeRequired();
-
-    const observer = new ResizeObserver(() => {
-      computeRequired();
-    });
-    observer.observe(container);
-    return () => observer.disconnect();
-  }, [items.length]);
-
-  const displayedItems = React.useMemo(() => {
-    if (!items || items.length === 0) return [];
-    if (items.length >= minVisibleCount || minVisibleCount === 0) return items;
-    const extended: typeof items = [...items];
-    let i = 0;
-    while (extended.length < minVisibleCount) {
-      extended.push(items[i % items.length]);
-      i += 1;
-    }
-    return extended;
-  }, [items, minVisibleCount]);
-
   return (
     <div className={styles.liveStatusBar}>
       <div className={styles.liveIndicator}>
@@ -114,11 +73,11 @@ export const LiveStatusBar: React.FC = () => {
       </div>
       
       <div className={styles.liveItems} ref={liveItemsRef}>
-        {displayedItems.map((item, idx) => {
-          const isNewlyAdded = idx === 0 && item.id === lastAddedId && item.id !== enterDoneId;
+        {items.map((item) => {
+          const isNewlyAdded = item.id === lastAddedId && item.id !== enterDoneId;
           return (
           <div 
-            key={`${item.id}-${idx}`} 
+            key={item.id} 
             data-rarity={item.rarity}
             className={`${styles.liveItem} ${isNewlyAdded ? styles.liveItemEnter : ''}`}
             onAnimationEnd={(e) => {
@@ -134,6 +93,10 @@ export const LiveStatusBar: React.FC = () => {
                 alt={item.name} 
                 className={styles.liveImage}
                 cacheKey={String(item.id)}
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.style.display = 'none';
+                }}
               />
             </div>
           </div>
