@@ -1,147 +1,147 @@
 /* Live Status Bar */
 .liveStatusBar {
-    border-radius: var(--radius-md);
-    display: flex
+  border-radius: var(--radius-md);
+  display: flex
 ;
-    width: 100%;
-    max-width: 99%;
-    min-height: 60px;
-    overflow: hidden; /* чтобы элементы не обрезались снизу при падении, ограничим только по контейнеру */
-    position: relative;
+  width: 100%;
+  max-width: 99%;
+  min-height: 60px;
+  overflow: hidden; /* чтобы элементы не обрезались снизу при падении, ограничим только по контейнеру */
+  position: relative;
 }
 
 /* Live индикатор */
 .liveIndicator {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-4);
-  align-items: center;
-  position: absolute;
-  left: -2px;
-  top: 50%;
-  transform: translateY(-50%);
-  z-index: 2;
-  border-radius: var(--radius-md);
+display: flex;
+flex-direction: column;
+gap: var(--spacing-4);
+align-items: center;
+position: absolute;
+left: -2px;
+top: 50%;
+transform: translateY(-50%);
+z-index: 2;
+border-radius: var(--radius-md);
 }
 
 .liveDot {
-  color: var(--color-live, #23c265);
-  font-size: 8px;
-  font-weight: var(--font-weight-semibold);
-  height: 10px;
-  animation: pulse 2s infinite;
-  margin-bottom: 3px;
+color: var(--color-live, #23c265);
+font-size: 8px;
+font-weight: var(--font-weight-semibold);
+height: 10px;
+animation: pulse 2s infinite;
+margin-bottom: 3px;
 }
 
 @keyframes pulse {
-  0% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.6;
-  }
-  100% {
-    opacity: 1;
-  }
+0% {
+  opacity: 1;
+}
+50% {
+  opacity: 0.6;
+}
+100% {
+  opacity: 1;
+}
 }
 
 .liveText {
-  color: var(--color-live, #23c265);
-  font-size: var(--font-size-sm);
-  line-height: var(--line-height-sm);
-  font-weight: var(--font-weight-semibold);
-  writing-mode: vertical-lr;
-  transform: rotate(180deg);
-  margin-bottom: 8px;
-  letter-spacing: 0.5px;
+color: var(--color-live, #23c265);
+font-size: var(--font-size-sm);
+line-height: var(--line-height-sm);
+font-weight: var(--font-weight-semibold);
+writing-mode: vertical-lr;
+transform: rotate(180deg);
+margin-bottom: 8px;
+letter-spacing: 0.5px;
 }
 
 /* Live items container */
 .liveItems {
-  display: flex
-  ;
-      flex-direction: row;
-      gap: 3px;
-      align-items: center;
-      flex: 1;
-      margin-left: 15px;
-      overflow: visible;
-      padding-left: 8px;
-      will-change: transform;
-      min-height: 50px;
+display: flex
+;
+    flex-direction: row;
+    gap: 3px;
+    align-items: center;
+    flex: 1;
+    margin-left: 15px;
+    overflow: hidden;
+    padding-left: 8px;
+    will-change: transform;
+    min-height: 50px;
 }
 
 /* Individual live item */
 .liveItem {
-  flex-shrink: 0;
-  position: relative;
-  overflow: hidden;
-  width: 50px; /* фиксируем ширину, чтобы не было скачков при расчётах */
-  height: 50px;
-  border-radius: 12px;
-  box-sizing: border-box;
+flex-shrink: 0;
+position: relative;
+overflow: hidden;
+width: 50px; /* фиксируем ширину, чтобы не было скачков при расчётах */
+height: 50px;
+border-radius: 12px;
+box-sizing: border-box;
 }
 
 .liveItemContent {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 50px;
-  height: 50px;
+display: flex;
+align-items: center;
+justify-content: center;
+width: 50px;
+height: 50px;
 }
 
 /* Редкость — повторяем prizeGridItem стили */
 .liveItem[data-rarity="common"] {
-  background: linear-gradient(180deg, rgba(40, 57, 150, 0) 0%, rgba(40, 57, 150, .5) 100%), rgba(255, 255, 255, .05);
-  border-bottom: 1px solid #5067E5;
+background: linear-gradient(180deg, rgba(40, 57, 150, 0) 0%, rgba(40, 57, 150, .5) 100%), rgba(255, 255, 255, .05);
+border-bottom: 1px solid #5067E5;
 }
 .liveItem[data-rarity="rare"] {
-  background: linear-gradient(180deg, rgba(138, 37, 92, 0) 0%, rgba(138, 37, 92, .5) 100%), rgba(255, 255, 255, .05);
-  border-bottom: 1px solid #C52F81;
+background: linear-gradient(180deg, rgba(138, 37, 92, 0) 0%, rgba(138, 37, 92, .5) 100%), rgba(255, 255, 255, .05);
+border-bottom: 1px solid #C52F81;
 }
 .liveItem[data-rarity="epic"] {
-  background: linear-gradient(180deg, rgba(130, 48, 53, 0) 0%, rgba(130, 48, 53, .5) 100%), rgba(255, 255, 255, .05);
-  border-bottom: 1px solid #C03A42;
+background: linear-gradient(180deg, rgba(130, 48, 53, 0) 0%, rgba(130, 48, 53, .5) 100%), rgba(255, 255, 255, .05);
+border-bottom: 1px solid #C03A42;
 }
 .liveItem[data-rarity="legendary"] {
-  background: linear-gradient(180deg, rgba(140, 93, 50, 0) 0%, rgba(140, 93, 50, .5) 100%), rgba(255, 255, 255, .05);
-  border-bottom: 1px solid #DC904B;
+background: linear-gradient(180deg, rgba(140, 93, 50, 0) 0%, rgba(140, 93, 50, .5) 100%), rgba(255, 255, 255, .05);
+border-bottom: 1px solid #DC904B;
 }
 
 .liveItemEnter {
-  opacity: 0;
-  transform: translateY(-50px);
-  animation: liveItemFall 700ms ease forwards;
+opacity: 0;
+transform: translateY(-50px);
+animation: liveItemFall 700ms ease forwards;
 }
 
 
 
 .liveImage {
-  display: block;
-  margin: 0 auto;
-  width: 34px;
-  height: 34px;
-  object-fit: contain;
-  aspect-ratio: 1;
+display: block;
+margin: 0 auto;
+width: 34px;
+height: 34px;
+object-fit: contain;
+aspect-ratio: 1;
 }
 
 /* Лёгкий бликовый слой сверху для глубины */
 .liveItem::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background: linear-gradient(180deg, rgba(255,255,255,.03) 0%, rgba(255,255,255,0) 60%);
+content: '';
+position: absolute;
+inset: 0;
+pointer-events: none;
+background: linear-gradient(180deg, rgba(255,255,255,.03) 0%, rgba(255,255,255,0) 60%);
 }
 
 /* Анимации */
 @keyframes liveItemFall {
-  0% {
-    opacity: 0;
-    transform: translateY(-50px);
-  }
-  100% {
-    transform: translateY(0);
-    opacity: 1; /* остаётся видимым после падения */
-  }
+0% {
+  opacity: 0;
+  transform: translateY(-50px);
+}
+100% {
+  transform: translateY(0);
+  opacity: 1; /* остаётся видимым после падения */
+}
 }

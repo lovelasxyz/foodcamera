@@ -29,7 +29,9 @@ export const HomePage: React.FC = () => {
       ASSETS.IMAGES.GIFT,
       ASSETS.IMAGES.TEDDY,
     ];
-    imageCache.preload(bannerAssets, { concurrency: 3 });
+    // Используем более консервативные настройки для слабых устройств
+    const concurrency = Math.max(1, Math.min(2, navigator.hardwareConcurrency || 2));
+    imageCache.preload(bannerAssets, { concurrency });
   }, []);
 
   // Переходы для списка кейсов: во время реальной загрузки (isLoading) или при офлайне
@@ -180,23 +182,11 @@ export const HomePage: React.FC = () => {
   // Always refresh cases on mount when online (lightweight server-side caching recommended)
   React.useEffect(() => {
     if (!isOnline) return;
-    // Preload case images ahead of showing the grid
-    const caseImages = cases.map((c) => c.image).filter(Boolean);
-    if (caseImages.length > 0) {
-      imageCache.preload(caseImages, { concurrency: 3 });
-    }
     if (!isLoading) {
       loadCases();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOnline]);
-
-  // Also trigger preloads whenever the `cases` array changes (new images)
-  React.useEffect(() => {
-    if (!isOnline) return;
-    const caseImages = cases.map((c) => c.image).filter(Boolean);
-    if (caseImages.length > 0) imageCache.preload(caseImages, { concurrency: 3 });
-  }, [cases, isOnline]);
 
   // Refresh on tab visibility regain
   React.useEffect(() => {

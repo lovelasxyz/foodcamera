@@ -13,6 +13,8 @@ export class AppInitializer {
 
   stop(): void {
     try { ConnectivityGuard.stop(); } catch {}
+    // При остановке приложения можем очистить кеш если нужно
+    // (в данном случае оставляем кеш для быстрого следующего запуска)
   }
 
   async bootstrapForGuestIfNeeded(): Promise<void> {

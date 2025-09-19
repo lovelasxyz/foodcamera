@@ -51,6 +51,39 @@ export const mockCases: Case[] = [
   },
   {
     id: 5,
+    name: 'Mystic Frog',
+    image: ASSETS.IMAGES.FROG,
+    price: 20,
+    background: '#FFD700',
+    items: [
+      { id: 2, name: 'Scroll', price: 24.06, image: ASSETS.IMAGES.SCROLL, rarity: 'rare' },
+      { id: 10, name: 'Frog', price: 1562, image: ASSETS.IMAGES.FROG, rarity: 'legendary' },
+    ]
+  },
+  {
+    id: 6,
+    name: 'Golden Gift',
+    image: ASSETS.IMAGES.GIFT,
+    price: 1,
+    background: '#32CD32',
+    items: [
+      { id: 2, name: 'TON', price: 5.50, image: ASSETS.IMAGES.TOKEN, rarity: 'common' },
+      { id: 4, name: 'Gift', price: 25.00, image: ASSETS.IMAGES.GIFT, rarity: 'rare' },
+    ]
+  },
+  {
+    id: 7,
+    name: 'Golden Gift',
+    image: ASSETS.IMAGES.GIFT,
+    price: 1,
+    background: '#32CD32',
+    items: [
+      { id: 2, name: 'TON', price: 5.50, image: ASSETS.IMAGES.TOKEN, rarity: 'common' },
+      { id: 4, name: 'Gift', price: 25.00, image: ASSETS.IMAGES.GIFT, rarity: 'rare' },
+    ]
+  },
+  {
+    id: 8,
     name: 'Golden Gift',
     image: ASSETS.IMAGES.GIFT,
     price: 1,

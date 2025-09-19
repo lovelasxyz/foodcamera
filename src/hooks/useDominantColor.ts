@@ -1,5 +1,14 @@
 import { useEffect, useMemo, useState } from 'react';
 
+// Полифилл для requestIdleCallback
+const requestIdleCallbackPolyfill = (callback: (deadline: { timeRemaining: () => number }) => void, options: { timeout?: number } = {}) => {
+  if ('requestIdleCallback' in window) {
+    return window.requestIdleCallback(callback, options);
+  }
+  // Fallback для браузеров без поддержки
+  return setTimeout(() => callback({ timeRemaining: () => 50 }), options.timeout || 0);
+};
+
 function getDominantColorFromImage(image: HTMLImageElement): string | null {
 	const canvas = document.createElement('canvas');
 	const context = canvas.getContext('2d');
@@ -59,30 +68,43 @@ export function useDominantColor(imageUrl?: string): { colorHex: string | null; 
 			return;
 		}
 
-		let cancelled = false;
-		const img = new Image();
-		// Attempt to avoid CORS tainting for same-origin assets
-		img.crossOrigin = 'anonymous';
-		img.src = imageUrl;
-		img.decoding = 'async';
-		img.loading = 'eager';
-
 		// Try cached color for instant first paint
 		const storageKey = `dominantColor:${imageUrl}`;
 		try {
 			const cached = localStorage.getItem(storageKey);
 			if (cached) {
 				setColorHex(cached);
+				return; // Если есть кэш - не загружаем изображение повторно
 			}
 		} catch {}
 
+		let cancelled = false;
+		const img = new Image();
+		// Attempt to avoid CORS tainting for same-origin assets
+		img.crossOrigin = 'anonymous';
+		
+		// Используем кэшированную версию из ImageCache если доступна
+		import('@/services/ImageCache').then(({ imageCache }) => {
+			const cachedSrc = imageCache.getCachedSrc(imageUrl);
+			img.src = cachedSrc;
+		}).catch(() => {
+			img.src = imageUrl; // Fallback к оригинальному URL
+		});
+		
+		img.decoding = 'async';
+		img.loading = 'lazy'; // Изменили на lazy для экономии ресурсов
+
 		const onLoad = () => {
 			if (cancelled) return;
-			const color = getDominantColorFromImage(img);
-			setColorHex(color);
-			if (color) {
-				try { localStorage.setItem(storageKey, color); } catch {}
-			}
+			// Добавляем задержку для слабых устройств, чтобы не блокировать основной поток
+			requestIdleCallbackPolyfill(() => {
+				if (cancelled) return;
+				const color = getDominantColorFromImage(img);
+				setColorHex(color);
+				if (color) {
+					try { localStorage.setItem(storageKey, color); } catch {}
+				}
+			}, { timeout: 100 });
 		};
 
 		const onError = () => {

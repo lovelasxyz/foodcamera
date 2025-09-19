@@ -8,6 +8,23 @@ interface ProgressiveImgProps extends React.ImgHTMLAttributes<HTMLImageElement> 
 
 const loadedCache = new Set<string>();
 
+// Определяет оптимальный rootMargin для IntersectionObserver на основе производительности устройства
+function getOptimalRootMargin(): string {
+  try {
+    const anyNav: any = navigator as any;
+    const connection = anyNav?.connection || anyNav?.mozConnection || anyNav?.webkitConnection;
+    const downlink: number = connection?.downlink ?? 10;
+    const memory = (anyNav as any)?.deviceMemory ?? 4;
+    
+    // Более консервативные настройки для слабых устройств
+    if (downlink < 1.5 || memory < 2) return '50px';  // Загружаем только когда очень близко
+    if (downlink < 3 || memory < 4) return '100px';   // Средняя дистанция
+    return '200px';                                    // Агрессивная предзагрузка для мощных устройств
+  } catch {
+    return '100px'; // Безопасное значение по умолчанию
+  }
+}
+
 export const ProgressiveImg: React.FC<ProgressiveImgProps> = ({ previewSrc, src, cacheKey, style, ...rest }) => {
   const srcStr = typeof src === 'string' ? src : undefined;
   const cacheId = srcStr ? `${srcStr}${cacheKey ? `?v=${cacheKey}` : ''}` : '';
@@ -18,10 +35,21 @@ export const ProgressiveImg: React.FC<ProgressiveImgProps> = ({ previewSrc, src,
   const mountedRef = React.useRef(true);
   const imgRef = React.useRef<HTMLImageElement | null>(null);
 
+  // Отключаем blur на слабых устройствах для экономии ресурсов
+  const shouldUseBlur = React.useMemo(() => {
+    try {
+      const anyNav: any = navigator as any;
+      const memory = (anyNav as any)?.deviceMemory ?? 4;
+      return memory >= 2; // Используем blur только на устройствах с 2GB+ RAM
+    } catch {
+      return true; // По умолчанию включаем blur
+    }
+  }, []);
+
   const finalStyle: React.CSSProperties = {
     ...style,
-    filter: loaded ? 'none' : 'blur(12px) saturate(0.8)',
-    transition: 'filter 300ms ease',
+    filter: loaded ? 'none' : (shouldUseBlur ? 'blur(12px) saturate(0.8)' : 'opacity(0.7)'),
+    transition: shouldUseBlur ? 'filter 300ms ease' : 'opacity 300ms ease',
   };
 
   React.useEffect(() => {
@@ -61,6 +89,8 @@ export const ProgressiveImg: React.FC<ProgressiveImgProps> = ({ previewSrc, src,
     let observer: IntersectionObserver | null = null;
     const el = imgRef.current;
     if (el && 'IntersectionObserver' in window) {
+      // Адаптивный rootMargin в зависимости от производительности устройства
+      const rootMargin = getOptimalRootMargin();
       observer = new IntersectionObserver((entries) => {
         for (const entry of entries) {
           if (entry.isIntersecting) {
@@ -68,7 +98,7 @@ export const ProgressiveImg: React.FC<ProgressiveImgProps> = ({ previewSrc, src,
             observer?.unobserve(entry.target);
           }
         }
-      }, { rootMargin: '200px' });
+      }, { rootMargin });
       observer.observe(el);
     } else if (el) {
       // No observer support: preload immediately

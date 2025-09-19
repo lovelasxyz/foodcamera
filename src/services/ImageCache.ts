@@ -9,6 +9,23 @@ type PreloadOptions = {
 	force?: boolean;
 };
 
+// Определяет оптимальную емкость кэша на основе производительности устройства
+function getOptimalCacheCapacity(): number {
+	try {
+		const anyNav: any = navigator as any;
+		const memory = (anyNav as any)?.deviceMemory ?? 4;
+		const connection = anyNav?.connection || anyNav?.mozConnection || anyNav?.webkitConnection;
+		const downlink: number = connection?.downlink ?? 10;
+		
+		// Очень консервативные настройки для слабых устройств
+		if (memory < 2 || downlink < 1.5) return 20;  // Минимальный кэш для очень слабых устройств
+		if (memory < 4 || downlink < 3) return 40;    // Средний кэш
+		return 80;                                     // Полный кэш для мощных устройств
+	} catch {
+		return 40; // Безопасное значение по умолчанию
+	}
+}
+
 class ImageCacheService {
 	private loadedUrls: Set<string> = new Set();
 	private inFlight: Map<string, Promise<void>> = new Map();
@@ -18,7 +35,7 @@ class ImageCacheService {
 	private lruList: string[] = [];
 	private capacity: number;
 
-	constructor(capacity = 80) {
+	constructor(capacity = getOptimalCacheCapacity()) {
 		this.capacity = capacity;
 	}
 
@@ -172,6 +189,73 @@ class ImageCacheService {
 }
 
 export const imageCache = new ImageCacheService();
+
+// Оптимизированная функция для предзагрузки изображений кейсов
+export function preloadCaseImages(cases: any[], options: { priorityCount?: number; concurrency?: number } = {}): void {
+	const allImages: string[] = [];
+	
+	// Собираем все изображения
+	for (const caseItem of cases) {
+		if (caseItem.image) allImages.push(caseItem.image);
+		// Не предзагружаем изображения призов сразу - они загрузятся при открытии кейса
+	}
+	
+	const uniqueImages = Array.from(new Set(allImages.filter(Boolean)));
+	if (uniqueImages.length === 0) return;
+	
+	// Определяем параметры на основе производительности устройства
+	const concurrency = options.concurrency ?? getOptimalConcurrency();
+	const priorityCount = options.priorityCount ?? 8; // Загружаем только первые 8 кейсов сразу
+	
+	// Предзагружаем приоритетные изображения (видимые на экране)
+	const priorityImages = uniqueImages.slice(0, priorityCount);
+	const remainingImages = uniqueImages.slice(priorityCount);
+	
+	// Загружаем приоритетные сразу
+	if (priorityImages.length > 0) {
+		imageCache.preload(priorityImages, { concurrency }).catch(() => {});
+	}
+	
+	// Остальные загружаем с задержкой для слабых устройств
+	if (remainingImages.length > 0) {
+		const delay = getOptimalDelay();
+		setTimeout(() => {
+			imageCache.preload(remainingImages, { concurrency: Math.max(1, concurrency - 1) }).catch(() => {});
+		}, delay);
+	}
+}
+
+// Определяет оптимальный concurrency на основе производительности устройства
+function getOptimalConcurrency(): number {
+	try {
+		const anyNav: any = navigator as any;
+		const connection = anyNav?.connection || anyNav?.mozConnection || anyNav?.webkitConnection;
+		const downlink: number = connection?.downlink ?? 10;
+		const memory = (anyNav as any)?.deviceMemory ?? 4;
+		
+		// Очень консервативные настройки для слабых устройств
+		if (downlink < 1.5 || memory < 2) return 1;
+		if (downlink < 3 || memory < 4) return 2;
+		return 3;
+	} catch {
+		return 2; // Безопасное значение по умолчанию
+	}
+}
+
+// Определяет задержку для загрузки неприоритетных изображений
+function getOptimalDelay(): number {
+	try {
+		const anyNav: any = navigator as any;
+		const connection = anyNav?.connection || anyNav?.mozConnection || anyNav?.webkitConnection;
+		const downlink: number = connection?.downlink ?? 10;
+		
+		if (downlink < 1.5) return 3000; // 3 секунды для медленных соединений
+		if (downlink < 3) return 1500;   // 1.5 секунды для средних
+		return 500;                      // 0.5 секунды для быстрых
+	} catch {
+		return 2000; // Безопасное значение по умолчанию
+	}
+}
 
 
 

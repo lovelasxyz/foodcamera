@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { Case } from '@/types/game';
 import { ICaseRepository } from '@/application/case/ICaseRepository';
 import { RepositoryFactory } from '@/infrastructure/repositories/RepositoryFactory';
+import { preloadCaseImages } from '@/services/ImageCache';
 
 interface CasesState {
   cases: Case[];
@@ -23,7 +24,10 @@ export const useCasesStore = create<CasesState & CasesActions>((set) => ({
   isLoading: false,
   error: null,
 
-  setCases: (cases) => set({ cases }),
+  setCases: (cases) => {
+    set({ cases });
+    // Не предзагружаем здесь - это делается в loadCases
+  },
 
   addCase: (caseData) =>
     set((state) => ({
@@ -45,6 +49,8 @@ export const useCasesStore = create<CasesState & CasesActions>((set) => ({
     try {
       const cases = await repository.fetchAll();
       set({ cases, isLoading: false, error: null });
+      // Предзагружаем изображения
+      preloadCaseImages(cases);
     } catch (e: unknown) {
       const message = e instanceof Error ? e.message : String(e);
       set({ isLoading: false, error: message || 'Failed to load cases' });

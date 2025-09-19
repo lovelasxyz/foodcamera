@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import styles from './LiveStatusBar.module.css';
 import { useLiveStore } from '@/store/liveStore';
 import { ProgressiveImg } from '@/components/ui/ProgressiveImg';
@@ -10,9 +10,34 @@ export const LiveStatusBar: React.FC = () => {
   const liveItemsRef = useRef<HTMLDivElement | null>(null);
   const didInitRef = useRef<boolean>(false);
   const [enterDoneId, setEnterDoneId] = useState<number | null>(null);
+  const [capacity, setCapacity] = useState<number>(0);
 
   useEffect(() => {
     init();
+  }, []);
+
+  // Рассчитываем, сколько элементов должно быть видно, чтобы заполнить всю ширину
+  useEffect(() => {
+    const container = liveItemsRef.current;
+    if (!container) return;
+
+    const ITEM_W = 50; // должно совпадать с css шириной liveItem
+    const compute = () => {
+      const rect = container.getBoundingClientRect();
+      const computed = getComputedStyle(container);
+      const gapStr = (computed as any).columnGap || (computed as any).gap || '3px';
+      const gap = parseFloat(gapStr) || 3;
+      const available = rect.width;
+      const per = ITEM_W + gap;
+      const count = Math.max(1, Math.floor((available + gap) / per));
+      setCapacity(count);
+    };
+
+    // Инициализация и подписка на ресайз
+    compute();
+    const ro = new ResizeObserver(() => compute());
+    ro.observe(container);
+    return () => ro.disconnect();
   }, []);
 
   // Плавное смещение списка вправо при добавлении нового элемента слева
@@ -65,6 +90,21 @@ export const LiveStatusBar: React.FC = () => {
     }
   }, [lastAddedId]);
 
+  // Формируем массив для отрисовки нужной длины: используем имеющиеся items,
+  // при нехватке — дублируем существующие, чтобы заполнить всю ширину
+  const renderItems = useMemo(() => {
+    if (!capacity) return items;
+    if (items.length >= capacity) return items.slice(0, capacity);
+    if (items.length === 0) return items;
+    const result = items.slice();
+    let i = 0;
+    while (result.length < capacity) {
+      result.push(items[i % items.length]);
+      i += 1;
+    }
+    return result;
+  }, [items, capacity]);
+
   return (
     <div className={styles.liveStatusBar}>
       <div className={styles.liveIndicator}>
@@ -73,11 +113,17 @@ export const LiveStatusBar: React.FC = () => {
       </div>
       
       <div className={styles.liveItems} ref={liveItemsRef}>
-        {items.map((item) => {
-          const isNewlyAdded = item.id === lastAddedId && item.id !== enterDoneId;
+        {renderItems.map((item, idx) => {
+          // Анимируем только первое вхождение нового элемента
+          let isNewlyAdded = false;
+          if (item.id === lastAddedId && item.id !== enterDoneId) {
+            // Проверяем, что это первое появление данного id среди renderItems
+            const firstIndex = renderItems.findIndex((ri) => ri.id === item.id);
+            isNewlyAdded = firstIndex === idx;
+          }
           return (
           <div 
-            key={item.id} 
+            key={`${item.id}-${idx}`} 
             data-rarity={item.rarity}
             className={`${styles.liveItem} ${isNewlyAdded ? styles.liveItemEnter : ''}`}
             onAnimationEnd={(e) => {
