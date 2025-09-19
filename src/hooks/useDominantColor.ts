@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { imageCache } from '@/services/ImageCache';
 
 // Полифилл для requestIdleCallback
 const requestIdleCallbackPolyfill = (callback: (deadline: { timeRemaining: () => number }) => void, options: { timeout?: number } = {}) => {
@@ -84,12 +85,8 @@ export function useDominantColor(imageUrl?: string): { colorHex: string | null; 
 		img.crossOrigin = 'anonymous';
 		
 		// Используем кэшированную версию из ImageCache если доступна
-		import('@/services/ImageCache').then(({ imageCache }) => {
-			const cachedSrc = imageCache.getCachedSrc(imageUrl);
-			img.src = cachedSrc;
-		}).catch(() => {
-			img.src = imageUrl; // Fallback к оригинальному URL
-		});
+		const cachedSrc = imageCache.getCachedSrc(imageUrl);
+		img.src = cachedSrc;
 		
 		img.decoding = 'async';
 		img.loading = 'lazy'; // Изменили на lazy для экономии ресурсов
