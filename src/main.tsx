@@ -15,7 +15,6 @@ if (!shouldUseGuestMode() && window.Telegram?.WebApp) {
   const tg = window.Telegram.WebApp;
   
   try {
-    // Готовность приложения
     tg.ready();
     
     // Разворачиваем приложение на весь экран
