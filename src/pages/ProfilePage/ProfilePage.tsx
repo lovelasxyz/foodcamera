@@ -17,11 +17,13 @@ import { PrizeItem } from '@/domain/items/PrizeItem';
 import { ASSETS } from '@/constants/assets';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { useI18n } from '@/i18n';
+import { usePrizeDescription } from '@/i18n/prizeDescriptions';
 // import { InventoryItemSkeleton } from '@/components/profile/InventoryItemSkeleton';
 // import { InventoryGrid } from '@/components/widgets/InventoryGrid/InventoryGrid';
 
 export const ProfilePage: React.FC = () => {
   const { t } = useI18n();
+  const getDescription = usePrizeDescription();
   const { user, disconnectWallet, craftFromShards, sellInventoryItem, receiveInventoryItem, isLoading, loadInventory, inventoryFetched } = useUserStore();
   const { isModalOpen, modalType, openModal, closeModal } = useUIStore();
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
@@ -175,7 +177,7 @@ export const ProfilePage: React.FC = () => {
         onClose={() => setSelectedItemId(null)}
         title={selectedInventoryItem?.prize.name}
         image={selectedInventoryItem?.prize.image || ''}
-        description={selectedInventoryItem?.prize.description}
+        description={getDescription(selectedInventoryItem?.prize)}
         rows={selectedInventoryItem ? [
           { label: t('roulette.rarity'), value: (() => {
             const r = selectedInventoryItem.prize.rarity;

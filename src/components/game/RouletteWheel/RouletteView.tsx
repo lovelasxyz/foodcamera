@@ -7,6 +7,7 @@ import { PossiblePrizes } from './PossiblePrizes';
 import { PrizeModal } from '@/components/game/PrizeCard';
 import { SpinLogicState, SpinLogicApi } from './hooks/useSpinLogic';
 import { Case, Prize, SpinResult } from '@/types/game';
+import { usePrizeDescription } from '@/i18n/prizeDescriptions';
 
 interface RouletteViewProps {
   currentCase: Case | null;
@@ -46,6 +47,7 @@ const RouletteView: React.FC<RouletteViewProps> = ({
   setShowWinModal
 }) => {
   const { position, instantPosition, targetReplicaIndex, previewPrize, hasEnoughFunds } = state;
+  const getDescription = usePrizeDescription();
 
   return (
     <>
@@ -104,7 +106,7 @@ const RouletteView: React.FC<RouletteViewProps> = ({
         onClose={() => api.setPreviewPrize(null)}
         title={previewPrize?.name}
         image={previewPrize?.image || ''}
-        description={previewPrize?.description}
+        description={getDescription(previewPrize)}
         rarityLabelLeft={t('roulette.rarity')}
         rarityValue={(() => {
           const r = previewPrize?.rarity;

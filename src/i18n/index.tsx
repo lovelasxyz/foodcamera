@@ -107,6 +107,16 @@ const en: TranslationDict = {
       legendary: 'Legendary'
     }
   },
+  prizes: {
+    gift: { description: 'A wrapped surprise from the case. Keep it or trade it.' },
+    giftShard: { description: 'Combine {required} shards to craft a full Gift.' },
+    teddyBear: { description: 'A cuddly bear to brighten your inventory.' },
+    scroll: { description: 'An ancient scroll whispering secrets. A rare find.' },
+    frog: { description: 'A mystical frog. Legends say it brings fortune.' },
+    diamond: { description: 'A brilliant diamond that shines with epic value.' },
+    dragon: { description: 'A dragon relic shimmering with fiery power.' },
+    ton: { description: 'TON token you can use across the game.' }
+  },
   nav: {
     main: 'Main',
     profile: 'Profile',
@@ -222,6 +232,16 @@ const ru: TranslationDict = {
       epic: 'Эпический',
       legendary: 'Легендарный'
     }
+  },
+  prizes: {
+    gift: { description: 'Завёрнутый сюрприз из кейса. Забери или продай.' },
+    giftShard: { description: 'Соберите {required} осколков, чтобы создать полный Подарок.' },
+    teddyBear: { description: 'Плюшевый медведь, поднимает настроение.' },
+    scroll: { description: 'Древний свиток, шепчущий секреты. Редкая находка.' },
+    frog: { description: 'Мистическая лягушка. Говорят, приносит удачу.' },
+    diamond: { description: 'Сверкающий алмаз — эпическая ценность.' },
+    dragon: { description: 'Драконья реликвия, пылающая силой.' },
+    ton: { description: 'Токен TON, полезный для покупок и наград.' }
   },
   nav: {
     main: 'Главная',
