@@ -1,7 +1,6 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback, useLayoutEffect } from 'react';
 import styles from './LiveStatusBar.module.css';
 import { useLiveStore } from '@/store/liveStore';
-import { ProgressiveImg } from '@/components/ui/ProgressiveImg';
 
 export const LiveStatusBar: React.FC = () => {
   const items = useLiveStore((s) => s.items);
@@ -10,35 +9,109 @@ export const LiveStatusBar: React.FC = () => {
   const liveItemsRef = useRef<HTMLDivElement | null>(null);
   const didInitRef = useRef<boolean>(false);
   const [enterDoneId, setEnterDoneId] = useState<number | null>(null);
-  const [capacity, setCapacity] = useState<number>(0);
+  const [itemsToShow, setItemsToShow] = useState<typeof items>([]);
+  const resizeObserverRef = useRef<ResizeObserver | null>(null);
+  const didMountRef = useRef<boolean>(false);
+  const lastShiftedIdRef = useRef<number | null>(null);
 
   useEffect(() => {
     init();
   }, []);
 
-  // Рассчитываем, сколько элементов должно быть видно, чтобы заполнить всю ширину
+  // На первом монтировании помечаем текущий lastAddedId как уже анимированный,
+  // чтобы при возврате на страницу не перезапускалась анимация появления.
+  useLayoutEffect(() => {
+    if (!didMountRef.current) {
+      didMountRef.current = true;
+      if (lastAddedId != null) {
+        setEnterDoneId(lastAddedId);
+        lastShiftedIdRef.current = lastAddedId;
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lastAddedId]);
+
+  // Функция для расчета количества элементов, которые помещаются в контейнер
+  const calculateVisibleItems = useCallback(() => {
+    const container = liveItemsRef.current;
+    if (!container || items.length === 0) return;
+
+    // Получаем ширину контейнера
+    const containerWidth = container.offsetWidth;
+    
+    // Создаем временный элемент для измерения
+    const tempDiv = document.createElement('div');
+    tempDiv.className = styles.liveItem;
+    tempDiv.style.visibility = 'hidden';
+    tempDiv.style.position = 'absolute';
+    tempDiv.innerHTML = `
+      <div class="${styles.liveItemContent}">
+        <img src="" alt="" class="${styles.liveImage}" />
+      </div>
+    `;
+    container.appendChild(tempDiv);
+    
+    // Измеряем ширину одного элемента
+    const itemWidth = tempDiv.offsetWidth;
+    
+    // Получаем gap между элементами
+    const computed = getComputedStyle(container);
+    const gapStr = computed.columnGap || computed.gap || '0px';
+    const gap = parseFloat(gapStr) || 0;
+    
+    // Удаляем временный элемент
+    container.removeChild(tempDiv);
+    
+    // Рассчитываем сколько элементов помещается
+    const totalItemWidth = itemWidth + gap;
+    const visibleCount = Math.floor((containerWidth + gap) / totalItemWidth);
+    
+    // Берем нужное количество элементов или дублируем если их меньше
+    let resultItems = [...items];
+    
+    // Если элементов меньше чем нужно для заполнения, дублируем их
+    if (items.length < visibleCount && items.length > 0) {
+      const timesToRepeat = Math.ceil(visibleCount / items.length) + 1; // +1 для запаса при анимации
+      resultItems = [];
+      for (let i = 0; i < timesToRepeat; i++) {
+        resultItems.push(...items.map(item => ({
+          ...item,
+          // Добавляем уникальный ключ для React, сохраняя оригинальный id
+          uniqueKey: `${item.id}_${i}`
+        })));
+      }
+    }
+    
+    // Обрезаем до нужного количества + запас для анимации
+    setItemsToShow(resultItems.slice(0, visibleCount + 2));
+  }, [items]);
+
+  // Пересчитываем при изменении размера контейнера
   useEffect(() => {
     const container = liveItemsRef.current;
     if (!container) return;
 
-    const ITEM_W = 50; // должно совпадать с css шириной liveItem
-    const compute = () => {
-      const rect = container.getBoundingClientRect();
-      const computed = getComputedStyle(container);
-      const gapStr = (computed as any).columnGap || (computed as any).gap || '3px';
-      const gap = parseFloat(gapStr) || 3;
-      const available = rect.width;
-      const per = ITEM_W + gap;
-      const count = Math.max(1, Math.floor((available + gap) / per));
-      setCapacity(count);
-    };
+    // Начальный расчет
+    calculateVisibleItems();
 
-    // Инициализация и подписка на ресайз
-    compute();
-    const ro = new ResizeObserver(() => compute());
-    ro.observe(container);
-    return () => ro.disconnect();
-  }, []);
+    // Создаем ResizeObserver для отслеживания изменений размера
+    resizeObserverRef.current = new ResizeObserver(() => {
+      calculateVisibleItems();
+    });
+
+    resizeObserverRef.current.observe(container);
+
+    return () => {
+      if (resizeObserverRef.current) {
+        resizeObserverRef.current.disconnect();
+      }
+    };
+  }, [calculateVisibleItems]);
+
+  // Пересчитываем при изменении элементов
+  useEffect(() => {
+    calculateVisibleItems();
+  }, [items, calculateVisibleItems]);
 
   // Плавное смещение списка вправо при добавлении нового элемента слева
   useEffect(() => {
@@ -48,14 +121,18 @@ export const LiveStatusBar: React.FC = () => {
     }
     const container = liveItemsRef.current;
     if (!container) return;
-    if (!items.length) return;
+    if (!itemsToShow.length) return;
+    if (lastAddedId == null) return;
+    if (lastShiftedIdRef.current === lastAddedId) return; // уже обработан
 
     // Запускаем только если первый элемент — именно что добавленный
-    if (items[0]?.id !== lastAddedId) return;
+    const firstItem = itemsToShow[0];
+    const originalId = firstItem.id;
+    if (originalId !== lastAddedId) return;
 
     const firstChild = container.firstElementChild as HTMLElement | null;
     const computed = getComputedStyle(container);
-    const gapStr = (computed as any).columnGap || (computed as any).gap || '0px';
+    const gapStr = computed.columnGap || computed.gap || '0px';
     const gap = parseFloat(gapStr) || 0;
     const itemWidth = firstChild ? firstChild.getBoundingClientRect().width : 50;
     const shift = itemWidth + gap;
@@ -64,6 +141,7 @@ export const LiveStatusBar: React.FC = () => {
     // затем анимация обратно к нулю, создающая эффект плавного сдвига вправо
     container.style.transition = 'none';
     container.style.transform = `translateX(-${shift}px)`;
+    
     // Двойной rAF для надёжного запуска анимации без дёрганий
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
@@ -78,10 +156,11 @@ export const LiveStatusBar: React.FC = () => {
       container.removeEventListener('transitionend', handleEnd);
     };
     container.addEventListener('transitionend', handleEnd);
+    lastShiftedIdRef.current = lastAddedId;
     return () => {
       container.removeEventListener('transitionend', handleEnd);
     };
-  }, [items]);
+  }, [itemsToShow, lastAddedId]);
   
   // Сбрасываем флаг завершения, когда приходит новый элемент
   useEffect(() => {
@@ -89,21 +168,6 @@ export const LiveStatusBar: React.FC = () => {
       setEnterDoneId(null);
     }
   }, [lastAddedId]);
-
-  // Формируем массив для отрисовки нужной длины: используем имеющиеся items,
-  // при нехватке — дублируем существующие, чтобы заполнить всю ширину
-  const renderItems = useMemo(() => {
-    if (!capacity) return items;
-    if (items.length >= capacity) return items.slice(0, capacity);
-    if (items.length === 0) return items;
-    const result = items.slice();
-    let i = 0;
-    while (result.length < capacity) {
-      result.push(items[i % items.length]);
-      i += 1;
-    }
-    return result;
-  }, [items, capacity]);
 
   return (
     <div className={styles.liveStatusBar}>
@@ -113,42 +177,38 @@ export const LiveStatusBar: React.FC = () => {
       </div>
       
       <div className={styles.liveItems} ref={liveItemsRef}>
-        {renderItems.map((item, idx) => {
-          // Анимируем только первое вхождение нового элемента
-          let isNewlyAdded = false;
-          if (item.id === lastAddedId && item.id !== enterDoneId) {
-            // Проверяем, что это первое появление данного id среди renderItems
-            const firstIndex = renderItems.findIndex((ri) => ri.id === item.id);
-            isNewlyAdded = firstIndex === idx;
-          }
+        {itemsToShow.map((item) => {
+          const originalId = item.id;
+          const keyVal = (item as any).uniqueKey ?? item.id;
+          const isNewlyAdded = originalId === lastAddedId && originalId !== enterDoneId;
+          
           return (
-          <div 
-            key={`${item.id}-${idx}`} 
-            data-rarity={item.rarity}
-            className={`${styles.liveItem} ${isNewlyAdded ? styles.liveItemEnter : ''}`}
-            onAnimationEnd={(e) => {
-              if (e.currentTarget !== e.target) return; // игнорируем события от дочерних элементов
-              if (item.id === lastAddedId) {
-                setEnterDoneId(item.id);
-              }
-            }}
-          >
-            <div className={styles.liveItemContent}>
-              <ProgressiveImg 
-                src={item.image} 
-                alt={item.name} 
-                className={styles.liveImage}
-                cacheKey={String(item.id)}
-                onError={(e) => {
-                  const target = e.target as HTMLImageElement;
-                  target.style.display = 'none';
-                }}
-              />
+            <div 
+              key={keyVal}
+              data-rarity={item.rarity}
+              className={`${styles.liveItem} ${isNewlyAdded ? styles.liveItemEnter : ''}`}
+              onAnimationEnd={(e) => {
+                if (e.currentTarget !== e.target) return; // игнорируем события от дочерних элементов
+                if (originalId === lastAddedId) {
+                  setEnterDoneId(originalId);
+                }
+              }}
+            >
+              <div className={styles.liveItemContent}>
+                <img 
+                  src={item.image} 
+                  alt={item.name} 
+                  className={styles.liveImage}
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.style.display = 'none';
+                  }}
+                />
+              </div>
             </div>
-          </div>
           );
         })}
       </div>
     </div>
   );
-}; 
+};

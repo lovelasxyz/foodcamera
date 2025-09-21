@@ -1,265 +1,294 @@
-// Lightweight image preloading and cache signaling utility
-// - Deduplicates in-flight requests
-// - Marks images as loaded for instant render in ProgressiveImg
+// Улучшенный image cache без проблем с производительностью
 
-type PreloadOptions = {
+interface PreloadOptions {
 	concurrency?: number;
-	priority?: 'high' | 'normal' | 'low';
-	// When true, re-fetch even if URL was previously loaded/cached
 	force?: boolean;
-};
-
-// Определяет оптимальную емкость кэша на основе производительности устройства
-function getOptimalCacheCapacity(): number {
-	try {
-		const anyNav: any = navigator as any;
-		const memory = (anyNav as any)?.deviceMemory ?? 4;
-		const connection = anyNav?.connection || anyNav?.mozConnection || anyNav?.webkitConnection;
-		const downlink: number = connection?.downlink ?? 10;
+	priority?: 'high' | 'low';
+  }
+  
+  class SimpleImageCache {
+	private loaded = new Set<string>();
+	private loading = new Map<string, Promise<void>>();
+	private failed = new Set<string>();
+	private subscribers = new Map<string, Set<() => void>>();
+	private loadQueue: string[] = [];
+	private activeLoads = 0;
+	private maxConcurrent = 3;
+  
+	isLoaded(url: string): boolean {
+	  if (!url) return false;
+	  // Проверяем также браузерный кеш через Performance API
+	  if (this.loaded.has(url)) return true;
+	  
+	  // Дополнительная проверка через браузерный кеш
+	  if (typeof performance !== 'undefined' && performance.getEntriesByName) {
+		const entries = performance.getEntriesByName(url);
+		if (entries.length > 0) {
+		  this.loaded.add(url);
+		  return true;
+		}
+	  }
+	  
+	  return false;
+	}
+  
+	isLoading(url: string): boolean {
+	  return this.loading.has(url);
+	}
+  
+	hasFailed(url: string): boolean {
+	  return this.failed.has(url);
+	}
+  
+	markLoaded(url: string): void {
+	  if (!url) return;
+	  this.loaded.add(url);
+	  this.loading.delete(url);
+	  this.failed.delete(url);
+	  this.notify(url);
+	  this.processQueue();
+	}
+  
+	markFailed(url: string): void {
+	  if (!url) return;
+	  this.failed.add(url);
+	  this.loading.delete(url);
+	  this.activeLoads--;
+	  this.processQueue();
+	}
+  
+	async preload(urls: string[], options: PreloadOptions = {}): Promise<void> {
+	  const { concurrency = 3, force = false, priority = 'low' } = options;
+	  const validUrls = urls.filter(url => url && (force || !this.isLoaded(url)));
+	  
+	  if (validUrls.length === 0) return;
+  
+	  // Высокий приоритет - загружаем сразу
+	  if (priority === 'high') {
+		const promises = validUrls.map(url => this.loadSingle(url, true));
+		await Promise.allSettled(promises);
+		return;
+	  }
+  
+	  // Низкий приоритет - добавляем в очередь
+	  this.maxConcurrent = concurrency;
+	  validUrls.forEach(url => {
+		if (!this.loadQueue.includes(url) && !this.loading.has(url)) {
+		  this.loadQueue.push(url);
+		}
+	  });
+	  
+	  this.processQueue();
+	}
+  
+	preloadLazy(url: string): void {
+	  if (!url || this.isLoaded(url) || this.isLoading(url)) return;
+	  
+	  // Добавляем в начало очереди для более быстрой загрузки
+	  if (!this.loadQueue.includes(url)) {
+		this.loadQueue.unshift(url);
+		this.processQueue();
+	  }
+	}
+  
+	private processQueue(): void {
+	  while (this.activeLoads < this.maxConcurrent && this.loadQueue.length > 0) {
+		const url = this.loadQueue.shift();
+		if (url && !this.isLoaded(url) && !this.isLoading(url)) {
+		  this.loadSingle(url, false);
+		}
+	  }
+	}
+  
+	private async loadSingle(url: string, highPriority: boolean = false): Promise<void> {
+	  if (!url || this.loading.has(url)) {
+		return this.loading.get(url);
+	  }
+	  
+	  if (this.isLoaded(url)) {
+		return Promise.resolve();
+	  }
+  
+	  this.activeLoads++;
+	  this.failed.delete(url);
+  
+	  const loadPromise = new Promise<void>((resolve, reject) => {
+		const img = new Image();
 		
-		// Очень консервативные настройки для слабых устройств
-		if (memory < 2 || downlink < 1.5) return 20;  // Минимальный кэш для очень слабых устройств
-		if (memory < 4 || downlink < 3) return 40;    // Средний кэш
-		return 80;                                     // Полный кэш для мощных устройств
-	} catch {
-		return 40; // Безопасное значение по умолчанию
-	}
-}
-
-class ImageCacheService {
-	private loadedUrls: Set<string> = new Set();
-	private inFlight: Map<string, Promise<void>> = new Map();
-	private objectUrls: Map<string, string> = new Map();
-	private subscribers: Map<string, Set<() => void>> = new Map();
-	// Maintain LRU order: most recently used keys at the end
-	private lruList: string[] = [];
-	private capacity: number;
-
-	constructor(capacity = getOptimalCacheCapacity()) {
-		this.capacity = capacity;
-	}
-
-	isLoaded(url: string | undefined | null): boolean {
-		if (!url) return false;
-		return this.loadedUrls.has(url) || this.objectUrls.has(url);
-	}
-
-	markLoaded(url: string | undefined | null): void {
-		if (!url) return;
-		this.loadedUrls.add(url);
-		this.touchKey(url);
-	}
-
-	preload(urls: Array<string | undefined | null>, options: PreloadOptions = {}): Promise<void> {
-		const unique = Array.from(new Set(urls.filter((u): u is string => !!u)));
-		if (unique.length === 0) return Promise.resolve();
-
-		const concurrency = Math.max(1, Math.min(options.concurrency ?? this.getRecommendedConcurrency(), 6));
-		let index = 0;
-
-		const worker = async () => {
-			while (index < unique.length) {
-				const current = unique[index++];
-				if (!options.force && this.loadedUrls.has(current)) continue;
-				await this.preloadOne(current, options.force === true);
-			}
+		// Настройки для избежания проблем с CORS
+		img.crossOrigin = 'anonymous';
+		
+		// Таймаут для предотвращения зависания
+		const timeout = setTimeout(() => {
+		  img.src = '';
+		  reject(new Error('Timeout'));
+		  this.markFailed(url);
+		}, highPriority ? 30000 : 15000);
+  
+		img.onload = () => {
+		  clearTimeout(timeout);
+		  this.markLoaded(url);
+		  resolve();
 		};
-
-		const workers = Array.from({ length: Math.min(concurrency, unique.length) }, () => worker());
-		return Promise.all(workers).then(() => void 0);
-	}
-
-	private preloadOne(url: string, force = false): Promise<void> {
-		if (!force && this.loadedUrls.has(url)) return Promise.resolve();
-		const existing = this.inFlight.get(url);
-		if (existing) return existing;
-
-		if (force) {
-			const oldObj = this.objectUrls.get(url);
-			if (oldObj) {
-				URL.revokeObjectURL(oldObj);
-				this.objectUrls.delete(url);
-			}
-			this.loadedUrls.delete(url);
+  
+		img.onerror = () => {
+		  clearTimeout(timeout);
+		  this.markFailed(url);
+		  reject(new Error('Failed to load'));
+		};
+  
+		// Устанавливаем приоритет загрузки
+		if ('fetchpriority' in img) {
+		  (img as any).fetchpriority = highPriority ? 'high' : 'low';
 		}
-
-		const p = (async () => {
-			try {
-				const resp = await fetch(url, { mode: 'cors', cache: force ? 'reload' : 'force-cache' });
-				if (!resp.ok) throw new Error('Network response not ok');
-				const blob = await resp.blob();
-				const objectUrl = URL.createObjectURL(blob);
-				this.objectUrls.set(url, objectUrl);
-				this.loadedUrls.add(url);
-				this.touchKey(url);
-				this.inFlight.delete(url);
-				this.notifySubscribers(url);
-			} catch (e) {
-				// Не добавляем в loadedUrls при ошибке - это может привести к ложному кэшированию
-				this.inFlight.delete(url);
-				console.warn('Failed to preload image:', url, e);
-			}
-		})();
-
-		this.inFlight.set(url, p);
-		return p;
+  
+		img.src = url;
+	  });
+  
+	  this.loading.set(url, loadPromise);
+  
+	  try {
+		await loadPromise;
+	  } finally {
+		this.loading.delete(url);
+		this.activeLoads--;
+	  }
+  
+	  return loadPromise;
 	}
-
-	// Public API to lazy preload a single image (non-blocking)
-	preloadOneLazy(url: string) {
-		if (!url) return;
-		if (this.objectUrls.has(url) || this.loadedUrls.has(url)) return;
-		this.preloadOne(url).catch(() => {});
+  
+	subscribe(url: string, callback: () => void): () => void {
+	  if (!url) return () => {};
+	  
+	  if (!this.subscribers.has(url)) {
+		this.subscribers.set(url, new Set());
+	  }
+	  this.subscribers.get(url)!.add(callback);
+	  
+	  // Если изображение уже загружено, вызываем callback сразу
+	  if (this.isLoaded(url)) {
+		// Используем микротаск для избежания проблем с синхронным вызовом
+		queueMicrotask(() => callback());
+	  }
+	  
+	  return () => {
+		const subs = this.subscribers.get(url);
+		if (subs) {
+		  subs.delete(callback);
+		  if (subs.size === 0) {
+			this.subscribers.delete(url);
+		  }
+		}
+	  };
 	}
-
+  
+	private notify(url: string): void {
+	  const subs = this.subscribers.get(url);
+	  if (subs) {
+		// Копируем set чтобы избежать проблем с модификацией во время итерации
+		const callbacks = Array.from(subs);
+		// Используем микротаски для избежания блокировки
+		queueMicrotask(() => {
+		  callbacks.forEach(callback => callback());
+		});
+	  }
+	}
+  
 	getCachedSrc(url: string): string {
-		const obj = this.objectUrls.get(url);
-		if (obj) {
-			this.touchKey(url);
-			return obj;
-		}
-		return url;
+	  // Возвращаем оригинальный URL - браузер сам управляет кешем
+	  return url;
 	}
-
-	private touchKey(url: string) {
-		const idx = this.lruList.indexOf(url);
-		if (idx !== -1) this.lruList.splice(idx, 1);
-		this.lruList.push(url);
-		this.evictIfNeeded();
-	}
-
-	private evictIfNeeded() {
-		while (this.lruList.length > this.capacity) {
-			const oldest = this.lruList.shift();
-			if (!oldest) continue;
-			const obj = this.objectUrls.get(oldest);
-			if (obj) {
-				URL.revokeObjectURL(obj);
-				this.objectUrls.delete(oldest);
-			}
-			this.loadedUrls.delete(oldest);
-			this.inFlight.delete(oldest);
-			this.subscribers.delete(oldest);
-		}
-	}
-
-	subscribe(url: string, cb: () => void): () => void {
-		if (!this.subscribers.has(url)) this.subscribers.set(url, new Set());
-		this.subscribers.get(url)!.add(cb);
-		return () => this.unsubscribe(url, cb);
-	}
-
-	unsubscribe(url: string, cb: () => void) {
-		const s = this.subscribers.get(url);
-		if (!s) return;
-		s.delete(cb);
-		if (s.size === 0) this.subscribers.delete(url);
-	}
-
-	private notifySubscribers(url: string) {
-		const s = this.subscribers.get(url);
-		if (!s) return;
-		for (const cb of Array.from(s)) cb();
-	}
-
-	// Optional cleanup if needed
-	revoke(url: string) {
-		const obj = this.objectUrls.get(url);
-		if (obj) {
-			URL.revokeObjectURL(obj);
-			this.objectUrls.delete(url);
-			const idx = this.lruList.indexOf(url);
-			if (idx !== -1) this.lruList.splice(idx, 1);
-		}
-		this.loadedUrls.delete(url);
-		this.inFlight.delete(url);
-		this.subscribers.delete(url);
-	}
-
-
-	private getRecommendedConcurrency(): number {
-		try {
-			const anyNav: any = navigator as any;
-			const connection = anyNav?.connection || anyNav?.mozConnection || anyNav?.webkitConnection;
-			const downlink: number = connection?.downlink ?? 10;
-			// Conservative defaults for low/mid tier
-			if (downlink < 1.5) return 2;
-			if (downlink < 3) return 3;
-			return 4;
-		} catch {
-			return 3;
-		}
-	}
-}
-
-export const imageCache = new ImageCacheService();
-
-// Оптимизированная функция для предзагрузки изображений кейсов
-export function preloadCaseImages(cases: any[], options: { priorityCount?: number; concurrency?: number } = {}): void {
-	const allImages: string[] = [];
-	
-	// Собираем все изображения
-	for (const caseItem of cases) {
-		if (caseItem.image) allImages.push(caseItem.image);
-		// Не предзагружаем изображения призов сразу - они загрузятся при открытии кейса
-	}
-	
-	const uniqueImages = Array.from(new Set(allImages.filter(Boolean)));
-	if (uniqueImages.length === 0) return;
-	
-	// Определяем параметры на основе производительности устройства
-	const concurrency = options.concurrency ?? getOptimalConcurrency();
-	const priorityCount = options.priorityCount ?? 8; // Загружаем только первые 8 кейсов сразу
-	
-	// Предзагружаем приоритетные изображения (видимые на экране)
-	const priorityImages = uniqueImages.slice(0, priorityCount);
-	const remainingImages = uniqueImages.slice(priorityCount);
-	
-	// Загружаем приоритетные сразу
-	if (priorityImages.length > 0) {
-		imageCache.preload(priorityImages, { concurrency }).catch(() => {});
-	}
-	
-	// Остальные загружаем с задержкой для слабых устройств
-	if (remainingImages.length > 0) {
-		const delay = getOptimalDelay();
-		setTimeout(() => {
-			imageCache.preload(remainingImages, { concurrency: Math.max(1, concurrency - 1) }).catch(() => {});
-		}, delay);
-	}
-}
-
-// Определяет оптимальный concurrency на основе производительности устройства
-function getOptimalConcurrency(): number {
-	try {
-		const anyNav: any = navigator as any;
-		const connection = anyNav?.connection || anyNav?.mozConnection || anyNav?.webkitConnection;
-		const downlink: number = connection?.downlink ?? 10;
-		const memory = (anyNav as any)?.deviceMemory ?? 4;
+  
+	// Метод для предзагрузки с учетом viewport
+	preloadVisible(urls: string[], viewportMargin: number = 100): void {
+	  if (typeof window === 'undefined') return;
+	  
+	  const viewportHeight = window.innerHeight;
+	  const threshold = viewportHeight + viewportMargin;
+	  
+	  const visible: string[] = [];
+	  const upcoming: string[] = [];
+	  
+	  urls.forEach((url, index) => {
+		// Приблизительная оценка позиции (можно улучшить с реальными позициями)
+		const estimatedPosition = index * 200; // предполагаем высоту элемента
 		
-		// Очень консервативные настройки для слабых устройств
-		if (downlink < 1.5 || memory < 2) return 1;
-		if (downlink < 3 || memory < 4) return 2;
-		return 3;
-	} catch {
-		return 2; // Безопасное значение по умолчанию
+		if (estimatedPosition < threshold) {
+		  visible.push(url);
+		} else if (estimatedPosition < threshold * 2) {
+		  upcoming.push(url);
+		}
+	  });
+	  
+	  // Загружаем видимые с высоким приоритетом
+	  this.preload(visible, { priority: 'high', concurrency: 4 });
+	  
+	  // Загружаем следующие с низким приоритетом
+	  setTimeout(() => {
+		this.preload(upcoming, { priority: 'low', concurrency: 2 });
+	  }, 500);
 	}
-}
-
-// Определяет задержку для загрузки неприоритетных изображений
-function getOptimalDelay(): number {
-	try {
-		const anyNav: any = navigator as any;
-		const connection = anyNav?.connection || anyNav?.mozConnection || anyNav?.webkitConnection;
-		const downlink: number = connection?.downlink ?? 10;
-		
-		if (downlink < 1.5) return 3000; // 3 секунды для медленных соединений
-		if (downlink < 3) return 1500;   // 1.5 секунды для средних
-		return 500;                      // 0.5 секунды для быстрых
-	} catch {
-		return 2000; // Безопасное значение по умолчанию
+  
+	// Статистика для отладки
+	getStats() {
+	  return {
+		loaded: this.loaded.size,
+		loading: this.loading.size,
+		failed: this.failed.size,
+		queued: this.loadQueue.length,
+		activeLoads: this.activeLoads
+	  };
 	}
-}
-
-
-
+  
+	// Очистка с сохранением успешно загруженных
+	clearFailed(): void {
+	  this.failed.clear();
+	  this.loadQueue = [];
+	}
+  
+	// Полная очистка
+	clear(): void {
+	  this.loaded.clear();
+	  this.loading.clear();
+	  this.failed.clear();
+	  this.subscribers.clear();
+	  this.loadQueue = [];
+	  this.activeLoads = 0;
+	}
+  }
+  
+  export const imageCache = new SimpleImageCache();
+  
+  // Улучшенные хелперы
+  export const preloadCaseImages = (cases: Array<{ image: string }>, priorityCount = 6) => {
+	const images = cases.map(c => c.image).filter(Boolean);
+	
+	if (images.length === 0) return;
+	
+	const priority = images.slice(0, priorityCount);
+	const remaining = images.slice(priorityCount);
+  
+	// Загружаем приоритетные с высоким приоритетом
+	imageCache.preload(priority, { 
+	  concurrency: 3, 
+	  priority: 'high' 
+	});
+	
+	// Остальные с задержкой и низким приоритетом
+	if (remaining.length > 0) {
+	  requestIdleCallback(() => {
+		imageCache.preload(remaining, { 
+		  concurrency: 2, 
+		  priority: 'low' 
+		});
+	  }, { timeout: 2000 });
+	}
+  };
+  
+  export const preloadBannerAssets = (assets: string[]) => {
+	// Баннеры обычно важны, загружаем с высоким приоритетом
+	imageCache.preload(assets, { 
+	  concurrency: 3, 
+	  priority: 'high' 
+	});
+  };

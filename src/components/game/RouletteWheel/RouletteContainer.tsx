@@ -32,9 +32,14 @@ export const RouletteContainer: React.FC = () => {
 
   React.useEffect(() => {
     if (!currentCase) return;
-    const prizeImages = currentCase.items.map((p) => p.image);
-    // Preload in background without cache-busting to leverage browser cache
-    imageCache.preload([...prizeImages, ASSETS.IMAGES.TON, ASSETS.IMAGES.UNION], { concurrency: 3 });
+    
+    // Предзагружаем только уникальные изображения
+    const uniqueImages = [...new Set(currentCase.items.map(item => item.image))];
+    const criticalImages = [ASSETS.IMAGES.TON, ASSETS.IMAGES.UNION];
+    
+    imageCache.preload([...criticalImages, ...uniqueImages], { 
+      concurrency: 2, // Уменьшите concurrency для стабильности
+    });
   }, [currentCase?.id]);
 
   const handleSpin = () => api.handleSpin(rouletteItems.length);

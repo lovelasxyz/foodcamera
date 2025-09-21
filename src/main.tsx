@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { BrowserRouter } from 'react-router-dom';
+import { HashRouter } from 'react-router-dom';
 import App from './App.tsx';
 import { I18nProvider } from '@/i18n';
 import { shouldUseGuestMode } from '@/utils/environment';
@@ -45,9 +45,9 @@ const root = ReactDOM.createRoot(
 root.render(
   <React.StrictMode>
     <I18nProvider>
-      <BrowserRouter>
+      <HashRouter>
         <App />
-      </BrowserRouter>
+      </HashRouter>
     </I18nProvider>
   </React.StrictMode>
 );
