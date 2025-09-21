@@ -54,6 +54,8 @@ export const useSpinLogic = (): [SpinLogicState, SpinLogicApi] => {
   const [previewPrize, setPreviewPrize] = useState<Prize | null>(null);
   const clickLockRef = useRef(false);
   const awardedRef = useRef(false);
+  const endGuardRef = useRef(false);
+  const spinEndTimerRef = useRef<number | null>(null);
 
   const engine = useMemo(() => new RouletteEngine(ROULETTE_CONFIG), []);
   const spinUseCase = useMemo(() => new SpinUseCase(engine, { updateBalance, addToInventory }), [engine, updateBalance, addToInventory]);
@@ -63,28 +65,41 @@ export const useSpinLogic = (): [SpinLogicState, SpinLogicApi] => {
     setTargetReplicaIndex(null);
   }, []);
 
+  const finalizeSpin = useCallback((settleDelay = 1000) => {
+    if (endGuardRef.current) return;
+    endGuardRef.current = true;
+    // Small settle delay to allow last frame and highlight
+    const t = window.setTimeout(() => {
+      if (spinResult && currentCase) {
+        if (showWinModal) {
+          endSpin();
+        } else {
+          if (!awardedRef.current) {
+            addToInventory(spinResult.prize, currentCase.name);
+            awardedRef.current = true;
+          }
+          useGameStore.setState({ isSpinning: false });
+        }
+      } else {
+        endSpin();
+      }
+      clickLockRef.current = false;
+      if (spinEndTimerRef.current != null) {
+        window.clearTimeout(spinEndTimerRef.current);
+        spinEndTimerRef.current = null;
+      }
+    }, settleDelay);
+    // store timer id only if not already set (best-effort)
+    if (spinEndTimerRef.current == null) spinEndTimerRef.current = t as unknown as number;
+  }, [spinResult, currentCase, showWinModal, endSpin, addToInventory]);
+
   const handleAnimationEnd = useCallback(() => {
     if (isSpinning) {
-      setTimeout(() => {
-        if (spinResult && currentCase) {
-          if (showWinModal) {
-            endSpin();
-          } else {
-            if (!awardedRef.current) {
-              addToInventory(spinResult.prize, currentCase.name);
-              awardedRef.current = true;
-            }
-            useGameStore.setState({ isSpinning: false });
-          }
-        } else {
-          endSpin();
-        }
-        clickLockRef.current = false;
-      }, 1000);
+      finalizeSpin(1000);
     } else {
       clickLockRef.current = false;
     }
-  }, [isSpinning, spinResult, currentCase, addToInventory, endSpin, showWinModal]);
+  }, [isSpinning, finalizeSpin]);
 
   const handleSpin = useCallback((rouletteItemsLength: number) => {
     ConnectivityGuard.ensureOnline();
@@ -112,6 +127,18 @@ export const useSpinLogic = (): [SpinLogicState, SpinLogicApi] => {
       setPosition(result.position);
       setTargetReplicaIndex(result.targetDomIndex);
     });
+    // Fallback: ensure we finish even if transitionend is dropped
+    if (spinEndTimerRef.current != null) {
+      window.clearTimeout(spinEndTimerRef.current);
+      spinEndTimerRef.current = null;
+    }
+    endGuardRef.current = false;
+    spinEndTimerRef.current = window.setTimeout(() => {
+      // If still spinning after duration + buffer, finalize programmatically
+      if (useGameStore.getState().isSpinning) {
+        finalizeSpin(300); // shorter settle on fallback
+      }
+    }, ROULETTE_CONFIG.SPIN_DURATION + 800) as unknown as number;
   }, [currentCase, isSpinning, isOnline, spinUseCase, user.balance, playSound, startSpin]);
 
   const handleKeepPrize = useCallback(() => {
@@ -146,22 +173,14 @@ export const useSpinLogic = (): [SpinLogicState, SpinLogicApi] => {
       setPosition(spinResult.position);
       // Allow DOM to update then finalize
       requestAnimationFrame(() => {
-        if (showWinModal) {
-          endSpin();
-        } else {
-          if (!awardedRef.current) {
-            addToInventory(spinResult.prize, currentCase.name);
-            awardedRef.current = true;
-          }
-          useGameStore.setState({ isSpinning: false });
-        }
+        finalizeSpin(0);
       });
     } else {
       endSpin();
     }
 
     clickLockRef.current = false;
-  }, [isSpinning, spinResult, currentCase, addToInventory, endSpin, showWinModal]);
+  }, [isSpinning, spinResult, currentCase, finalizeSpin, endSpin]);
 
   const handleCloseCase = useCallback(() => {
     // Разрешаем закрытие кейса без потери выигрыша
@@ -180,6 +199,14 @@ export const useSpinLogic = (): [SpinLogicState, SpinLogicApi] => {
       return () => clearTimeout(timer);
     }
   }, [showResult, isSpinning, resetRoulette]);
+
+  // Cleanup timer when unmounting or when spin ends externally
+  useEffect(() => {
+    if (!isSpinning && spinEndTimerRef.current != null) {
+      window.clearTimeout(spinEndTimerRef.current);
+      spinEndTimerRef.current = null;
+    }
+  }, [isSpinning]);
 
   const hasEnoughFunds = useMemo(() => {
     const balance = new Money(user.balance);

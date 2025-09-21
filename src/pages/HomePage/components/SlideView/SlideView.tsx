@@ -54,3 +54,4 @@ export const SlideView: React.FC<SlideViewProps> = ({ slide, shadowColor, onActi
   ) : content;
 };
 
+

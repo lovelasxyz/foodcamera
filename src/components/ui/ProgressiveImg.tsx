@@ -3,12 +3,14 @@ import { imageCache } from '@/services/ImageCache';
 
 interface ProgressiveImgProps extends React.ImgHTMLAttributes<HTMLImageElement> {
   previewSrc?: string;
+  cacheKey?: string; // optional external cache key (currently not used)
 }
 
 export const ProgressiveImg: React.FC<ProgressiveImgProps> = ({ 
   previewSrc, 
   src, 
   style, 
+  cacheKey: _cacheKey,
   ...rest 
 }) => {
   const srcStr = typeof src === 'string' ? src : undefined;
