@@ -101,35 +101,22 @@
   will-change: auto;
 }
 
-/* Плавная анимация появления */
+/* Простая анимация падения как в примере */
 .liveItemEnter {
   opacity: 0;
-  transform: translateY(-60px) translateZ(0) scale(0.8);
-  animation: liveItemFallSmooth 800ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  transform: translateY(-50px);
+  animation: liveItemFall 700ms ease forwards;
   will-change: transform, opacity;
 }
 
-@keyframes liveItemFallSmooth {
+@keyframes liveItemFall {
   0% {
     opacity: 0;
-    transform: translateY(-60px) translateZ(0) scale(0.8);
-  }
-  20% {
-    opacity: 0.5;
-  }
-  40% {
-    opacity: 1;
-    transform: translateY(-20px) translateZ(0) scale(0.95);
-  }
-  60% {
-    transform: translateY(5px) translateZ(0) scale(1.02);
-  }
-  80% {
-    transform: translateY(-2px) translateZ(0) scale(0.99);
+    transform: translateY(-50px);
   }
   100% {
+    transform: translateY(0);
     opacity: 1;
-    transform: translateY(0) translateZ(0) scale(1);
   }
 }
 
