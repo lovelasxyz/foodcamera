@@ -121,7 +121,8 @@ export const useSpinLogic = (): [SpinLogicState, SpinLogicApi] => {
     DomainEventBus.emit(DomainEventNames.CaseOpened, { type: 'CaseOpened', caseId: currentCase.id, timestamp: Date.now() });
 
   // Derive modifier context from user data (simple approximations)
-    const hasAvatar = !!user.avatar && !/default|avatar\.png/i.test(user.avatar);
+    const hasAvatar = user.telegram?.hasPhoto
+      ?? (!!user.avatar && !/default|avatar\.png/i.test(user.avatar));
     const spinsCount = user.stats?.spinsCount ?? 0;
     const registeredDays = user.telegram ? Math.floor((Date.now() - user.telegram.registeredAt) / 86400000) : undefined;
     // Rough common wins bias: share of common items in inventory

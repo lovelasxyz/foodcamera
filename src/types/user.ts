@@ -6,6 +6,8 @@ export interface UserTelegramAccount {
   id: string;
   username?: string;
   registeredAt: number; // дата регистрации в приложении
+  hasPhoto?: boolean;   // есть ли фото профиля в Telegram
+  photoUrl?: string;    // оригинальный URL фото из Telegram (если есть)
 }
 
 export interface UserStats {

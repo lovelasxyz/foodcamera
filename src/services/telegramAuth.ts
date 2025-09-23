@@ -59,7 +59,7 @@ class TelegramAuthService {
       id: telegramUser.id.toString(),
       name: fullName || telegramUser.username || 'User',
       username: telegramUser.username,
-      avatar: telegramUser.photo_url,
+      avatar: telegramUser.photo_url, // may be undefined if no photo
       isPremium: telegramUser.is_premium,
       languageCode: telegramUser.language_code,
     };
@@ -118,14 +118,12 @@ class TelegramAuthService {
     }
 
     const parsedUser = this.parseUserData(telegramUser);
-    
-    // Получаем аватарку
+    // Не подменяем отсутствующую аватарку дефолтной здесь, чтобы можно было
+    // различать «нет фото в TG» и «есть фото». UI/Store могут отрендерить
+    // плейсхолдер визуально, но логика будет знать реальное состояние.
     if (telegramUser.photo_url) {
       parsedUser.avatar = this.getAvatarUrl(telegramUser);
-    } else {
-      parsedUser.avatar = this.generateDefaultAvatar(parsedUser.name);
     }
-
     return parsedUser;
   }
 

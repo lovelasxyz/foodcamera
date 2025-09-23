@@ -27,15 +27,21 @@ export const UserFactory = {
   },
 
   createFromTelegram(t: ParsedTelegramUser): User {
+    const defaults = baseDefaults();
+    const avatar = t.avatar && t.avatar.trim().length > 0 ? t.avatar : defaults.avatar;
+    const hasPhoto = !!t.avatar && t.avatar.trim().length > 0;
     return {
       id: t.id,
       name: t.name,
-      ...baseDefaults(),
+      ...defaults,
+      avatar,
       status: t.isPremium ? 'premium' : 'regular',
       telegram: {
         id: t.id,
         username: t.username,
-        registeredAt: Date.now()
+        registeredAt: Date.now(),
+        hasPhoto,
+        photoUrl: hasPhoto ? t.avatar : undefined,
       },
       stats: { spinsCount: 0, lastAuthAt: Date.now() }
     };
