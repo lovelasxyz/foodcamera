@@ -18,9 +18,6 @@ interface LoadingScreenProps {
 }
 
 export const LoadingScreen: React.FC<LoadingScreenProps> = ({ 
-  mode = 'simple',
-  status = 'Loading...',
-  showLogo = true,
   onRetry 
 }) => {
   const { t } = useI18n();
@@ -53,31 +50,6 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({
     }
   };
 
-  // Простой режим (бывший AppLoader)
-  if (mode === 'simple') {
-    return (
-      <div className={styles.loadingScreen}>
-        <div className={styles.content}>
-          {showLogo && (
-            <div className={styles.logoContainer}>
-              <div className={styles.logo}>
-                <div className={styles.logoShape}>
-                  <div className={styles.logoInner}>V</div>
-                </div>
-              </div>
-              <h1 className={styles.appName}>{t('loading.appName')}</h1>
-              <p className={styles.copyright}>{t('loading.copyright')}</p>
-            </div>
-          )}
-          
-          <div className={styles.loaderContainer}>
-            <div className={styles.spinner}></div>
-            <p className={styles.status}>{shouldUseGuestMode() ? t('loading.connecting') : status}</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   // Режим авторизации Telegram (оригинальный LoadingPage)
   return (
