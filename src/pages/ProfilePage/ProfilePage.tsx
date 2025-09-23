@@ -3,7 +3,7 @@ import { useUserStore } from '@/store/userStore';
 import { useUIStore } from '@/store/uiStore';
 import { Button } from '@/components/ui/Button';
 import styles from './ProfilePage.module.css';
-import { SHARD_PRODUCTS } from '@/utils/constants';
+import { ShardRecipeMapper } from '@/domain/shards/ShardRecipeMapper';
 import { Modal } from '@/components/ui/Modal';
 import { PrizeModal } from '@/components/game/PrizeCard';
 import { DepositModal } from '@/components/profile/DepositModal';
@@ -74,12 +74,12 @@ export const ProfilePage: React.FC = () => {
     });
     // Карточки осколков с последним временем изменения количества
     const shards = Object.entries(user.shards || {}).map(([key, count]) => {
-      const cfg = SHARD_PRODUCTS[key as keyof typeof SHARD_PRODUCTS];
+        const cfg = ShardRecipeMapper.fromConstants().find(r => r.key === key);
       return {
         kind: 'shard' as const,
         id: `shard-${key}`,
-        image: cfg?.shardImage || '/images/gift_shard.png',
-        label: `${count} of ${cfg?.required ?? 10}`,
+          image: cfg?.shardImage,
+        label: t('common.ofPattern', { count, total: cfg?.required ?? 10 }),
         shardKey: key,
         count,
         required: cfg?.required ?? 10,
@@ -201,24 +201,26 @@ export const ProfilePage: React.FC = () => {
             >
               {t('common.receive')}
             </Button>
-            <Button
-              className={styles.quickSellBtn}
-              onClick={() => {
-                if (inventoryActionLock) return;
-                setInventoryActionLock(true);
-                try {
-                  sellInventoryItem(selectedInventoryItem.id);
-                } finally {
-                  setSelectedItemId(null);
-                }
-              }}
-            >
-              <span style={{ color: 'white', fontSize: '14px' }}>{t('roulette.quickSell')}</span>
-              <span className={styles.quickSellRight}>
-                {selectedInventoryItem.prize.price.toFixed(2)}
-                <img src={ASSETS.IMAGES.TON} alt="TON" className={styles.tonIconSmall} />
-              </span>
-            </Button>
+            {!(selectedInventoryItem.prize.nonRemovableGift) && !selectedInventoryItem.prize.benefit && (
+              <Button
+                className={styles.quickSellBtn}
+                onClick={() => {
+                  if (inventoryActionLock) return;
+                  setInventoryActionLock(true);
+                  try {
+                    sellInventoryItem(selectedInventoryItem.id);
+                  } finally {
+                    setSelectedItemId(null);
+                  }
+                }}
+              >
+                <span style={{ color: 'white', fontSize: '14px' }}>{t('roulette.quickSell')}</span>
+                <span className={styles.quickSellRight}>
+                  {selectedInventoryItem.prize.price.toFixed(2)}
+                  <img src={ASSETS.IMAGES.TON} alt="TON" className={styles.tonIconSmall} />
+                </span>
+              </Button>
+            )}
           </div>
         )}
       />

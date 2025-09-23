@@ -9,7 +9,10 @@ export const mockCases: Case[] = [
     price: 0,
     background: '#0088FF',
     items: [
-      { id: 100, name: 'Gift Shard', price: 0, image: ASSETS.SHARDS.GIFT_SHARD, rarity: 'common', isShard: true, shardKey: 'gift', shardsRequired: 10 } as Prize,
+      { id: 11030, name: 'Discount 30% Shard', price: 0, image: ASSETS.SHARDS.GIFT_SHARD, rarity: 'rare', isShard: true, shardKey: 'discount_30', shardsRequired: 10 } as Prize,
+      { id: 11050, name: 'Discount 50% Shard', price: 0, image: ASSETS.SHARDS.GIFT_SHARD, rarity: 'rare', isShard: true, shardKey: 'discount_50', shardsRequired: 10 } as Prize,
+      { id: 11015, name: 'Discount 15% Shard', price: 0, image: ASSETS.SHARDS.GIFT_SHARD, rarity: 'common', isShard: true, shardKey: 'discount_15', shardsRequired: 10 } as Prize,
+      { id: 11010, name: 'Discount 10% Shard', price: 0, image: ASSETS.SHARDS.GIFT_SHARD, rarity: 'common', isShard: true, shardKey: 'discount_10', shardsRequired: 10 } as Prize,
       { id: 1, name: 'Teddy Bear', price: 10.91, image: ASSETS.IMAGES.TEDDY, rarity: 'common' },
     ]
   },

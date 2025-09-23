@@ -1,12 +1,11 @@
 import React from 'react';
 import { Modal } from '@/components/ui/Modal';
 import styles from './RouletteWheel.module.css';
-import { SpinControls, PrizeDisplay } from './components';
+import { SpinControls, PrizeDisplay, PossiblePrizes } from './components';
 import { RouletteViewport } from './RouletteViewport';
-import { PossiblePrizes } from './PossiblePrizes';
 import { PrizeModal } from '@/components/game/PrizeCard';
 import { SpinLogicState, SpinLogicApi } from './hooks/useSpinLogic';
-import { Case, Prize, SpinResult } from '@/types/game';
+import { Case, Prize, SpinResult, RouletteItem } from '@/types/game';
 import { usePrizeDescription } from '@/i18n/prizeDescriptions';
 
 interface RouletteViewProps {
@@ -14,7 +13,7 @@ interface RouletteViewProps {
   isSpinning: boolean;
   showResult: boolean;
   spinResult: SpinResult | null;
-  rouletteItems: Array<{ uniqueId: string; image: string; name: string; price: number; rarity?: string; originalIndex?: number; } & Record<string, any>>;
+  rouletteItems: RouletteItem[];
   state: SpinLogicState;
   api: SpinLogicApi;
   onSpin: () => void;
@@ -94,6 +93,14 @@ const RouletteView: React.FC<RouletteViewProps> = ({
               isSpinning={isSpinning}
               onKeep={api.handleKeepPrize}
               onSell={api.handleQuickSell}
+              showSell={(() => {
+                const p = spinResult?.prize;
+                if (!p) return false;
+                if (p.isShard) return false;
+                if (p.benefit) return false; // hide for any benefit (discount, subscription, lottery, bigwin)
+                if (p.nonRemovableGift) return false;
+                return true;
+              })()}
             />
             <PossiblePrizes title={t('roulette.possiblePrizes')} prizes={sortedPrizes} onPreview={(item) => api.setPreviewPrize(item)} />
           </>

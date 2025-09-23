@@ -43,3 +43,4 @@ export function useSlider(slides: Slide[], autoplayInterval = 6000) {
 }
 
 
+

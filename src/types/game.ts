@@ -1,16 +1,24 @@
+export type ProductBenefit =
+  | { type: 'discount'; percent: 10 | 15 | 30 | 50 }
+  | { type: 'subscription'; service: 'tg_premium'; months: 3 }
+  | { type: 'lottery_ticket' }
+  | { type: 'bigwin' };
+
 export interface Prize {
   id: number;
   name: string;
   price: number;
   image: string;
   rarity: 'common' | 'rare' | 'epic' | 'legendary';
-  // Осколочная система (опционально)
-  // Если приз является осколком, то при выпадении он увеличивает прогресс
-  // сборки полноценного подарка по ключу shardKey до количества shardsRequired
   isShard?: boolean;
-  shardKey?: string;        // уникальный ключ набора осколков
-  shardsRequired?: number;  // сколько осколков нужно для сборки
-  description?: string;     // описание для модального окна
+  shardKey?: string;
+  shardsRequired?: number;
+  description?: string;
+  benefit?: ProductBenefit;
+  uniqueKey?: string;
+  stackable?: boolean;
+  notAwardIfOwned?: boolean;
+  nonRemovableGift?: boolean;
 }
 
 export interface Case {
@@ -48,6 +56,12 @@ export interface RouletteConfig {
 export interface Multiplier {
   value: number;
   label: string;
+}
+
+// Элемент рулетки (для отрисовки дорожки) — приз с дополнительными полями
+export interface RouletteItem extends Prize {
+  uniqueId: string;
+  originalIndex: number;
 }
 
 // Константы для конфигурации

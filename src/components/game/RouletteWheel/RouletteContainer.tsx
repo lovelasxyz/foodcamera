@@ -8,6 +8,7 @@ import { imageCache } from '@/services/ImageCache';
 import { ASSETS } from '@/constants/assets';
 import { useSpinLogic } from './hooks/useSpinLogic';
 import RouletteView from './RouletteView';
+import { RouletteItem } from '@/types/game';
 
 export const RouletteContainer: React.FC = () => {
   const { t } = useI18n();
@@ -16,9 +17,9 @@ export const RouletteContainer: React.FC = () => {
   const navigate = useNavigate();
   const [state, api] = useSpinLogic();
 
-  const rouletteItems = useMemo(() => {
+  const rouletteItems: RouletteItem[] = useMemo(() => {
     if (!currentCase) return [];
-    const items: any[] = [];
+    const items: RouletteItem[] = [];
     const totalItemsInCase = currentCase.items.length;
     const neededElements = 5 * totalItemsInCase * 2;
     const reelLength = Math.max(neededElements, 300);

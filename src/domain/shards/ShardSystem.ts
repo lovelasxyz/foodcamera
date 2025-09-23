@@ -1,6 +1,6 @@
 import { IShardSystem, ShardProgress } from './IShardSystem';
 import { Prize } from '@/types/game';
-import { SHARD_PRODUCTS } from '@/utils/constants';
+import { ShardRecipeMapper } from './ShardRecipeMapper';
 
 export class ShardSystem implements IShardSystem {
   addShard(shards: Record<string, number>, key: string, count: number): Record<string, number> {
@@ -9,7 +9,7 @@ export class ShardSystem implements IShardSystem {
   }
 
   canCraft(shards: Record<string, number>, key: string): boolean {
-    const cfg = SHARD_PRODUCTS[key as keyof typeof SHARD_PRODUCTS];
+    const cfg = ShardRecipeMapper.fromConstants().find(r => r.key === key);
     if (!cfg) return false;
     const have = shards?.[key] || 0;
     return have >= cfg.required;
@@ -20,17 +20,22 @@ export class ShardSystem implements IShardSystem {
     shardUpdatedAt: Record<string, number>,
     key: string
   ): { updatedShards: Record<string, number>; updatedShardUpdatedAt: Record<string, number>; prize: Prize } | null {
-    const cfg = SHARD_PRODUCTS[key as keyof typeof SHARD_PRODUCTS];
+    const cfg = ShardRecipeMapper.fromConstants().find(r => r.key === key);
     if (!cfg) return null;
     const have = shards?.[key] || 0;
     if (have < cfg.required) return null;
 
     const prize: Prize = {
-      id: cfg.id,
-      name: cfg.name,
-      price: cfg.price,
-      image: cfg.image,
-      rarity: cfg.rarity
+      id: cfg.product.id,
+      name: cfg.product.name,
+      price: cfg.product.price,
+      image: cfg.product.image,
+      rarity: cfg.product.rarity,
+      benefit: cfg.product.benefit,
+      uniqueKey: cfg.product.uniqueKey,
+      stackable: cfg.product.stackable,
+      notAwardIfOwned: cfg.product.notAwardIfOwned,
+      nonRemovableGift: cfg.product.nonRemovableGift
     };
 
     const remaining = Math.max(0, have - cfg.required);
@@ -48,7 +53,7 @@ export class ShardSystem implements IShardSystem {
   }
 
   getProgress(shards: Record<string, number>, key: string): ShardProgress {
-    const cfg = SHARD_PRODUCTS[key as keyof typeof SHARD_PRODUCTS];
+    const cfg = ShardRecipeMapper.fromConstants().find(r => r.key === key);
     return {
       key,
       count: shards?.[key] || 0,

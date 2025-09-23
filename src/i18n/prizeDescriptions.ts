@@ -10,7 +10,17 @@ const nameToKey: Record<string, keyof typeof PRIZE_KEYS> = {
   'Frog': 'frog',
   'Diamond': 'diamond',
   'Dragon': 'dragon',
-  'TON': 'ton'
+  'TON': 'ton',
+  // Discount coupons (crafted products)
+  'Discount 10%': 'discount10',
+  'Discount 15%': 'discount15',
+  'Discount 30%': 'discount30',
+  'Discount 50%': 'discount50',
+  // Discount shards (case items)
+  'Discount 10% Shard': 'discountShard10',
+  'Discount 15% Shard': 'discountShard15',
+  'Discount 30% Shard': 'discountShard30',
+  'Discount 50% Shard': 'discountShard50'
 };
 
 const PRIZE_KEYS = {
@@ -21,7 +31,15 @@ const PRIZE_KEYS = {
   frog: 'prizes.frog.description',
   diamond: 'prizes.diamond.description',
   dragon: 'prizes.dragon.description',
-  ton: 'prizes.ton.description'
+  ton: 'prizes.ton.description',
+  discount10: 'prizes.discount10.description',
+  discount15: 'prizes.discount15.description',
+  discount30: 'prizes.discount30.description',
+  discount50: 'prizes.discount50.description',
+  discountShard10: 'prizes.discountShard10.description',
+  discountShard15: 'prizes.discountShard15.description',
+  discountShard30: 'prizes.discountShard30.description',
+  discountShard50: 'prizes.discountShard50.description'
 } as const;
 
 export function usePrizeDescription() {

@@ -1,5 +1,18 @@
 import { Prize } from './game';
 
+export type UserStatus = 'regular' | 'premium' | 'advertiser';
+
+export interface UserTelegramAccount {
+  id: string;
+  username?: string;
+  registeredAt: number; // дата регистрации в приложении
+}
+
+export interface UserStats {
+  spinsCount: number;
+  lastAuthAt: number | null; // дата последней авторизации
+}
+
 export interface LastDrop {
   kind: 'item' | 'shard';
   id: string; // inventory item id for items, shardKey for shards
@@ -11,6 +24,14 @@ export interface User {
   avatar: string;
   balance: number;
   wallet?: string;
+  status: UserStatus; // обычный | премиум | рекламщик
+  isAdmin?: boolean;
+  perks?: {
+    freeSpins?: boolean;         // бесплатные прокрутки
+    unlimitedBalance?: boolean;  // неограниченный баланс
+  };
+  telegram?: UserTelegramAccount; // данные аккаунта телеграм
+  stats?: UserStats;              // статистика (прокруты, дата авторизации)
   inventory: InventoryItem[];
   // Прогресс по осколкам: ключ набора -> текущее количество
   shards?: Record<string, number>;

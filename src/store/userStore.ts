@@ -4,7 +4,6 @@ import { Prize } from '@/types/game';
 import { ParsedTelegramUser } from '@/types/telegram';
 // ...existing code...
 import { Inventory } from '@/domain/inventory/Inventory';
-import { ASSETS } from '@/constants/assets';
 import { IUserRepository } from '@/application/user/IUserRepository';
 import { RepositoryFactory } from '@/infrastructure/repositories/RepositoryFactory';
 // import { CraftItemUseCase } from '@/application/crafting/CraftItemUseCase';
@@ -24,11 +23,14 @@ interface UserActions {
   setUser: (user: User) => void;
   setTelegramUser: (telegramUser: ParsedTelegramUser) => void;
   updateBalance: (amount: number) => void;
+  awardPrize: (prize: Prize, fromCase: string) => void;
   addToInventory: (prize: Prize, fromCase: string) => void;
   receiveInventoryItem: (inventoryItemId: string) => void;
   craftFromShards: (shardKey: string, fromCase?: string) => void;
   sellInventoryItem: (inventoryItemId: string) => void;
   addInventoryItem: (prize: Prize, fromCase: string, status?: 'active' | 'sold' | 'received') => string;
+  incrementSpinsCount: () => void;
+  setLastAuthNow: () => void;
   setLoading: (isLoading: boolean) => void;
   setError: (error: string | null) => void;
   disconnectWallet: () => void;
@@ -38,35 +40,16 @@ interface UserActions {
   saveUser: () => Promise<void>;
 }
 
+import { UserFactory } from '@/application/user/UserFactory';
 // Дефолтный пользователь (fallback)
-const defaultUser: User = {
-  id: 'guest',
-  name: 'Guest User',
-  avatar: ASSETS.IMAGES.AVATAR,
-  balance: 100.00, // Начальный баланс 100 монет
-  wallet: undefined,
-  inventory: [],
-  shards: {},
-  shardUpdatedAt: {},
-  lastDrop: null
-};
+const defaultUser: User = UserFactory.createGuest();
 
 // Функция для преобразования Telegram пользователя в пользователя приложения
-const createUserFromTelegram = (telegramUser: ParsedTelegramUser): User => {
-  return {
-    id: telegramUser.id,
-    name: telegramUser.name,
-    avatar: telegramUser.avatar || ASSETS.IMAGES.AVATAR,
-    balance: 100.00, // Начальный баланс для новых пользователей
-    wallet: undefined,
-    inventory: [],
-    shards: {},
-    shardUpdatedAt: {},
-    lastDrop: null
-  };
-};
+const createUserFromTelegram = (telegramUser: ParsedTelegramUser): User => UserFactory.createFromTelegram(telegramUser);
 
-export const useUserStore = create<UserState & UserActions>((set) => ({
+import { AwardPrizeUseCase } from '@/application/inventory/AwardPrizeUseCase';
+
+export const useUserStore = create<UserState & UserActions>((set, get) => ({
   user: defaultUser,
   isLoading: false,
   error: null,
@@ -96,6 +79,25 @@ export const useUserStore = create<UserState & UserActions>((set) => ({
         balance: Math.max(0, state.user.balance + amount)
       }
     })),
+
+  awardPrize: (prize, fromCase) => {
+    const useCase = new AwardPrizeUseCase(
+      () => get().user.inventory,
+      (item) => set((state) => ({
+        user: { ...state.user, inventory: [...state.user.inventory, item], lastDrop: { kind: 'item', id: item.id } }
+      })),
+      (key) => get().user.shards?.[key] || 0,
+      (key, newCount) => set((state) => ({
+        user: {
+          ...state.user,
+          shards: { ...(state.user.shards || {}), [key]: newCount },
+          shardUpdatedAt: { ...(state.user.shardUpdatedAt || {}), [key]: Date.now() },
+          lastDrop: { kind: 'shard', id: key }
+        }
+      }))
+    );
+    void useCase.award(prize, fromCase);
+  },
 
   addToInventory: (prize, fromCase) =>
     set((state) => {
@@ -154,6 +156,21 @@ export const useUserStore = create<UserState & UserActions>((set) => ({
     return inventoryItem.id;
   },
 
+  incrementSpinsCount: () =>
+    set((state) => {
+      // Рекламщик: без статистики
+      if (state.user.status === 'advertiser') return state;
+      const prev = state.user.stats?.spinsCount ?? 0;
+      const nextStats = { ...(state.user.stats || { spinsCount: 0, lastAuthAt: null }), spinsCount: prev + 1 };
+      return { user: { ...state.user, stats: nextStats } };
+    }),
+
+  setLastAuthNow: () =>
+    set((state) => {
+      const nextStats = { ...(state.user.stats || { spinsCount: 0, lastAuthAt: null }), lastAuthAt: Date.now() };
+      return { user: { ...state.user, stats: nextStats } };
+    }),
+
   receiveInventoryItem: (inventoryItemId) =>
     set((state) => {
       const idx = state.user.inventory.findIndex(i => i.id === inventoryItemId);
@@ -188,6 +205,7 @@ export const useUserStore = create<UserState & UserActions>((set) => ({
       const targetIndex = state.user.inventory.findIndex(i => i.id === inventoryItemId);
       if (targetIndex === -1) return state;
       const target = state.user.inventory[targetIndex];
+      if (target.prize.nonRemovableGift) return state;
       // If already sold, do nothing
       if (target.status === 'sold') return state;
       const updatedItem: InventoryItem = { ...target, status: 'sold' };

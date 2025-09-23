@@ -61,6 +61,33 @@ export class RouletteEngine {
 			targetDomIndex
 		};
 	}
+
+	/**
+	 * When backend returns a specific prizeId or index, compute the same outcome deterministically.
+	 */
+	public outcomeForPrizeIndex(currentCase: Case, prizeIndex: number, reelLength: number): SpinOutcome {
+		const ITEM_WIDTH = this.config.ITEM_WIDTH;
+		const totalItems = currentCase.items.length;
+		const containerCenter = (reelLength * ITEM_WIDTH) / 2;
+
+		const targetZoneStart = Math.floor(reelLength * 0.75);
+		const targetZoneEnd = Math.floor(reelLength * 0.95);
+		let targetDomIndex = targetZoneStart + (Math.floor(Math.random() * (targetZoneEnd - targetZoneStart)));
+		while (targetDomIndex % totalItems !== prizeIndex) {
+			targetDomIndex++;
+			if (targetDomIndex >= targetZoneEnd) targetDomIndex = targetZoneStart;
+		}
+
+		const itemCenter = targetDomIndex * ITEM_WIDTH + ITEM_WIDTH / 2;
+		const randomOffset = (Math.random() - 0.5) * ITEM_WIDTH * 0.8;
+		const finalPosition = containerCenter - itemCenter + randomOffset;
+		return {
+			position: finalPosition,
+			prize: currentCase.items[prizeIndex],
+			prizeIndex,
+			targetDomIndex
+		};
+	}
 }
 
 

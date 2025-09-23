@@ -1,26 +1,14 @@
 import { IUserRepository } from './IUserRepository';
-import { User } from '@/types/user';
-import { ASSETS } from '@/constants/assets';
+import type { User } from '@/types/user';
+import { UserFactory } from './UserFactory';
 
 export class MockUserRepository implements IUserRepository {
   async fetchUser(): Promise<User> {
-    await new Promise((r) => setTimeout(r, 120));
-    return {
-      id: 'guest',
-      name: 'Guest User',
-      avatar: ASSETS.IMAGES.AVATAR,
-      balance: 100,
-      wallet: undefined,
-      inventory: [],
-      shards: {},
-      shardUpdatedAt: {},
-      lastDrop: null
-    };
+    return UserFactory.createGuest();
   }
 
   async saveUser(user: User): Promise<void> {
-    void user;
-    await new Promise((r) => setTimeout(r, 60));
+    void user; // mock no-op
   }
 
   async fetchAll(): Promise<User[]> {
@@ -28,5 +16,19 @@ export class MockUserRepository implements IUserRepository {
     return [me];
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 

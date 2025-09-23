@@ -1,4 +1,4 @@
-import { Prize } from '@/types/game';
+import type { Prize, ProductBenefit } from '@/types/game';
 
 /** ООП-обертка над призом для вычисляемых свойств и бизнес-логики. */
 export class PrizeItem {
@@ -22,6 +22,26 @@ export class PrizeItem {
 
 	public get price(): number {
 		return this.prize.price;
+	}
+
+	public get benefit(): ProductBenefit | undefined {
+		return this.prize.benefit;
+	}
+
+	public get isStackable(): boolean {
+		return !!this.prize.stackable;
+	}
+
+	public get uniqueKey(): string | undefined {
+		return this.prize.uniqueKey;
+	}
+
+	public get notAwardIfOwned(): boolean {
+		return !!this.prize.notAwardIfOwned;
+	}
+
+	public get nonRemovableGift(): boolean {
+		return !!this.prize.nonRemovableGift;
 	}
 }
 

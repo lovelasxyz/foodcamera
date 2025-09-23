@@ -44,7 +44,7 @@ const en: TranslationDict = {
   },
   deposit: {
     selectMethod: 'Select the method of deposit',
-    methodTon: 'Ton',
+    methodTon: 'USDT',
     methodCryptoBot: 'CryptoBot',
     methodGifts: 'Gifts',
     promoTitle: 'Get a bonus on your deposit',
@@ -63,7 +63,7 @@ const en: TranslationDict = {
     giftsSubtitle: 'Use Gift cards to top up your balance.',
     comingSoon: 'Coming soon',
     modalTitleSelect: 'Deposit',
-    modalTitleTon: 'TON Deposit',
+    modalTitleTon: 'USDT Deposit',
     modalSubtitleTon: 'Enter the amount to deposit',
     apiError: 'Failed to prepare transaction. Please try again.',
     successTitle: 'Payment received',
@@ -115,7 +115,17 @@ const en: TranslationDict = {
     frog: { description: 'A mystical frog. Legends say it brings fortune.' },
     diamond: { description: 'A brilliant diamond that shines with epic value.' },
     dragon: { description: 'A dragon relic shimmering with fiery power.' },
-    ton: { description: 'TON token you can use across the game.' }
+    ton: { description: 'TON token you can use across the game.' },
+    // Discount coupons
+    discount10: { description: 'Discount coupon 10% for purchases.' },
+    discount15: { description: 'Discount coupon 15% for purchases.' },
+    discount30: { description: 'Discount coupon 30% for purchases.' },
+    discount50: { description: 'Discount coupon 50% for purchases.' },
+    // Shards for discount coupons
+    discountShard10: { description: 'Collect {required} shards to craft a 10% discount coupon.' },
+    discountShard15: { description: 'Collect {required} shards to craft a 15% discount coupon.' },
+    discountShard30: { description: 'Collect {required} shards to craft a 30% discount coupon.' },
+    discountShard50: { description: 'Collect {required} shards to craft a 50% discount coupon.' }
   },
   nav: {
     main: 'Main',
@@ -170,7 +180,7 @@ const ru: TranslationDict = {
   },
   deposit: {
     selectMethod: 'Выберите способ пополнения',
-    methodTon: 'Ton',
+    methodTon: 'USDT',
     methodCryptoBot: 'CryptoBot',
     methodGifts: 'Подарки',
     promoTitle: 'Получите бонус к пополнению',
@@ -189,7 +199,7 @@ const ru: TranslationDict = {
     giftsSubtitle: 'Используйте подарочные карты, чтобы пополнить баланс.',
     comingSoon: 'Скоро',
     modalTitleSelect: 'Пополнение',
-    modalTitleTon: 'Пополнение TON',
+    modalTitleTon: 'Пополнение USDT',
     modalSubtitleTon: 'Введите сумму пополнения',
     apiError: 'Не удалось подготовить транзакцию. Попробуйте ещё раз.',
     successTitle: 'Платёж получен',
@@ -241,7 +251,17 @@ const ru: TranslationDict = {
     frog: { description: 'Мистическая лягушка. Говорят, приносит удачу.' },
     diamond: { description: 'Сверкающий алмаз — эпическая ценность.' },
     dragon: { description: 'Драконья реликвия, пылающая силой.' },
-    ton: { description: 'Токен TON, полезный для покупок и наград.' }
+    ton: { description: 'Токен TON, полезный для покупок и наград.' },
+    // Купоны на скидку
+    discount10: { description: 'Купон на скидку 10% на покупки.' },
+    discount15: { description: 'Купон на скидку 15% на покупки.' },
+    discount30: { description: 'Купон на скидку 30% на покупки.' },
+    discount50: { description: 'Купон на скидку 50% на покупки.' },
+    // Осколки для купонов
+    discountShard10: { description: 'Соберите {required} осколков, чтобы получить купон на скидку 10%.' },
+    discountShard15: { description: 'Соберите {required} осколков, чтобы получить купон на скидку 15%.' },
+    discountShard30: { description: 'Соберите {required} осколков, чтобы получить купон на скидку 30%.' },
+    discountShard50: { description: 'Соберите {required} осколков, чтобы получить купон на скидку 50%.' }
   },
   nav: {
     main: 'Главная',

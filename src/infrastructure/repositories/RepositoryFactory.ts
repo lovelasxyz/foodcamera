@@ -8,6 +8,8 @@ import { MockInventoryRepository } from '@/application/inventory/MockInventoryRe
 import { CaseRepository } from './CaseRepository';
 import { UserRepository } from './UserRepository';
 import { InventoryRepository } from './InventoryRepository';
+import { IProductRepository } from '@/application/product/IProductRepository';
+import { MockProductRepository } from '@/application/product/MockProductRepository';
 
 export class RepositoryFactory {
   static getCaseRepository(): ICaseRepository {
@@ -21,6 +23,11 @@ export class RepositoryFactory {
 
   static getInventoryRepository(): IInventoryRepository {
     return (shouldUseGuestMode() ? new MockInventoryRepository() : new InventoryRepository()) as IInventoryRepository;
+  }
+
+  static getProductRepository(): IProductRepository {
+    // пока только мок
+    return new MockProductRepository();
   }
 }
 

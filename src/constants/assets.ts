@@ -16,9 +16,9 @@ export const ASSETS = {
 		PROFILE: '/assets/images/profile.svg',
 		SCROLL: '/assets/images/scroll.png',
 		TEDDY: '/assets/images/teddy.png',
-		TOKEN_GOLD: '/assets/images/ton.svg',
-		TOKEN: '/assets/images/ton.svg',
-		TON: '/assets/images/ton.svg',
+		TOKEN_GOLD: '/assets/images/usdt.svg',
+		TOKEN: '/assets/images/usdt.svg',
+		TON: '/assets/images/usdt.svg',
 		UPGRADE: '/assets/images/upgrade.svg',
         UNION: '/assets/images/Union.svg',
         LOADING_LOGO: '/assets/images/loader.png',
@@ -26,7 +26,9 @@ export const ASSETS = {
 	},
 	SHARDS: {
 		GIFT: '/images/gift.png',
-		GIFT_SHARD: '/images/gift_shard.png'
+		GIFT_SHARD: '/images/gift_shard.png',
+		TICKET_SHARD: '/images/gift_shard.png',
+		TG_PREMIUM_SHARD: '/images/gift_shard.png'
 	},
 	ICONS: {
 		INVITE: '/assets/images/invite_user.svg',

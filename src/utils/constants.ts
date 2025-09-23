@@ -6,7 +6,6 @@ export const APP_CONFIG = {
   description: 'Приложение для открытия кейсов с рулеткой'
 } as const;
 
-import { ASSETS } from '@/constants/assets';
 
 export const GAME_CONFIG = {
   spinDuration: 8000, // Время вращения рулетки в мс
@@ -45,19 +44,6 @@ export const ROUTES = {
 
 // Пути к изображениям перемещены в src/constants/assets.ts
 
-// Продукты сборки осколков (по ключу shardKey)
-// При достижении нужного количества осколков пользователю будет добавлен данный приз
-export const SHARD_PRODUCTS: Record<string, { id: number; name: string; price: number; image: string; rarity: 'common' | 'rare' | 'epic' | 'legendary'; required: number; shardImage: string; } > = {
-  gift: {
-    id: 10001,
-    name: 'Gift',
-    price: 25,
-    image: ASSETS.SHARDS.GIFT,
-    rarity: 'rare',
-    required: 10,
-    shardImage: ASSETS.SHARDS.GIFT_SHARD
-  }
-};
 
 // Цвета градиентов для кейсов
 export const CASE_GRADIENT_COLORS = {

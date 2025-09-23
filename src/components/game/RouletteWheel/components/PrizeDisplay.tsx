@@ -12,6 +12,7 @@ interface PrizeDisplayProps {
   isSpinning: boolean;
   onKeep: () => void;
   onSell: () => void;
+  showSell?: boolean;
 }
 
 export const PrizeDisplay: React.FC<PrizeDisplayProps> = ({
@@ -22,7 +23,8 @@ export const PrizeDisplay: React.FC<PrizeDisplayProps> = ({
   sellLabel,
   isSpinning,
   onKeep,
-  onSell
+  onSell,
+  showSell = true
 }) => {
   return (
     <div className={styles.resultContainer}>
@@ -74,23 +76,25 @@ export const PrizeDisplay: React.FC<PrizeDisplayProps> = ({
         <button onClick={onKeep} className={`${styles.spinButton} ${styles.centered}`}>
           <div className={styles.buttonLabel}>{keepLabel}</div>
         </button>
-        <button 
-          className={styles.quickSellButton}
-          onClick={onSell}
-          disabled={isSpinning}
-        >
-          <div className={styles.buttonLabel}>{sellLabel}</div>
-          {typeof price === 'number' && (
-            <div className={styles.priceTag}>
-              <div className={styles.priceValue}>{price.toFixed(2)}</div>
-              <div className={styles.coinSmall}>
-                <div className={styles.coin}>
-                  <img className={styles.coinImage} src={ASSETS.IMAGES.TON} alt="Coin" />
+        {showSell && (
+          <button 
+            className={styles.quickSellButton}
+            onClick={onSell}
+            disabled={isSpinning}
+          >
+            <div className={styles.buttonLabel}>{sellLabel}</div>
+            {typeof price === 'number' && (
+              <div className={styles.priceTag}>
+                <div className={styles.priceValue}>{price.toFixed(2)}</div>
+                <div className={styles.coinSmall}>
+                  <div className={styles.coin}>
+                    <img className={styles.coinImage} src={ASSETS.IMAGES.TON} alt="Coin" />
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
-        </button>
+            )}
+          </button>
+        )}
       </div>
     </div>
   );

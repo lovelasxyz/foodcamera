@@ -12,6 +12,7 @@ import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { ConnectivityGuard } from '@/services/ConnectivityGuard';
 import { DomainEventBus } from '@/domain/events/EventBus';
 import { DomainEventNames } from '@/domain/events/DomainEvents';
+import { HttpSpinGateway } from '@/infrastructure/gateways/HttpSpinGateway';
 
 export interface SpinLogicState {
   position: number;
@@ -43,7 +44,7 @@ export const useSpinLogic = (): [SpinLogicState, SpinLogicApi] => {
     resetForNextSpin,
     closeCase
   } = useGameStore();
-  const { user, addToInventory, addInventoryItem, updateBalance } = useUserStore();
+  const { user, awardPrize, addToInventory, addInventoryItem, updateBalance, incrementSpinsCount } = useUserStore();
   const { showWinModal } = useUIStore();
   const { playSound } = useSoundEffects();
   const isOnline = useOnlineStatus();
@@ -58,7 +59,8 @@ export const useSpinLogic = (): [SpinLogicState, SpinLogicApi] => {
   const spinEndTimerRef = useRef<number | null>(null);
 
   const engine = useMemo(() => new RouletteEngine(ROULETTE_CONFIG), []);
-  const spinUseCase = useMemo(() => new SpinUseCase(engine, { updateBalance, addToInventory }), [engine, updateBalance, addToInventory]);
+  const gateway = useMemo(() => new HttpSpinGateway(), []);
+  const spinUseCase = useMemo(() => new SpinUseCase(engine, { updateBalance, addToInventory }, undefined, gateway), [engine, updateBalance, addToInventory, gateway]);
 
   const resetRoulette = useCallback(() => {
     setPosition(0);
@@ -75,7 +77,7 @@ export const useSpinLogic = (): [SpinLogicState, SpinLogicApi] => {
           endSpin();
         } else {
           if (!awardedRef.current) {
-            addToInventory(spinResult.prize, currentCase.name);
+            awardPrize(spinResult.prize, currentCase.name);
             awardedRef.current = true;
           }
           useGameStore.setState({ isSpinning: false });
@@ -101,11 +103,13 @@ export const useSpinLogic = (): [SpinLogicState, SpinLogicApi] => {
     }
   }, [isSpinning, finalizeSpin]);
 
-  const handleSpin = useCallback((rouletteItemsLength: number) => {
+  const handleSpin = useCallback(async (rouletteItemsLength: number) => {
     ConnectivityGuard.ensureOnline();
-    if (!currentCase || isSpinning || clickLockRef.current) return;
-    if (!isOnline) return;
-    if (!spinUseCase.canAfford(currentCase, user.balance)) return;
+  if (!currentCase || isSpinning || clickLockRef.current) return;
+  if (!isOnline) return;
+  const perks = user.perks || {};
+  const canAfford = spinUseCase.canAfford(currentCase, user.balance) || perks.freeSpins || perks.unlimitedBalance;
+  if (!canAfford) return;
 
 
     clickLockRef.current = true;
@@ -116,8 +120,31 @@ export const useSpinLogic = (): [SpinLogicState, SpinLogicApi] => {
     Analytics.trackCaseOpened(currentCase.id);
     DomainEventBus.emit(DomainEventNames.CaseOpened, { type: 'CaseOpened', caseId: currentCase.id, timestamp: Date.now() });
 
-    const result = spinUseCase.beginSpin(currentCase, user.balance, rouletteItemsLength);
+  // Derive modifier context from user data (simple approximations)
+    const hasAvatar = !!user.avatar && !/default|avatar\.png/i.test(user.avatar);
+    const spinsCount = user.stats?.spinsCount ?? 0;
+    const registeredDays = user.telegram ? Math.floor((Date.now() - user.telegram.registeredAt) / 86400000) : undefined;
+    // Rough common wins bias: share of common items in inventory
+    const inventory = user.inventory || [];
+    const commonCount = inventory.filter(i => i.prize.rarity === 'common').length;
+    const commonShare = inventory.length > 0 ? commonCount / inventory.length : 0;
+    const historyCommonWinsBoost = commonShare > 0.6 ? 0.5 : commonShare < 0.2 ? -0.2 : 0;
+
+  const result = await spinUseCase.beginSpin(
+      currentCase,
+      user.balance,
+      rouletteItemsLength,
+      perks,
+      {
+        happyHoursMultiplier: 1,
+        registeredDays,
+        avatarBonus: hasAvatar ? 0.5 : 0,
+        spinCount: spinsCount,
+        historyCommonWinsBoost,
+      }
+    );
     if (!result) { clickLockRef.current = false; return; }
+  incrementSpinsCount();
 
     setInstantPosition(true);
     setPosition(0);
@@ -145,7 +172,7 @@ export const useSpinLogic = (): [SpinLogicState, SpinLogicApi] => {
     if (spinResult && currentCase) {
       Analytics.trackSpinResult(currentCase.id, spinResult.prize);
       DomainEventBus.emit(DomainEventNames.PrizeWon, { type: 'PrizeWon', caseId: currentCase.id, prize: spinResult.prize, timestamp: Date.now() });
-      addToInventory(spinResult.prize, currentCase.name);
+  awardPrize(spinResult.prize, currentCase.name);
       awardedRef.current = true;
       resetForNextSpin();
       resetRoulette();
@@ -154,11 +181,31 @@ export const useSpinLogic = (): [SpinLogicState, SpinLogicApi] => {
 
   const handleQuickSell = useCallback(() => {
     if (spinResult) {
+      const p = spinResult.prize;
+      if (p.isShard || p.benefit) {
+        // Treat as keep: award and close like keep to avoid losing it
+        if (currentCase) {
+          awardPrize(p, currentCase.name);
+          awardedRef.current = true;
+        }
+        resetForNextSpin();
+        resetRoulette();
+        return;
+      }
+      if (p.nonRemovableGift) {
+        if (currentCase) {
+          awardPrize(p, currentCase.name);
+          awardedRef.current = true;
+        }
+        resetForNextSpin();
+        resetRoulette();
+        return;
+      }
       // Create an inventory record with status 'sold' for audit/history
-      const inventoryId = addInventoryItem(spinResult.prize, currentCase?.name || 'QuickSell', 'sold');
-      Analytics.trackItemSold(String(spinResult.prize.id), spinResult.prize.price);
-      DomainEventBus.emit(DomainEventNames.ItemSold, { type: 'ItemSold', inventoryItemId: String(inventoryId), amount: spinResult.prize.price, timestamp: Date.now() });
-      updateBalance(spinResult.prize.price);
+      const inventoryId = addInventoryItem(p, currentCase?.name || 'QuickSell', 'sold');
+      Analytics.trackItemSold(String(p.id), p.price);
+      DomainEventBus.emit(DomainEventNames.ItemSold, { type: 'ItemSold', inventoryItemId: String(inventoryId), amount: p.price, timestamp: Date.now() });
+      updateBalance(p.price);
       resetForNextSpin();
       resetRoulette();
     }
@@ -186,7 +233,7 @@ export const useSpinLogic = (): [SpinLogicState, SpinLogicApi] => {
     // Разрешаем закрытие кейса без потери выигрыша
     clickLockRef.current = false;
     if (spinResult && currentCase && !awardedRef.current) {
-      addToInventory(spinResult.prize, currentCase.name);
+      awardPrize(spinResult.prize, currentCase.name);
       awardedRef.current = true;
     }
     resetRoulette();
