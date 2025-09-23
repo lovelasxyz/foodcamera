@@ -41,7 +41,7 @@ const renderIcon = (iconType: string) => {
 };
 
 export const BottomNavigation: React.FC = () => {
-  const { /* activePage, setActivePage */ } = useUIStore();
+  useUIStore();
   const location = useLocation();
   const { t } = useI18n();
 

@@ -14,7 +14,7 @@ import AppInitializer from '@/application/AppInitializer';
 import ErrorBoundary from '@/components/ui/ErrorBoundary';
 
 const AppContentInner: React.FC = () => {
-  const { /* activePage unused when using router */ } = useUIStore();
+  useUIStore();
   const getRouteKey = () => window.location.pathname || '/';
   const [routeKey, setRouteKey] = useState<string>(getRouteKey());
   const { closeCase } = useGameStore();
@@ -32,7 +32,7 @@ const AppContentInner: React.FC = () => {
     // Close case when navigating to main sections (home/profile)
     const key = getRouteKey();
     if (key === '/' || key === '/profile') {
-      try { closeCase(); } catch {}
+      try { closeCase(); } catch { /* ignore close errors */ }
     }
     const onPop = () => setRouteKey(getRouteKey());
     window.addEventListener('popstate', onPop);
@@ -42,11 +42,8 @@ const AppContentInner: React.FC = () => {
   // Обрабатываем авторизацию пользователя
   useEffect(() => {
     if (shouldUseGuestMode()) {
-      // В guest режиме показываем быстрый загрузочный экран
-      setTimeout(() => {
-        setInitializationComplete(true);
-        setShowLoadingPage(false);
-      }, 2000); // 2 секунды для показа загрузочного экрана
+      setInitializationComplete(true);
+      setShowLoadingPage(false);
       return;
     }
 
@@ -54,11 +51,8 @@ const AppContentInner: React.FC = () => {
     if (telegramUser && authStatus === 'authenticated') {
       setTelegramUser(telegramUser);
       
-      // Задержка для показа успешной авторизации
-      setTimeout(() => {
-        setInitializationComplete(true);
-        setShowLoadingPage(false);
-      }, 1500);
+      setInitializationComplete(true);
+      setShowLoadingPage(false);
     } else if (authStatus === 'error') {
       // При ошибке авторизации показываем LoadingPage с ошибкой
       setShowLoadingPage(true);
@@ -69,11 +63,15 @@ const AppContentInner: React.FC = () => {
       // Если статус idle более 3 секунд, показываем приложение
       const timeoutId = setTimeout(() => {
         if (!initializationComplete) {
-          if (process.env.NODE_ENV === 'development') console.log('Auth timeout - proceeding without Telegram auth');
+          if (process.env.NODE_ENV !== 'production') {
+            // debug: auth timeout, proceed without Telegram auth
+            // eslint-disable-next-line no-console
+            console.debug('Auth timeout - proceeding without Telegram auth');
+          }
           setInitializationComplete(true);
           setShowLoadingPage(false);
         }
-      }, 3000);
+      }, 1200);
       
       return () => clearTimeout(timeoutId);
     }
@@ -83,7 +81,7 @@ const AppContentInner: React.FC = () => {
     const initializer = new AppInitializer();
     initializer.start();
     return () => {
-      try { initializer.stop(); } catch {}
+      try { initializer.stop(); } catch { /* ignore */ }
     };
   }, []);
 

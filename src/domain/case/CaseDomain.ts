@@ -1,5 +1,6 @@
 import { Case } from '@/types/game';
 import { CASE_GRADIENT_COLORS, PRICE_THRESHOLDS } from '@/utils/constants';
+import type React from 'react';
 
 export class CaseDomain {
 	static isFree(caseData: Case): boolean {

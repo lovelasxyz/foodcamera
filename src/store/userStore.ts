@@ -2,14 +2,11 @@ import { create } from 'zustand';
 import { User, InventoryItem } from '@/types/user';
 import { Prize } from '@/types/game';
 import { ParsedTelegramUser } from '@/types/telegram';
-// ...existing code...
 import { Inventory } from '@/domain/inventory/Inventory';
 import { IUserRepository } from '@/application/user/IUserRepository';
 import { RepositoryFactory } from '@/infrastructure/repositories/RepositoryFactory';
-// import { CraftItemUseCase } from '@/application/crafting/CraftItemUseCase';
 import { IInventoryRepository } from '@/application/inventory/IInventoryRepository';
 import { ShardSystem } from '@/domain/shards/ShardSystem';
-// ...existing code...
 
 interface UserState {
   user: User;
@@ -99,34 +96,9 @@ export const useUserStore = create<UserState & UserActions>((set, get) => ({
     void useCase.award(prize, fromCase);
   },
 
-  addToInventory: (prize, fromCase) =>
-    set((state) => {
-      // Обработка осколков — делегируем системе осколков для централизованной логики
-      if (prize.isShard && prize.shardKey) {
-        const sys = new ShardSystem();
-        const nextShards = sys.addShard(state.user.shards || {}, prize.shardKey, 1);
-        const now = Date.now();
-        return {
-          user: {
-            ...state.user,
-            shards: nextShards,
-            shardUpdatedAt: { ...(state.user.shardUpdatedAt || {}), [prize.shardKey]: now },
-            lastDrop: { kind: 'shard', id: prize.shardKey }
-          }
-        };
-      }
-
-      // Обычный приз — создаем предмет через доменную модель инвентаря
-      const inventoryItem: InventoryItem = Inventory.createInventoryItem(prize, fromCase);
-      
-      return {
-        user: {
-          ...state.user,
-          inventory: [...state.user.inventory, inventoryItem],
-          lastDrop: { kind: 'item', id: inventoryItem.id }
-        }
-      };
-    }),
+  addToInventory: (prize, fromCase) => {
+    get().addInventoryItem(prize, fromCase, 'active');
+  },
 
   addInventoryItem: (prize, fromCase, status = 'active') => {
     const inventoryItem: InventoryItem = Inventory.createInventoryItem(prize, fromCase);

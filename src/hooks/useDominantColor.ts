@@ -1,14 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { imageCache } from '@/services/ImageCache';
+import { runIdle } from '@/utils/idle';
 
-// Полифилл для requestIdleCallback
-const requestIdleCallbackPolyfill = (callback: (deadline: { timeRemaining: () => number }) => void, options: { timeout?: number } = {}) => {
-  if ('requestIdleCallback' in window) {
-    return window.requestIdleCallback(callback, options);
-  }
-  // Fallback для браузеров без поддержки
-  return setTimeout(() => callback({ timeRemaining: () => 50 }), options.timeout || 0);
-};
 
 function getDominantColorFromImage(image: HTMLImageElement): string | null {
 	const canvas = document.createElement('canvas');
@@ -47,6 +40,7 @@ function getDominantColorFromImage(image: HTMLImageElement): string | null {
 			.map((v) => v.toString(16).padStart(2, '0'))
 			.join('')}`.toUpperCase();
 	} catch {
+		// getImageData can fail due to CORS; ignore and return null
 		return null;
 	}
 }
@@ -77,7 +71,9 @@ export function useDominantColor(imageUrl?: string): { colorHex: string | null; 
 				setColorHex(cached);
 				return; // Если есть кэш - не загружаем изображение повторно
 			}
-		} catch {}
+		} catch {
+			// localStorage may be unavailable (privacy mode/quota); ignore
+		}
 
 		let cancelled = false;
 		const img = new Image();
@@ -93,15 +89,19 @@ export function useDominantColor(imageUrl?: string): { colorHex: string | null; 
 
 		const onLoad = () => {
 			if (cancelled) return;
-			// Добавляем задержку для слабых устройств, чтобы не блокировать основной поток
-			requestIdleCallbackPolyfill(() => {
-				if (cancelled) return;
-				const color = getDominantColorFromImage(img);
-				setColorHex(color);
-				if (color) {
-					try { localStorage.setItem(storageKey, color); } catch {}
-				}
-			}, { timeout: 100 });
+					// Отложим вычисление в idle-слот, чтобы не блокировать поток
+					const cancel = runIdle(() => {
+						if (cancelled) return;
+						const color = getDominantColorFromImage(img);
+						setColorHex(color);
+						if (color) {
+										try { localStorage.setItem(storageKey, color); } catch { /* quota or privacy blocked */ }
+						}
+					});
+					// Если размонтируемся — отменим
+					if (cancel) {
+						// no-op: отмена произойдет в cleanup ниже вместе с флагом cancelled
+					}
 		};
 
 		const onError = () => {
@@ -116,7 +116,7 @@ export function useDominantColor(imageUrl?: string): { colorHex: string | null; 
 			cancelled = true;
 			img.removeEventListener('load', onLoad);
 			img.removeEventListener('error', onError);
-			try { img.src = ''; } catch {}
+					try { img.src = ''; } catch { /* ignore cleanup */ }
 		};
 	}, [imageUrl]);
 

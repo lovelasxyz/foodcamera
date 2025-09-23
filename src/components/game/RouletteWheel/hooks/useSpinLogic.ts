@@ -93,7 +93,7 @@ export const useSpinLogic = (): [SpinLogicState, SpinLogicApi] => {
     }, settleDelay);
     // store timer id only if not already set (best-effort)
     if (spinEndTimerRef.current == null) spinEndTimerRef.current = t as unknown as number;
-  }, [spinResult, currentCase, showWinModal, endSpin, addToInventory]);
+  }, [spinResult, currentCase, showWinModal, endSpin, awardPrize]);
 
   const handleAnimationEnd = useCallback(() => {
     if (isSpinning) {
@@ -167,7 +167,7 @@ export const useSpinLogic = (): [SpinLogicState, SpinLogicApi] => {
         finalizeSpin(300); // shorter settle on fallback
       }
     }, ROULETTE_CONFIG.SPIN_DURATION + 800) as unknown as number;
-  }, [currentCase, isSpinning, isOnline, spinUseCase, user.balance, playSound, startSpin]);
+  }, [currentCase, isSpinning, isOnline, spinUseCase, user.balance, user.inventory, user.telegram, user.perks, user.avatar, user.stats?.spinsCount, playSound, startSpin, incrementSpinsCount, finalizeSpin]);
 
   const handleKeepPrize = useCallback(() => {
     if (spinResult && currentCase) {
@@ -178,7 +178,7 @@ export const useSpinLogic = (): [SpinLogicState, SpinLogicApi] => {
       resetForNextSpin();
       resetRoulette();
     }
-  }, [spinResult, currentCase, addToInventory, resetForNextSpin, resetRoulette]);
+  }, [spinResult, currentCase, awardPrize, resetForNextSpin, resetRoulette]);
 
   const handleQuickSell = useCallback(() => {
     if (spinResult) {
@@ -210,7 +210,7 @@ export const useSpinLogic = (): [SpinLogicState, SpinLogicApi] => {
       resetForNextSpin();
       resetRoulette();
     }
-  }, [spinResult, updateBalance, resetForNextSpin, resetRoulette, addInventoryItem, currentCase]);
+  }, [spinResult, updateBalance, resetForNextSpin, resetRoulette, addInventoryItem, currentCase, awardPrize]);
 
   const handleSkipSpin = useCallback(() => {
     if (!isSpinning) return;
@@ -239,7 +239,7 @@ export const useSpinLogic = (): [SpinLogicState, SpinLogicApi] => {
     }
     resetRoulette();
     closeCase();
-  }, [spinResult, currentCase, addToInventory, resetRoulette, closeCase]);
+  }, [spinResult, currentCase, awardPrize, resetRoulette, closeCase]);
 
   useEffect(() => {
     if (!showResult && !isSpinning) {

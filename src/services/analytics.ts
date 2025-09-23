@@ -1,4 +1,5 @@
 import { Prize } from '@/types/game';
+import { logDebug } from './logger';
 
 export interface IAnalytics {
   trackCaseOpened(caseId: number): void;
@@ -8,10 +9,10 @@ export interface IAnalytics {
 }
 
 class ConsoleAnalytics implements IAnalytics {
-  trackCaseOpened(caseId: number): void { if (process.env.NODE_ENV === 'development') console.log('[analytics] case_opened', { caseId }); }
-  trackSpinResult(caseId: number, result: Prize): void { if (process.env.NODE_ENV === 'development') console.log('[analytics] spin_result', { caseId, result }); }
-  trackItemSold(inventoryItemId: string, price: number): void { if (process.env.NODE_ENV === 'development') console.log('[analytics] item_sold', { inventoryItemId, price }); }
-  trackDepositMade(amount: number, method: string): void { if (process.env.NODE_ENV === 'development') console.log('[analytics] deposit_made', { amount, method }); }
+  trackCaseOpened(caseId: number): void { if (process.env.NODE_ENV !== 'production') { logDebug('[analytics] case_opened', { caseId }); } }
+  trackSpinResult(caseId: number, result: Prize): void { if (process.env.NODE_ENV !== 'production') { logDebug('[analytics] spin_result', { caseId, result }); } }
+  trackItemSold(inventoryItemId: string, price: number): void { if (process.env.NODE_ENV !== 'production') { logDebug('[analytics] item_sold', { inventoryItemId, price }); } }
+  trackDepositMade(amount: number, method: string): void { if (process.env.NODE_ENV !== 'production') { logDebug('[analytics] deposit_made', { amount, method }); } }
 }
 
 export const Analytics: IAnalytics = new ConsoleAnalytics();

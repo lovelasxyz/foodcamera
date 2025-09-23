@@ -5,6 +5,7 @@ import App from './App.tsx';
 import { I18nProvider } from '@/i18n';
 import { shouldUseGuestMode } from '@/utils/environment';
 import './index.css';
+import { logDebug } from '@/services/logger';
 
 // Импортируем типы из нового файла
 import '@/types/telegram';
@@ -28,8 +29,9 @@ if (!shouldUseGuestMode() && window.Telegram?.WebApp) {
     tg.disableClosingConfirmation();
         
     // Telegram WebApp initialized successfully (removed in production)
-  } catch (error) {
-    console.error('Error initializing Telegram WebApp:', error);
+  } catch {
+    // Ignore TG init errors in non-prod
+    logDebug('Error initializing Telegram WebApp');
   }
 } else if (shouldUseGuestMode()) {
   // Guest mode - skipping Telegram WebApp initialization (removed in production)

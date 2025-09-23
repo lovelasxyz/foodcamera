@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { telegramAuth } from '@/services/telegramAuth';
 import { ParsedTelegramUser, AuthStatus } from '@/types/telegram';
 import { shouldUseGuestMode } from '@/utils/environment';
+import { logDebug } from '@/services/logger';
 
 interface UseTelegramAuthReturn {
   user: ParsedTelegramUser | null;
@@ -23,14 +24,14 @@ export const useTelegramAuth = (): UseTelegramAuthReturn => {
   const authenticate = useCallback(async () => {
     // В guest режиме не пытаемся авторизоваться
     if (shouldUseGuestMode()) {
-      if (process.env.NODE_ENV === 'development') console.log('Guest mode - skipping Telegram authentication');
+      if (process.env.NODE_ENV === 'development') logDebug('Guest mode - skipping Telegram authentication');
       setStatus('idle');
       return;
     }
 
     if (!isWebAppAvailable) {
       // Если Telegram WebApp недоступен, просто завершаем без ошибки
-      if (process.env.NODE_ENV === 'development') console.log('Telegram WebApp is not available - running in fallback mode');
+      if (process.env.NODE_ENV === 'development') logDebug('Telegram WebApp is not available - running in fallback mode');
       setStatus('idle');
       return;
     }
@@ -44,10 +45,10 @@ export const useTelegramAuth = (): UseTelegramAuthReturn => {
       if (authenticatedUser) {
         setUser(authenticatedUser);
   setStatus('authenticated');
-  if (process.env.NODE_ENV === 'development') console.log('User authenticated successfully:', authenticatedUser);
+  if (process.env.NODE_ENV === 'development') logDebug('User authenticated successfully:', authenticatedUser);
       } else {
   // Если нет данных пользователя, но WebApp доступен, это ошибка
-  if (process.env.NODE_ENV === 'development') console.warn('No user data available from Telegram WebApp');
+  if (process.env.NODE_ENV === 'development') logDebug('No user data available from Telegram WebApp');
         setStatus('error');
         setError('No Telegram initialization data available');
       }
@@ -55,7 +56,7 @@ export const useTelegramAuth = (): UseTelegramAuthReturn => {
   const errorMessage = err instanceof Error ? err.message : 'Authentication failed';
       setStatus('error');
       setError(errorMessage);
-  if (process.env.NODE_ENV === 'development') console.error('Authentication error:', err);
+  if (process.env.NODE_ENV === 'development') logDebug('Authentication error:', err);
     }
   }, [isWebAppAvailable]);
 

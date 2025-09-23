@@ -23,15 +23,15 @@ export const useTelegramWebApp = () => {
 
       // Настраиваем цвета, если поддерживается
       if (version >= 6.1 && typeof (tg as any).setHeaderColor === 'function') {
-        try { tg.setHeaderColor('#141415'); } catch {}
+        try { tg.setHeaderColor('#141415'); } catch { /* no-op */ }
       }
       if (version >= 6.1 && typeof (tg as any).setBackgroundColor === 'function') {
-        try { tg.setBackgroundColor('#141415'); } catch {}
+        try { tg.setBackgroundColor('#141415'); } catch { /* no-op */ }
       }
 
       // Отключаем подтверждение закрытия, если поддерживается
       if (version >= 6.2 && typeof (tg as any).disableClosingConfirmation === 'function') {
-        try { tg.disableClosingConfirmation(); } catch {}
+        try { tg.disableClosingConfirmation(); } catch { /* no-op */ }
       }
       
       // Обновляем CSS переменные для viewport

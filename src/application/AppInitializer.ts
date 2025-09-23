@@ -1,6 +1,7 @@
 import { shouldUseGuestMode } from '@/utils/environment';
 import { ConnectivityGuard } from '@/services/ConnectivityGuard';
 import { useUserStore } from '@/store/userStore';
+import { attachGlobalErrorHandlers } from '@/services/devtools/loggerService';
 
 /**
  * AppInitializer encapsulates app-level initialization side-effects.
@@ -9,10 +10,11 @@ import { useUserStore } from '@/store/userStore';
 export class AppInitializer {
   start(): void {
     ConnectivityGuard.start();
+    attachGlobalErrorHandlers();
   }
 
   stop(): void {
-    try { ConnectivityGuard.stop(); } catch {}
+    try { ConnectivityGuard.stop(); } catch { /* ignore stop errors */ }
     // При остановке приложения можем очистить кеш если нужно
     // (в данном случае оставляем кеш для быстрого следующего запуска)
   }

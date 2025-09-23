@@ -37,7 +37,8 @@ export const ROUTES = {
   home: '/',
   profile: '/profile',
   inventory: '/inventory',
-  upgrade: '/upgrade'
+  upgrade: '/upgrade',
+  logs: '/__logs'
 } as const; 
 
 // Пути к изображениям перемещены в src/constants/assets.ts

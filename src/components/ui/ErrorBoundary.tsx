@@ -1,4 +1,5 @@
 import React from 'react';
+import { DevLogger } from '@/services/devtools/loggerService';
 
 interface State {
   hasError: boolean;
@@ -19,6 +20,7 @@ class ErrorBoundary extends React.Component<{ children: React.ReactNode }, State
     // TODO: send to remote logger/analytics
     // eslint-disable-next-line no-console
     console.error('Unhandled error caught by ErrorBoundary:', error, info);
+    try { DevLogger.logError('ErrorBoundary captured error', error, { info }); } catch { /* ignore */ }
   }
 
   render() {

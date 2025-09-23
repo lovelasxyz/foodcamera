@@ -1,5 +1,6 @@
 import { ParsedTelegramUser, TelegramWebApp, TelegramWebAppUser } from '@/types/telegram';
 import { ASSETS } from '@/constants/assets';
+import { logDebug } from './logger';
 
 class TelegramAuthService {
   private webApp: TelegramWebApp | null = null;
@@ -20,12 +21,12 @@ class TelegramAuthService {
    */
   getTelegramUser(): TelegramWebAppUser | null {
     if (!this.webApp) {
-      if (process.env.NODE_ENV === 'development') console.warn('Telegram WebApp is not available');
+      if (process.env.NODE_ENV !== 'production') { logDebug('Telegram WebApp is not available'); }
       return null;
     }
 
     if (!this.webApp.initDataUnsafe?.user) {
-      if (process.env.NODE_ENV === 'development') console.warn('No user data in initDataUnsafe');
+      if (process.env.NODE_ENV !== 'production') { logDebug('No user data in initDataUnsafe'); }
       return null;
     }
 
@@ -33,7 +34,7 @@ class TelegramAuthService {
     
     // Проверяем минимальную валидность данных пользователя
     if (!user.id || !user.first_name) {
-      if (process.env.NODE_ENV === 'development') console.warn('Invalid user data:', user);
+      if (process.env.NODE_ENV !== 'production') { logDebug('Invalid user data:', user); }
       return null;
     }
 
@@ -107,13 +108,13 @@ class TelegramAuthService {
    */
   async authenticate(): Promise<ParsedTelegramUser | null> {
     if (!this.isAvailable()) {
-      if (process.env.NODE_ENV === 'development') console.warn('Telegram WebApp is not available');
+      if (process.env.NODE_ENV !== 'production') { logDebug('Telegram WebApp is not available'); }
       return null;
     }
 
     const telegramUser = this.getTelegramUser();
     if (!telegramUser) {
-      if (process.env.NODE_ENV === 'development') console.warn('No user data available from Telegram WebApp');
+      if (process.env.NODE_ENV !== 'production') { logDebug('No user data available from Telegram WebApp'); }
       return null;
     }
 

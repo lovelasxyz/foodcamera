@@ -18,10 +18,9 @@ export const LiveStatusBar: React.FC = () => {
   useEffect(() => {
     init();
     return () => {
-      try { stop(); } catch {}
+      try { stop(); } catch { /* ignore stop errors */ }
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [init, stop]);
 
   // На первом монтировании помечаем текущий lastAddedId как уже анимированный,
   // чтобы при возврате на страницу не перезапускалась анимация появления.
@@ -33,7 +32,6 @@ export const LiveStatusBar: React.FC = () => {
         lastShiftedIdRef.current = lastAddedId;
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lastAddedId]);
 
   // Функция для расчета количества элементов, которые помещаются в контейнер

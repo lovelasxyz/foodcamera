@@ -15,11 +15,11 @@ import { InventorySection } from './components/InventorySection';
 import { ShardProgress } from './components/ShardProgress';
 import { PrizeItem } from '@/domain/items/PrizeItem';
 import { ASSETS } from '@/constants/assets';
+import { runIdle } from '@/utils/idle';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { useI18n } from '@/i18n';
 import { usePrizeDescription } from '@/i18n/prizeDescriptions';
-// import { InventoryItemSkeleton } from '@/components/profile/InventoryItemSkeleton';
-// import { InventoryGrid } from '@/components/widgets/InventoryGrid/InventoryGrid';
+// removed unused, commented imports
 
 export const ProfilePage: React.FC = () => {
   const { t } = useI18n();
@@ -51,11 +51,10 @@ export const ProfilePage: React.FC = () => {
     setInventoryOfflinePhase('idle');
     // подгрузим инвентарь только один раз при первом заходе
     if (!inventoryFetched && !isLoading) {
-      // На слабых девайсах даём кадр отрисоваться
-      const id = window.requestIdleCallback ? window.requestIdleCallback(() => loadInventory()) : window.setTimeout(() => loadInventory(), 0);
-      return () => { if (typeof id === 'number') clearTimeout(id); };
+      const cancel = runIdle(() => void loadInventory());
+      return () => { cancel?.(); };
     }
-  }, [isOnline]);
+  }, [isOnline, inventoryFetched, isLoading, loadInventory]);
   const selectedInventoryItem = useMemo(() => user.inventory.find(i => i.id === selectedItemId) || null, [user.inventory, selectedItemId]);
 
   // Единая лента карточек: полноценные предметы + осколки, отсортированные по дате получения/обновления
@@ -90,7 +89,7 @@ export const ProfilePage: React.FC = () => {
     // Сортируем по updatedAt по убыванию, чтобы новые всегда сверху
     const combined = [...items, ...shards].sort((a: any, b: any) => (b.updatedAt || 0) - (a.updatedAt || 0));
     return combined;
-  }, [user.inventory, user.shards, (user as any).shardUpdatedAt]);
+  }, [user, t]);
 
   // Отфильтрованный список с учетом режима отображения
   const visibleInventory = useMemo(() => {

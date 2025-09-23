@@ -41,7 +41,7 @@ export const RouletteContainer: React.FC = () => {
     imageCache.preload([...criticalImages, ...uniqueImages], { 
       concurrency: 2, // Уменьшите concurrency для стабильности
     });
-  }, [currentCase?.id]);
+  }, [currentCase]);
 
   const handleSpin = () => api.handleSpin(rouletteItems.length);
   const handleDepositRedirect = () => {

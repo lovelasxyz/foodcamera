@@ -336,7 +336,7 @@ export const I18nProvider: React.FC<{ children: React.ReactNode }> = ({ children
     window.addEventListener('storage', onStorage);
     return () => {
       if ((window as any).setLang === setLang) {
-        try { delete (window as any).setLang; } catch {}
+        try { delete (window as any).setLang; } catch { /* ignore */ }
       }
       window.removeEventListener('storage', onStorage);
     };

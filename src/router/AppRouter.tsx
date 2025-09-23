@@ -3,6 +3,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { ROUTES } from '@/utils/constants';
 import { HomePage } from '@/pages/HomePage';
 import { ProfilePage } from '@/pages/ProfilePage';
+import { LogsPage } from '@/pages/LogsPage/LogsPage';
 
 const InventoryPage: React.FC = () => <div className="page-container"><h2>Inventory</h2><p>Coming soon...</p></div>;
 const UpgradePage: React.FC = () => <div className="page-container"><h2>Upgrade</h2><p>Coming soon...</p></div>;
@@ -14,6 +15,7 @@ export const AppRouter: React.FC = () => {
       <Route path={ROUTES.profile} element={<ProfilePage />} />
       <Route path={ROUTES.inventory} element={<InventoryPage />} />
       <Route path={ROUTES.upgrade} element={<UpgradePage />} />
+      <Route path={ROUTES.logs} element={<LogsPage />} />
       <Route path="*" element={<Navigate to={ROUTES.home} replace />} />
     </Routes>
   );
