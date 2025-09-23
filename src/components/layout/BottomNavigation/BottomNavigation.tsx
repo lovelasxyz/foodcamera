@@ -10,12 +10,12 @@ import { useI18n } from '@/i18n';
 interface NavigationTab {
   id: string;
   label: string;
-  icon: 'main' | 'weekly' | 'jackpot' | 'upgrade' | 'profile';
+  icon: 'main' | 'upgrade' | 'profile';
 }
 
 const navigationTabs: NavigationTab[] = [
   { id: 'main', label: 'Main', icon: 'main' },
-  { id: 'jackpot', label: 'JackPot', icon: 'jackpot' },
+  { id: 'upgrade', label: 'Portal', icon: 'upgrade' },
  // { id: 'upgrade', label: 'Upgrade', icon: 'upgrade' },
   { id: 'profile', label: 'Profile', icon: 'profile' },
 ];
@@ -31,10 +31,6 @@ const renderIcon = (iconType: string) => {
           <div className={styles.mainSquare}></div>
         </div>
       );
-    case 'weekly':
-      return <img src={ASSETS.IMAGES.LIGHTNING} alt="Weekly" className={styles.iconImage} />;
-    case 'jackpot':
-      return <img src={ASSETS.IMAGES.JACKPOT} alt="JackPot" className={styles.iconImage} />;
     case 'upgrade':
       return <img src={ASSETS.IMAGES.UPGRADE} alt="Upgrade" className={styles.iconImage} />;
     case 'profile':
@@ -51,7 +47,7 @@ export const BottomNavigation: React.FC = () => {
 
   const handleExternal = (tab: NavigationTab) => {
     ConnectivityGuard.ensureOnline();
-    if (tab.id === 'jackpot') {
+    if (tab.id === 'upgrade') {
       if (window.Telegram && window.Telegram.WebApp) {
         window.Telegram.WebApp.openLink('https://www.speedtest.net/');
       } else {
@@ -65,7 +61,7 @@ export const BottomNavigation: React.FC = () => {
       {navigationTabs.map((tab) => {
         const to = tab.id === 'main' ? ROUTES.home : tab.id === 'profile' ? ROUTES.profile : `/${tab.id}`;
         const isActive = location.pathname === to;
-        if (tab.id === 'jackpot') {
+        if (tab.id === 'upgrade') {
           return (
             <div
               key={tab.id}

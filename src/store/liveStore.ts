@@ -52,6 +52,7 @@ class LiveFeed {
       clearInterval(this.timerId);
       this.timerId = null;
     }
+    this.setState({ started: false });
   }
 
   private generateInitial(): LiveItem[] {

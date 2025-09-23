@@ -24,4 +24,4 @@ export interface CardProps {
   onClick?: () => void;
 }
 
-export type NavigationPage = 'main' | 'profile' | 'weekly' | 'jackpot' | 'upgrade'; 
+export type NavigationPage = 'main' | 'profile' | 'upgrade'; 

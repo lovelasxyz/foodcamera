@@ -6,6 +6,7 @@ export const LiveStatusBar: React.FC = () => {
   const items = useLiveStore((s) => s.items);
   const lastAddedId = useLiveStore((s) => s.lastAddedId);
   const init = useLiveStore((s) => s.init);
+  const stop = useLiveStore((s) => s.stop);
   const liveItemsRef = useRef<HTMLDivElement | null>(null);
   const didInitRef = useRef<boolean>(false);
   const [enterDoneId, setEnterDoneId] = useState<number | null>(null);
@@ -16,6 +17,10 @@ export const LiveStatusBar: React.FC = () => {
 
   useEffect(() => {
     init();
+    return () => {
+      try { stop(); } catch {}
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // На первом монтировании помечаем текущий lastAddedId как уже анимированный,

@@ -37,8 +37,6 @@ export const ROUTES = {
   home: '/',
   profile: '/profile',
   inventory: '/inventory',
-  weekly: '/weekly',
-  jackpot: '/jackpot',
   upgrade: '/upgrade'
 } as const; 
 
