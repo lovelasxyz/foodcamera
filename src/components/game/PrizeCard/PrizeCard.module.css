@@ -30,7 +30,6 @@
   max-height: 100%;
   object-fit: contain;
 }
-
 .prizeInfo {
   display: flex;
   flex-direction: column;

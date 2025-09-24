@@ -84,6 +84,19 @@
   position: relative;
 }
 
+.caseName {
+  color: #fff;
+  text-align: center;
+  font-family: var(--font-family, "Inter", sans-serif);
+  font-size: 15px;
+  line-height: var(--line-height-md, 20px);
+  font-weight: var(--font-weight-semibold, 600);
+  position: relative;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .token {
   width: 16px;
   height: 16px;

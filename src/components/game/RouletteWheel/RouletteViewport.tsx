@@ -34,17 +34,19 @@ export const RouletteViewport: React.FC<RouletteViewportProps> = ({
         style={animationStyle}
       >
         {items.map((item, index) => (
-          <div 
+          <div
             key={item.uniqueId}
-            className={`${styles.rouletteItem} ${index === targetReplicaIndex ? styles.highlighted : ''}`}
+            className={`${styles.prizeItem} ${index === targetReplicaIndex ? styles.highlighted : ''}`}
             data-rarity={item.rarity || 'common'}
             data-index={index}
             data-original-index={item.originalIndex}
+            style={{ width: '100px', height: '100px' }}
           >
-            <img 
+            <img
               src={item.image}
               alt={item.name}
-              style={{ width: '100px', height: '100px', objectFit: 'contain' }}
+              className={styles.roulettePrizeImage}
+              style={{ width: '75px', height: '75px', objectFit: 'contain' }}
             />
             <div className={styles.prizeHint}>
               <img src={tonIcon} alt="TON" className={styles.coinIcon} />

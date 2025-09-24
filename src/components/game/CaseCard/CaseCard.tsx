@@ -66,14 +66,7 @@ export const CaseCard: React.FC<CaseCardProps> = ({ caseData }) => {
         <ProgressiveImg className={styles.caseImage} src={caseData.image} cacheKey={String(caseData.id)} alt="Case Image" />
       </div>
       <div className={styles.caseFooter}>
-        <div className={styles.casePrice}>{caseData.price}</div>
-        <div className={styles.coin}>
-          <img 
-            className={styles.coinImage} 
-            src={ASSETS.IMAGES.TON} 
-            alt="Coin"
-          />
-        </div>
+        <div className={styles.caseName}>{caseData.name}</div>
       </div>
     </div>
   );

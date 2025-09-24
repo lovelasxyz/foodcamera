@@ -15,7 +15,8 @@ export const PrizeCard: React.FC<PrizeCardProps> = ({ prize, className }) => {
         <img 
           src={prize.image} 
           alt={prize.name} 
-          className={styles.prizeImage} 
+          className={clsx(styles.prizeImage)}
+
         />
       </div>
       <div className={styles.prizeInfo}>

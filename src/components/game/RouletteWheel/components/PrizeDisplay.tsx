@@ -1,6 +1,7 @@
 import React from 'react';
 import styles from '../RouletteWheel.module.css';
 import { ASSETS } from '@/constants/assets';
+import { ProgressiveImg } from '@/components/ui/ProgressiveImg';
 
 interface PrizeDisplayProps {
   name?: string;
@@ -27,48 +28,31 @@ export const PrizeDisplay: React.FC<PrizeDisplayProps> = ({
 }) => {
   return (
     <div className={styles.resultContainer}>
-      <div style={{ 
-        fontSize: '18px', 
-        color: 'rgba(255, 255, 255, 0.7)', 
-        marginBottom: '8px' 
-      }}>
-        {name}
-      </div>
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: '8px',
-        fontSize: '24px',
-        fontWeight: 'bold',
-        color: '#0075FF'
-      }}>
-        <img 
-          src={ASSETS.IMAGES.TON} 
-          alt="TON" 
-          style={{ width: '24px', height: '24px' }}
-        />
-        <span>{price}</span>
-      </div>
-      <div className={styles.resultPrize}>
-        {image && (
-          <div style={{ 
-            textAlign: 'center',
-            background: 'rgba(255, 255, 255, 0.05)',
-            borderRadius: 'var(--radius-lg)',
-            padding: '20px',
-            position: 'relative'
-          }}>
-            <img 
-              src={image} 
-              alt={name || 'Prize'}
-              style={{ 
-                width: '120px', 
-                height: '120px', 
-                objectFit: 'contain',
-              }}
-            />
+      <div className={styles.winContainer}>
+        <div className={styles.prizeShowcase}>
+          <div className={styles.lightsContainer}>
+            <img className={styles.lights} src={ASSETS.EFFECTS.LIGHTS} alt="Background lights" />
+            <img className={`${styles.stars} ${styles.starsAnimation}`} src={ASSETS.EFFECTS.STARS} alt="Stars" />
           </div>
-        )}
+          {image && (
+            <ProgressiveImg 
+              src={image}
+              alt={name || 'Prize Item'}
+              className={styles.winPrizeImage}
+              cacheKey={String(price ?? '')}
+            />
+          )}
+          {typeof price === 'number' && (
+            <div className={`${styles.hint} ${styles.prizeHint}`}>
+              <div className={styles.coinWrapper}>
+                <div className={`${styles.coin} ${styles.small}`}>
+                  <img className={styles.coinImage} src={ASSETS.IMAGES.TON} alt="Coin" />
+                </div>
+              </div>
+              <div className={styles.price}>{price.toFixed(2)}</div>
+            </div>
+          )}
+        </div>
       </div>
       <div className={styles.resultActions}>
         <button onClick={onKeep} className={`${styles.spinButton} ${styles.centered}`}>

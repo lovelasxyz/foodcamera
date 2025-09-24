@@ -340,6 +340,73 @@
   padding: 10px;
 }
 
+.winContainer {
+  width: 100%;
+  min-height: 250px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  margin-bottom: -20px;
+}
+
+.prizeShowcase {
+  border-radius: var(--radius-lg);
+  width: 100%;
+  height: 250px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: linear-gradient(180deg, rgba(20, 20, 21, .2) 0%, rgba(20, 20, 21, .8) 100%);
+}
+
+.lightsContainer {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.lights {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  filter: brightness(15%);
+  object-fit: cover;
+  left: 0;
+  top: 0;
+}
+
+.stars {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  left: 0;
+  top: 0;
+  z-index: 3;
+}
+
+.starsAnimation {
+  animation: float-stars 4s ease-in-out infinite alternate;
+}
+
+@keyframes float-stars {
+  0% { transform: translateY(0); opacity: 0.9; }
+  100% { transform: translateY(-6px); opacity: 1; }
+}
+
+.prizeImage {
+  position: relative;
+  width: 140px;
+  height: 140px;
+  object-fit: contain;
+  z-index: 2;
+}
+
 .resultTitle {
   font-size: 24px;
   font-weight: 700;
@@ -662,14 +729,49 @@
     font-weight: var(--font-weight-semibold);
 }
 
+.winPrizeImage.loaded {
+    opacity: 1;
+    transition: opacity .3s 
+ease;
+}
+@media (max-width: 420px) {
+  .winPrizeImage, .winPrizePlaceholder {
+        width: 180px;
+        height: 180px;
+    }
+}
+.winPrizeImage {
+    width: 200px;
+    height: 200px;
+    object-fit: contain;
+    position: relative;
+    z-index: 2;
+    animation: float-874682fd 3s 
+ease-in-out infinite alternate;
+    transform-origin: center center;
+    will-change: transform, opacity;
+}
+
+/* Dedicated image class for roulette items (no animation) */
+.roulettePrizeImage {
+  width: 100px;
+  height: 100px;
+  object-fit: contain;
+}
+
+@keyframes float-874682fd {
+    0% {
+        transform: translateY(-5px)
+    }
+
+    to {
+        transform: translateY(5px)
+    }
+}
+
 @media (max-width: 420px) {
     .prizeItem {
         width: 90px;
         height: 90px;
-    }
-
-    .prizeImage {
-        width: 60px;
-        height: 60px;
     }
 }

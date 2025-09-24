@@ -24,6 +24,10 @@ export const ASSETS = {
         LOADING_LOGO: '/assets/images/loader.png',
 		WIZARD_HAT: '/assets/images/wizard-hat.png'
 	},
+	EFFECTS: {
+		LIGHTS: '/assets/images/lights.png',
+		STARS: '/assets/images/stars.png'
+	},
 	SHARDS: {
 		GIFT: '/images/gift.png',
 		GIFT_SHARD: '/images/gift_shard.png',
