@@ -2,7 +2,6 @@ import React, { useRef } from 'react';
 import { animated } from 'react-spring';
 import { Prize } from '@/types/game';
 import { ASSETS } from '@/constants/assets';
-import { ProgressiveImg } from '@/components/ui/ProgressiveImg';
 import styles from '../RouletteWheel.module.css';
 
 interface RouletteViewportProps {
@@ -25,13 +24,13 @@ export const RouletteViewport: React.FC<RouletteViewportProps> = ({
       >
         {rouletteItems.map((item) => (
           <div key={item.uniqueId} className={styles.rouletteItem} data-rarity={item.rarity || 'common'}>
-            <ProgressiveImg 
+            <img 
               src={item.image} 
               alt={item.name} 
               style={{ width: '100px', height: '100px', objectFit: 'contain' }}
             />
             <div className={styles.prizeHint}>
-              <ProgressiveImg 
+              <img 
                 src={ASSETS.IMAGES.TON} 
                 alt="TON" 
                 className={styles.coinIcon}

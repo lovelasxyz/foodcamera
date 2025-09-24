@@ -1,6 +1,5 @@
 import React from 'react';
 import { Button } from '@/components/ui/Button';
-import { ProgressiveImg } from '@/components/ui/ProgressiveImg';
 import { ASSETS } from '@/constants/assets';
 import { Slide } from '../hooks/useSlider';
 import styles from '../../HomePage.module.css';
@@ -33,7 +32,7 @@ export const SlideView: React.FC<SlideViewProps> = ({ slide, shadowColor, onActi
   const content = (
     <div className={`${styles.freeCaseSlide} ${styles.imageSlide}`} style={style}>
       {slide.kind === 'image' ? (
-        <ProgressiveImg className={styles.imageSlideImage} src={slide.image || ''} alt="Slide" />
+        <img className={styles.imageSlideImage} src={slide.image || ''} alt="Slide" />
       ) : (
         <video
           className={styles.imageSlideImage}

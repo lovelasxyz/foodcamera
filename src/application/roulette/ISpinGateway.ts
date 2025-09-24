@@ -1,6 +1,8 @@
 export interface SpinRequestItem {
   id: number;
   ev: number; // Expected value (price) of the prize
+  rarity?: 'common' | 'rare' | 'epic' | 'legendary';
+  benefitType?: 'discount' | 'subscription' | 'lottery_ticket' | 'bigwin';
 }
 
 export interface SpinRequest {

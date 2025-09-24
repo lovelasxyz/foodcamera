@@ -1,7 +1,6 @@
 import React from 'react';
 import { clsx } from 'clsx';
 import { Modal } from '@/components/ui/Modal';
-import { ProgressiveImg } from '@/components/ui/ProgressiveImg';
 
 import styles from './PrizeModal.module.css';
 
@@ -57,7 +56,7 @@ export const PrizeModal: React.FC<PrizeModalProps> = ({
     <Modal isOpen={isOpen} onClose={onClose} title={title} size="md" className={className} overlayClassName={overlayClassName}>
       <div className={clsx(styles.container, containerClassName)}>
         <div className={styles.imageRow}>
-                <ProgressiveImg src={image} alt={title} className={clsx(styles.image, imageClassName)} />
+                <img src={image} alt={title} className={clsx(styles.image, imageClassName)} />
         </div>
         {resolvedDescription && (
           <div className={clsx(styles.description, descriptionClassName)}>

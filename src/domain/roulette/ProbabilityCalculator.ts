@@ -23,6 +23,26 @@ export interface ProbabilityEntry {
  * where g_i = (ln(EV_i) - ln(EV_min)) / (ln(EV_max) - ln(EV_min))   in [0,1]
  */
 export class ProbabilityCalculator {
+  // Externalized biases to keep consistent across app and gateways
+  public static rarityBias(rarity: Prize['rarity']): number {
+    const envLegendary = Number((import.meta as any).env?.VITE_LEGENDARY_SCALE);
+    const legendaryScale = isNaN(envLegendary) ? 0.05 : Math.max(0.001, Math.min(envLegendary, 0.2));
+    switch (rarity) {
+      case 'common': return 1;
+      case 'rare': return 0.6;
+      case 'epic': return 0.25;
+      case 'legendary': return legendaryScale; // very rare by default
+      default: return 1;
+    }
+  }
+
+  public static benefitBias(type?: Prize['benefit'] extends infer B ? B extends { type: infer T } ? T : never : never): number {
+    // Extra penalty for special benefits such as bigwin/lottery
+    if (!type) return 1;
+    if (type === 'bigwin') return 0.1;
+    if (type === 'lottery_ticket') return 0.8;
+    return 1;
+  }
   public static baseWeightsByEV(items: { id: number; ev: number }[]): number[] {
     return items.map(i => 1 / Math.sqrt(Math.max(1e-6, i.ev)));
   }
@@ -66,7 +86,9 @@ export class ProbabilityCalculator {
 
     const adjusted = items.map((it, idx) => {
       const g = this.sensitivity(it.ev, evMin, evMax); // 0..1
-      const wStar = baseWeights[idx] * Math.pow(M, g);
+      const rBias = this.rarityBias(prizes[idx].rarity);
+      const bBias = this.benefitBias(prizes[idx].benefit?.type as any);
+      const wStar = baseWeights[idx] * rBias * bBias * Math.pow(M, g);
       return wStar;
     });
     const sum = adjusted.reduce((a, b) => a + b, 0) || 1;

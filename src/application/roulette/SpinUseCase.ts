@@ -66,7 +66,7 @@ export class SpinUseCase {
 			const forceLocal = (import.meta as any).env?.VITE_FORCE_LOCAL_SPIN === 'true' || false;
 			if (this.gateway && !forceLocal) {
 				try {
-					const items = caseData.items.map(i => ({ id: i.id, ev: Math.max(1, i.price) }));
+					const items = caseData.items.map(i => ({ id: i.id, ev: Math.max(1, i.price), rarity: i.rarity, benefitType: (i.benefit as any)?.type }));
 					const resp = await this.gateway.requestSpin({ caseId: caseData.id, items });
 					const prizeIndex = Math.max(0, caseData.items.findIndex(p => p.id === resp.prizeId));
 					if (prizeIndex !== -1) return this.engine.outcomeForPrizeIndex(caseData, prizeIndex, reelLength);

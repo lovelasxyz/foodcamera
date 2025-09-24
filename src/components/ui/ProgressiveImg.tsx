@@ -16,27 +16,16 @@ export const ProgressiveImg: React.FC<ProgressiveImgProps> = ({
   ...rest 
 }) => {
   const [loaded, setLoaded] = React.useState(false);
-  const imgRef = React.useRef<HTMLImageElement | null>(null);
 
   const handleLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
     setLoaded(true);
     onLoad?.(e);
   };
 
-  // Сброс loaded при смене src и учет кэшированных изображений
+  // Сброс loaded при смене src
   React.useEffect(() => {
     setLoaded(false);
-    const el = imgRef.current;
-    if (el && el.complete && el.naturalWidth > 0) {
-      // Изображение уже в кэше и загружено — сразу показываем
-      setLoaded(true);
-    }
   }, [src]);
-
-  const handleError = () => {
-    // В случае ошибки убираем блюр/прозрачность, чтобы не прятать элемент
-    setLoaded(true);
-  };
 
   return (
     <>
@@ -56,7 +45,6 @@ export const ProgressiveImg: React.FC<ProgressiveImgProps> = ({
       <img
         {...rest}
         src={src}
-        ref={imgRef}
         style={{
           ...style,
           filter: loaded ? 'none' : 'blur(8px)',
@@ -64,7 +52,6 @@ export const ProgressiveImg: React.FC<ProgressiveImgProps> = ({
           transition: 'filter 0.3s ease, opacity 0.3s ease',
         }}
         onLoad={handleLoad}
-        onError={handleError}
         loading={lazy ? "lazy" : "eager"}
         decoding="async"
       />

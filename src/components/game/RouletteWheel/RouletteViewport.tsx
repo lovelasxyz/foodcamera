@@ -1,7 +1,6 @@
 import React from 'react';
 import styles from './RouletteWheel.module.css';
 import { useSpinAnimation } from './hooks/useSpinAnimation';
-import { ProgressiveImg } from '@/components/ui/ProgressiveImg';
 import { RouletteItem } from '@/types/game';
 
 interface RouletteViewportProps {
@@ -42,11 +41,10 @@ export const RouletteViewport: React.FC<RouletteViewportProps> = ({
             data-index={index}
             data-original-index={item.originalIndex}
           >
-            <ProgressiveImg 
+            <img 
               src={item.image}
               alt={item.name}
               style={{ width: '100px', height: '100px', objectFit: 'contain' }}
-              cacheKey={String(item.id)}
             />
             <div className={styles.prizeHint}>
               <img src={tonIcon} alt="TON" className={styles.coinIcon} />
