@@ -8,7 +8,7 @@ export interface Slide {
   readonly href?: string;
 }
 
-export function useSlider(slides: Slide[], autoplayInterval = 6000) {
+export function useSlider(slides: Slide[], autoplayInterval = 8000) {
   const [currentIndex, setCurrentIndex] = React.useState(0);
 
   const nextSlide = React.useCallback(() => {

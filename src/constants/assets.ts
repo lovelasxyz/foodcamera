@@ -38,7 +38,7 @@ export const ASSETS = {
 		INVITE: '/assets/images/invite_user.svg',
 	},
 	VIDEOS: {
-		DARKSIDE: '/assets/images/darkside.mp4'
+		DARKSIDE: '/assets/videos/darkside.mp4'
 	}
 } as const;
 
