@@ -73,7 +73,7 @@ export const PrizeDisplay: React.FC<PrizeDisplayProps> = ({
           <button 
             className={styles.quickSellButton}
             onClick={onSell}
-            disabled={isSpinning}
+            disabled={isSpinning || isKeeping}
           >
             <div className={styles.buttonLabel}>{sellLabel}</div>
             {typeof price === 'number' && (

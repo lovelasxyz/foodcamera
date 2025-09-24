@@ -469,6 +469,12 @@
     overflow: hidden;
 }
 
+.quickSellButton:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+  filter: grayscale(0.2);
+}
+
 .upgradeButton {
   background: #FF8400;
   border: none;
