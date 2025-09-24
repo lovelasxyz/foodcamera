@@ -85,11 +85,9 @@ export const InventorySection: React.FC<InventorySectionProps> = ({
                       style={{ cursor: isDisabled ? 'not-allowed' : 'pointer' }}
                     >
                       <div style={{ position: 'relative', width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <ProgressiveImg
+                      <img
                         src={card.image}
-                        previewSrc={card.item.prize?.previewImage}
-                        cacheKey={card.id}
-                        lazy={true}
+                        loading={"lazy"}
                         alt="item"
                         className={styles.itemImage}
                       />

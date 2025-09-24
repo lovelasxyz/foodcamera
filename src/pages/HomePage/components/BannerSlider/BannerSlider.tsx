@@ -36,6 +36,24 @@ export const BannerSlider: React.FC<BannerSliderProps> = ({ slides, className })
       onTouchEnd={handleTouchEnd}
     >
       <SlideView slide={currentSlide} shadowColor={shadowColor} />
+
+      {/* Invisible click zones on left/right to navigate */}
+      {slides.length > 1 && (
+        <>
+          <button
+            type="button"
+            aria-label="Previous slide"
+            className={styles.bannerHotspotLeft}
+            onClick={(e) => { e.preventDefault(); e.stopPropagation(); prevSlide(); }}
+          />
+          <button
+            type="button"
+            aria-label="Next slide"
+            className={styles.bannerHotspotRight}
+            onClick={(e) => { e.preventDefault(); e.stopPropagation(); nextSlide(); }}
+          />
+        </>
+      )}
       
       {slides.length > 1 && (
         <div className={styles.freeCaseDots}>

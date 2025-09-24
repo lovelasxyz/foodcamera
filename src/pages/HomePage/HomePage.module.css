@@ -109,6 +109,29 @@
     position: relative;
 }
 
+.bannerHotspotLeft,
+.bannerHotspotRight {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 18%;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+}
+.bannerHotspotLeft { left: 0; }
+.bannerHotspotRight { right: 0; }
+
+@media (hover: hover) {
+  .bannerHotspotLeft:hover,
+  .bannerHotspotRight:hover {
+    /* subtle hover area if нужно: оставить прозрачным */
+    background: transparent;
+  }
+}
+
 /* .freeCaseViewport, .freeCaseTrack - removed (unused) */
 
 .freeCaseSlide {

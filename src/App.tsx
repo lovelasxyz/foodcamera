@@ -1,4 +1,5 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useUIStore } from '@/store/uiStore';
 import { useGameStore } from '@/store/gameStore';
 import { useUserStore } from '@/store/userStore';
@@ -15,8 +16,8 @@ import ErrorBoundary from '@/components/ui/ErrorBoundary';
 
 const AppContentInner: React.FC = () => {
   useUIStore();
-  const getRouteKey = () => window.location.pathname || '/';
-  const [routeKey, setRouteKey] = useState<string>(getRouteKey());
+  const location = useLocation();
+  const routeKey = location.pathname || '/';
   const { closeCase } = useGameStore();
   const { setTelegramUser, loadUser } = useUserStore();
   const { isExpanded, isAvailable } = useTelegramWebApp();
@@ -30,14 +31,11 @@ const AppContentInner: React.FC = () => {
   // Close case when switching between main sections
   useEffect(() => {
     // Close case when navigating to main sections (home/profile)
-    const key = getRouteKey();
+    const key = routeKey;
     if (key === '/' || key === '/profile') {
       try { closeCase(); } catch { /* ignore close errors */ }
     }
-    const onPop = () => setRouteKey(getRouteKey());
-    window.addEventListener('popstate', onPop);
-    return () => window.removeEventListener('popstate', onPop);
-  }, [closeCase]);
+  }, [closeCase, routeKey]);
 
   // Обрабатываем авторизацию пользователя
   useEffect(() => {
@@ -102,7 +100,7 @@ const AppContentInner: React.FC = () => {
       scrollPositionsRef.current[prevKey] = currentScroll;
     }
     // Восстановить позицию для текущей страницы
-    const currentKey = getRouteKey();
+    const currentKey = routeKey;
     const targetY = scrollPositionsRef.current[currentKey] ?? 0;
     if (container) {
       container.scrollTo({ top: targetY, behavior: 'auto' });
