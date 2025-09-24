@@ -4,6 +4,7 @@ import { InventoryGrid } from '@/components/widgets/InventoryGrid/InventoryGrid'
 import { Button } from '@/components/ui/Button';
 import { ASSETS } from '@/constants/assets';
 import { PrizeItem } from '@/domain/items/PrizeItem';
+import { ProgressiveImg } from '@/components/ui/ProgressiveImg';
 import { useI18n } from '@/i18n';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '@/utils/constants';
@@ -83,7 +84,16 @@ export const InventorySection: React.FC<InventorySectionProps> = ({
                       onClick={() => { if (isActive) onSelectItem(card.id); }}
                       style={{ cursor: isDisabled ? 'not-allowed' : 'pointer' }}
                     >
-                      <img src={card.image} alt="item" className={styles.itemImage} />
+                      <div style={{ position: 'relative', width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <ProgressiveImg
+                        src={card.image}
+                        previewSrc={card.item.prize?.previewImage}
+                        cacheKey={card.id}
+                        lazy={true}
+                        alt="item"
+                        className={styles.itemImage}
+                      />
+                      </div>
                       <div className={`${styles.hint} ${styles.prizeHint}`}>
                         <div className={styles.coinWrapper}>
                           <div className={`${styles.coin} ${styles.small}`}>

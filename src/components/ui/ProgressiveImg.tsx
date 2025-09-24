@@ -1,117 +1,72 @@
 import React from 'react';
-import { imageCache } from '@/services/ImageCache';
 
 interface ProgressiveImgProps extends React.ImgHTMLAttributes<HTMLImageElement> {
   previewSrc?: string;
-  cacheKey?: string; // optional external cache key (currently not used)
+  cacheKey?: string; // для обратной совместимости
+  lazy?: boolean; // по умолчанию true
 }
 
 export const ProgressiveImg: React.FC<ProgressiveImgProps> = ({ 
   previewSrc, 
-  src, 
-  style, 
-  cacheKey: _cacheKey,
+  src,
+  style,
+  cacheKey, // игнорируется, но принимается для совместимости
+  lazy = true,
+  onLoad,
   ...rest 
 }) => {
-  const srcStr = typeof src === 'string' ? src : undefined;
-  const [loaded, setLoaded] = React.useState(() => srcStr ? imageCache.isLoaded(srcStr) : false);
-  const [error, setError] = React.useState(false);
-  const imgRef = React.useRef<HTMLImageElement>(null);
+  const [loaded, setLoaded] = React.useState(false);
+  const imgRef = React.useRef<HTMLImageElement | null>(null);
 
-  // Простая проверка производительности устройства
-  const shouldBlur = React.useMemo(() => {
-    try {
-      return ((navigator as any)?.deviceMemory ?? 4) >= 2;
-    } catch {
-      return true;
-    }
-  }, []);
-
-  // Эффект для управления загрузкой
-  React.useEffect(() => {
-    if (!srcStr) {
-      setLoaded(false);
-      setError(false);
-      return;
-    }
-
-    // Быстрая проверка кеша
-    if (imageCache.isLoaded(srcStr)) {
-      setLoaded(true);
-      setError(false);
-      return;
-    }
-
-    // Подписываемся на загрузку
-    const unsubscribe = imageCache.subscribe(srcStr, () => {
-      setLoaded(true);
-      setError(false);
-    });
-
-    // Lazy loading с IntersectionObserver
-    const img = imgRef.current;
-    if (img && 'IntersectionObserver' in window) {
-      const observer = new IntersectionObserver(
-        ([entry]) => {
-          if (entry.isIntersecting) {
-            imageCache.preloadLazy(srcStr);
-            observer.disconnect();
-          }
-        },
-        { rootMargin: '100px' }
-      );
-      observer.observe(img);
-      
-      return () => {
-        unsubscribe();
-        observer.disconnect();
-      };
-    } else {
-      // Fallback - загружаем сразу
-      imageCache.preloadLazy(srcStr);
-    }
-
-    return unsubscribe;
-  }, [srcStr]);
-
-  const handleLoad = React.useCallback(() => {
-    if (srcStr) {
-      imageCache.markLoaded(srcStr);
-    }
+  const handleLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
     setLoaded(true);
-    setError(false);
-  }, [srcStr]);
+    onLoad?.(e);
+  };
 
-  const handleError = React.useCallback(() => {
-    setError(true);
+  // Сброс loaded при смене src и учет кэшированных изображений
+  React.useEffect(() => {
     setLoaded(false);
-  }, []);
+    const el = imgRef.current;
+    if (el && el.complete && el.naturalWidth > 0) {
+      // Изображение уже в кэше и загружено — сразу показываем
+      setLoaded(true);
+    }
+  }, [src]);
 
-  const imageStyle: React.CSSProperties = {
-    ...style,
-    filter: loaded ? 'none' : (shouldBlur ? 'blur(8px)' : 'opacity(0.5)'),
-    transition: 'filter 0.3s ease, opacity 0.3s ease',
+  const handleError = () => {
+    // В случае ошибки убираем блюр/прозрачность, чтобы не прятать элемент
+    setLoaded(true);
   };
 
   return (
     <>
-      {previewSrc && !loaded && !error && (
+      {previewSrc && !loaded && (
         <img 
           src={previewSrc} 
-          style={{ ...imageStyle, position: 'absolute' }} 
-          aria-hidden 
+          style={{ 
+            ...style, 
+            position: 'absolute',
+            filter: 'blur(8px)',
+            opacity: 0.5
+          }} 
+          aria-hidden="true"
           alt=""
         />
       )}
       <img
         {...rest}
-        ref={imgRef}
         src={src}
-        loading="lazy"
-        decoding="async"
-        style={imageStyle}
+        ref={imgRef}
+        style={{
+          ...style,
+          filter: loaded ? 'none' : 'blur(8px)',
+          opacity: loaded ? 1 : 0,
+          transition: 'filter 0.3s ease, opacity 0.3s ease',
+        }}
         onLoad={handleLoad}
         onError={handleError}
+        loading={lazy ? "lazy" : "eager"}
+        decoding="async"
       />
     </>
   );
