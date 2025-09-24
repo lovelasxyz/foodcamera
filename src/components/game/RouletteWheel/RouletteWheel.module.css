@@ -775,3 +775,23 @@ ease-in-out infinite alternate;
         height: 90px;
     }
 }
+
+/* Keep animation: prize flies down into inventory */
+.keepItAnimation {
+  animation: keep-it-fly 1.5s cubic-bezier(.32,.86,.58,1) forwards;
+}
+
+@keyframes keep-it-fly {
+  0% {
+    transform: translateY(0) scale(1) rotate(0);
+    opacity: 1;
+  }
+  60% {
+    transform: translateY(60px) scale(0.6) rotate(8deg);
+    opacity: 0.8;
+  }
+  100% {
+    transform: translateY(120px) scale(0.2) rotate(12deg);
+    opacity: 0;
+  }
+}

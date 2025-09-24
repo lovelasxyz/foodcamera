@@ -26,6 +26,17 @@ export const PrizeDisplay: React.FC<PrizeDisplayProps> = ({
   onSell,
   showSell = true
 }) => {
+  const [isKeeping, setIsKeeping] = React.useState(false);
+
+  const handleKeep = () => {
+    if (isKeeping) return;
+    setIsKeeping(true);
+    // Let the animation run, then trigger onKeep
+    setTimeout(() => {
+      onKeep();
+      setIsKeeping(false);
+    }, 1500);
+  };
   return (
     <div className={styles.resultContainer}>
       <div className={styles.winContainer}>
@@ -38,7 +49,7 @@ export const PrizeDisplay: React.FC<PrizeDisplayProps> = ({
             <ProgressiveImg 
               src={image}
               alt={name || 'Prize Item'}
-              className={styles.winPrizeImage}
+              className={`${styles.winPrizeImage} ${isKeeping ? styles.keepItAnimation : ''}`}
               cacheKey={String(price ?? '')}
             />
           )}
@@ -55,7 +66,7 @@ export const PrizeDisplay: React.FC<PrizeDisplayProps> = ({
         </div>
       </div>
       <div className={styles.resultActions}>
-        <button onClick={onKeep} className={`${styles.spinButton} ${styles.centered}`}>
+        <button onClick={handleKeep} className={`${styles.spinButton} ${styles.centered}`} disabled={isKeeping}>
           <div className={styles.buttonLabel}>{keepLabel}</div>
         </button>
         {showSell && (
