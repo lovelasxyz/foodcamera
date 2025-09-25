@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { shouldUseGuestMode } from '@/utils/environment';
+import { shouldUseGuestMode, getGuestModeReason } from '@/utils/environment';
 import { useUserStore } from '@/store/userStore';
 import { useTelegramAuth } from '@/hooks/useTelegramAuth';
 import { apiService } from '@/services/apiService';
@@ -22,8 +22,11 @@ export function useAppBootstrap(): UseAppBootstrapResult {
 
     // Guest shortcut
     if (shouldUseGuestMode()) {
+      if (process.env.NODE_ENV !== 'production') {
+        console.debug('[bootstrap] Guest mode enabled:', getGuestModeReason());
+      }
       (async () => {
-        try { await loadUser(); } catch { /* ignore */ }
+        try { await loadUser(); } catch (e) { if (process.env.NODE_ENV !== 'production') console.debug('[bootstrap] loadUser(guest) failed', e); }
         setReady(true);
         setLoading(false);
       })();
@@ -37,8 +40,11 @@ export function useAppBootstrap(): UseAppBootstrapResult {
 
     if (authStatus === 'error') {
       // fallback as guest
+      if (process.env.NODE_ENV !== 'production') {
+        console.debug('[bootstrap] Telegram auth error -> fallback guest');
+      }
       (async () => {
-        try { await loadUser(); } catch { /* ignore */ }
+        try { await loadUser(); } catch (e) { if (process.env.NODE_ENV !== 'production') console.debug('[bootstrap] loadUser(fallback) failed', e); }
         setReady(true);
         setLoading(false);
       })();
@@ -53,9 +59,9 @@ export function useAppBootstrap(): UseAppBootstrapResult {
           try {
             const token = await apiService.authWithTelegram(telegramAuth.getInitData());
             setToken(token);
-          } catch { /* silent */ }
+          } catch (e) { if (process.env.NODE_ENV !== 'production') console.debug('[bootstrap] authWithTelegram failed', e); }
         }
-        try { await loadUser(); } catch { /* ignore */ }
+        try { await loadUser(); } catch (e) { if (process.env.NODE_ENV !== 'production') console.debug('[bootstrap] loadUser(authenticated) failed', e); }
         setReady(true);
         setLoading(false);
       })();

@@ -14,12 +14,25 @@ export const isTelegramWebApp = (): boolean => {
   return !!(window.Telegram?.WebApp);
 };
 
+/**
+ * Причина выбора guest режима (для диагностики)
+ */
+export const getGuestModeReason = (): string | null => {
+  const env = (import.meta as any).env || {};
+  if (env?.VITE_FORCE_GUEST === 'true') return 'VITE_FORCE_GUEST=true';
+  if (isDevelopment() && env?.VITE_TELEGRAM_DEV_AUTH !== 'true') return 'development (auth disabled)';
+  if (!isTelegramWebApp()) return 'Telegram WebApp not detected (window.Telegram.WebApp missing)';
+  return null; // не гостевой режим
+};
+
+/**
+ * Логика определения guest режима с возможностью переопределения через переменные окружения.
+ *
+ * Переменные:
+ *  - VITE_FORCE_GUEST=true       принудительно включает guest режим
+ *  - VITE_TELEGRAM_DEV_AUTH=true разрешает Telegram auth в DEV
+ */
 export const shouldUseGuestMode = (): boolean => {
-  // В dev режиме всегда используем guest режим
-  if (isDevelopment()) {
-    return true;
-  }
-  
-  // В продакшене используем guest режим только если Telegram WebApp недоступен
-  return !isTelegramWebApp();
-}; 
+  const reason = getGuestModeReason();
+  return reason !== null;
+};
