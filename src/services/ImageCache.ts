@@ -14,6 +14,8 @@ interface PreloadOptions {
 	private loadQueue: string[] = [];
 	private activeLoads = 0;
 	private maxConcurrent = 3;
+	private retryCounts = new Map<string, number>();
+	private maxRetries = 2; // 2 дополнительных попытки после первой
   
 	isLoaded(url: string): boolean {
 	  if (!url) return false;
@@ -51,6 +53,18 @@ interface PreloadOptions {
   
 	markFailed(url: string): void {
 	  if (!url) return;
+	  const current = this.retryCounts.get(url) || 0;
+	  if (current < this.maxRetries) {
+		this.retryCounts.set(url, current + 1);
+		// повторно запланируем в начало очереди (быстрая повторная попытка)
+		if (!this.loadQueue.includes(url)) {
+		  this.loadQueue.unshift(url);
+		}
+		this.loading.delete(url);
+		this.activeLoads--;
+		this.processQueue();
+		return;
+	  }
 	  this.failed.add(url);
 	  this.loading.delete(url);
 	  this.activeLoads--;
@@ -134,7 +148,8 @@ interface PreloadOptions {
 		img.onerror = () => {
 		  clearTimeout(timeout);
 		  this.markFailed(url);
-		  reject(new Error('Failed to load'));
+		  // Не пробрасываем жёстко исключение наружу при финальном провале — просто завершаем с reject
+		  reject(new Error('Failed to load: ' + url));
 		};
   
 		// Устанавливаем приоритет загрузки
@@ -145,11 +160,12 @@ interface PreloadOptions {
 		img.src = url;
 	  });
   
-	  this.loading.set(url, loadPromise);
+  	this.loading.set(url, loadPromise);
   
 	  try {
 		await loadPromise;
 	  } finally {
+		// если был успех или окончательный провал — убрать из loading (если еще не убрали)
 		this.loading.delete(url);
 		this.activeLoads--;
 	  }
@@ -244,6 +260,7 @@ interface PreloadOptions {
 	clearFailed(): void {
 	  this.failed.clear();
 	  this.loadQueue = [];
+	  this.retryCounts.clear();
 	}
   
 	// Полная очистка
@@ -254,6 +271,7 @@ interface PreloadOptions {
 	  this.subscribers.clear();
 	  this.loadQueue = [];
 	  this.activeLoads = 0;
+	  this.retryCounts.clear();
 	}
   }
   

@@ -13,6 +13,18 @@ export interface SpinRequest {
 
 export interface SpinResponse {
   prizeId: number; // id of selected prize
+  // optional enriched server authoritative prize payload
+  serverPrize?: {
+    id: number;
+    name?: string;
+    price?: number;
+    rarity?: string;
+    image?: string;
+  };
+  position?: number; // server-provided wheel position (if any)
+  raw?: unknown; // debugging / future use
+  spinId?: string;
+  userPatch?: { balance?: number; stats?: { spinsCount?: number }; [k: string]: unknown };
 }
 
 /**

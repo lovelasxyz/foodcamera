@@ -165,6 +165,7 @@
     display: block;
 }
 
+
 @media (max-width: 480px) {
   .freeCaseSlide {
     height: 64px;

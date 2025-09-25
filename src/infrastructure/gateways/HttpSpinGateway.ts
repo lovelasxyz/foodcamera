@@ -1,18 +1,19 @@
-import { apiClient } from '@/services/apiClient';
 import { ISpinGateway, SpinRequest, SpinResponse } from '@/application/roulette/ISpinGateway';
 import { ProbabilityCalculator } from '@/domain/roulette/ProbabilityCalculator';
+import { apiService } from '@/services/apiService';
+import { isApiEnabled } from '@/config/api.config';
+import { mapSpinResult } from '@/services/apiMappers';
 
 export class HttpSpinGateway implements ISpinGateway {
   async requestSpin(payload: SpinRequest): Promise<SpinResponse> {
     const forceLocal = (import.meta as any).env?.VITE_FORCE_LOCAL_SPIN === 'true';
-    const apiBase = (import.meta as any).env?.VITE_SPIN_API_URL as string | undefined;
-    const useHttp = !forceLocal && !!apiBase;
-
-    if (useHttp) {
+    if (!forceLocal && isApiEnabled()) {
       try {
-        return await apiClient.post<SpinResponse>(`${apiBase.replace(/\/$/, '')}/spin`, payload);
+  const apiResult = await apiService.spin(String(payload.caseId));
+  const mapped = mapSpinResult(apiResult as any);
+  return { prizeId: mapped.prize.id, serverPrize: mapped.prize, position: mapped.position, raw: apiResult, spinId: apiResult.spinId, userPatch: apiResult.userPatch };
       } catch {
-        // fall through to local
+        // fall back
       }
     }
 

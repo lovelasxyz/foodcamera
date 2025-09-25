@@ -1,18 +1,17 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Modal } from '@/components/ui/Modal';
-import { Button } from '@/components/ui/Button';
 import { useUserStore } from '@/store/userStore';
+import { useDepositStore } from '@/store/depositStore';
 import styles from './DepositModal.module.css';
-import { ASSETS } from '@/constants/assets';
 import { SuccessModal } from '@/components/ui/SuccessModal/SuccessModal';
 import { ErrorBanner } from '@/components/ui/ErrorBanner/ErrorBanner';
-import { useOnlineStatus } from '@/hooks/useOnlineStatus';
-import { ConnectivityGuard } from '@/services/ConnectivityGuard';
 import { useI18n } from '@/i18n';
 import { DomainEventBus } from '@/domain/events/EventBus';
 import { DomainEventNames } from '@/domain/events/DomainEvents';
+import { isApiEnabled } from '@/config/api.config';
 
-type DepositMethod = 'select' | 'ton' | 'cryptobot' | 'gifts';
+// Simplified: only USDT via internal balance top-up
+type DepositMethod = 'usdt';
 
 interface DepositModalProps {
   isOpen: boolean;
@@ -21,23 +20,18 @@ interface DepositModalProps {
 
 export const DepositModal: React.FC<DepositModalProps> = ({ isOpen, onClose }) => {
   const { t } = useI18n();
-  const { user, updateBalance } = useUserStore();
-  const [method, setMethod] = useState<DepositMethod>('select');
+  useUserStore(); // retain for potential user data (no direct balance mutation here)
+  const { createDeposit, isLoading } = useDepositStore();
+  useState<DepositMethod>('usdt');
   const [amount, setAmount] = useState<string>('');
   const [promoCode, setPromoCode] = useState<string>('');
   const [showSuccess, setShowSuccess] = useState<boolean>(false);
   const [promoError, setPromoError] = useState<string | null>(null);
   const [keyboardActive, setKeyboardActive] = useState<boolean>(false);
-  const isOnline = useOnlineStatus();
-  const [apiError, setApiError] = useState<string | null>(null);
 
   // Reset form when modal opens to avoid autofill/cached state
   useEffect(() => {
-    if (isOpen) {
-      setAmount('');
-      setPromoCode('');
-      setMethod('select');
-    }
+    if (isOpen) { setAmount(''); setPromoCode(''); }
   }, [isOpen]);
 
   // Hide error when user clears or edits promo
@@ -48,11 +42,7 @@ export const DepositModal: React.FC<DepositModalProps> = ({ isOpen, onClose }) =
   }, [promoCode]);
 
   // Keep a short address helper for potential future UI needs
-  const shortAddress = useMemo(() => {
-    const addr = user.wallet || 'UQDKd...hxwP';
-    if (!addr || addr.length < 10) return addr;
-    return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
-  }, [user.wallet]);
+  // shortAddress removed (no on-chain transfer in simplified USDT flow)
 
   const getBonusMultiplier = () => {
     const code = promoCode.trim().toUpperCase();
@@ -65,7 +55,7 @@ export const DepositModal: React.FC<DepositModalProps> = ({ isOpen, onClose }) =
     return code === 'PROMO' || code === 'CLAP';
   };
 
-  const performDeposit = () => {
+  const performDeposit = async () => {
     const numericAmount = Number(amount);
     if (!Number.isFinite(numericAmount) || numericAmount <= 0) return;
     const code = promoCode.trim().toUpperCase();
@@ -78,57 +68,19 @@ export const DepositModal: React.FC<DepositModalProps> = ({ isOpen, onClose }) =
     const flatBonus = code === 'PROMO' ? 1 : 0;
     const percentBonus = getBonusMultiplier();
     const total = numericAmount + flatBonus + numericAmount * percentBonus;
-    updateBalance(total);
-    DomainEventBus.emit(DomainEventNames.DepositMade, { type: 'DepositMade', amount: total, method, timestamp: Date.now() });
+    if (isApiEnabled()) {
+      await createDeposit(total);
+    } else {
+      await createDeposit(total); // mock path auto-confirms & credits
+    }
+    DomainEventBus.emit(DomainEventNames.DepositMade, { type: 'DepositMade', amount: total, method: 'usdt', timestamp: Date.now() });
     setShowSuccess(true);
     onClose();
   };
+  const handleSubmit = () => { void performDeposit(); };
 
-  const openTonTransfer = () => {
-    const addr = user.wallet || 'UQDKd...hxwP';
-    const value = amount && Number(amount) > 0 ? `?amount=${amount}` : '';
-    const url = `ton://transfer/${addr}${value}`;
-    window.location.href = url;
-  };
-
-  const handleSubmit = () => {
-    ConnectivityGuard.ensureOnline();
-    // Офлайн: не выполняем депозит, показываем ошибку как на скриншоте
-    if (method === 'ton' && !isOnline) {
-      setApiError(t('deposit.apiError'));
-      return;
-    }
-    performDeposit();
-    openTonTransfer();
-  };
-
-  const renderSelection = () => (
+  const renderUsdt = () => (
     <div className={styles.section}>
-      <div className={styles.subtitle}>{t('deposit.selectMethod')}</div>
-      <div className={styles.methodsGrid}>
-        <button className={`${styles.methodCard} ${styles.ton}`} onClick={() => setMethod('ton')}>
-          <img src={ASSETS.IMAGES.TON} alt="Ton" className={styles.methodIcon} />
-          <div className={styles.methodTitle}>{t('deposit.methodTon')}</div>
-        </button>
-        <button className={`${styles.methodCard} ${styles.cryptobot}`} onClick={() => setMethod('cryptobot')}>
-          <img src={ASSETS.IMAGES.TOKEN} alt="CryptoBot" className={styles.methodIcon} />
-          <div className={styles.methodTitle}>{t('deposit.methodCryptoBot')}</div>
-        </button>
-        {/* <button className={`${styles.methodCard} ${styles.gifts} ${styles.fullWidth}`} onClick={() => setMethod('gifts')}>
-          <img src={ASSETS.IMAGES.GIFT} alt="Gifts" className={styles.methodIcon} />
-          <div className={styles.methodTitle}>{t('deposit.methodGifts')}</div>
-        </button> */}
-      </div>
-    </div>
-  );
-
-  const renderTon = () => (
-    <div className={styles.section}>
-      {apiError && (
-        <div className={styles.apiErrorContainer}>
-          <div className={styles.apiError}>{apiError}</div>
-        </div>
-      )}
       <div className={styles.promoSection}>
         <div className={styles.promoCard}>
           <img className={styles.promoImage} src="/assets/images/discount_promo-min.png" alt="Promocode" />
@@ -199,9 +151,7 @@ export const DepositModal: React.FC<DepositModalProps> = ({ isOpen, onClose }) =
           className={styles.amountInput}
           aria-label={t('deposit.amountAria')}
         />
-        <div className={styles.coin}>
-          <img src={ASSETS.IMAGES.TON} alt="Coin" style={{ width: 20, height: 20 }} />
-        </div>
+        <div className={styles.coin}>USDT</div>
       </div>
       {/* To receive row: show only when valid promo is applied */}
       {isPromoValid(promoCode) && (
@@ -217,43 +167,17 @@ export const DepositModal: React.FC<DepositModalProps> = ({ isOpen, onClose }) =
             })()} 
             
           </span>
-          <img src={ASSETS.IMAGES.TON} alt="ton" style={{ width: 16, height: 16 }} />
+          <span style={{ fontSize: 12, marginLeft: 4 }}>USDT</span>
         </div>
       )}
-      <div className={styles.qr}>
-        <img
-          className={styles.qrImage}
-          src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(user.wallet || 'UQDKd...hxwP')}`}
-          alt={t('deposit.walletQrAlt')}
-        />
-      </div>
-      <div className={styles.addressRow}>
-        <div className={styles.addressText}>{shortAddress}</div>
-        <Button onClick={() => navigator.clipboard.writeText(user.wallet || 'UQDKd...hxwP')}>{t('deposit.copy')}</Button>
-      </div>
+      {/* QR / address removed for simplified USDT flow (handled externally) */}
       <button
         className={`${styles.depositButton} ${!amount ? styles.depositButtonDisabled : ''}`}
         onClick={handleSubmit}
-        disabled={!amount}
+        disabled={!amount || isLoading}
       >
-        <div className={styles.buttonLabel}>{t('deposit.buttonDeposit')}</div>
+        <div className={styles.buttonLabel}>{isLoading ? t('common.loading') : `${t('deposit.buttonDeposit')} USDT`}</div>
       </button>
-    </div>
-  );
-
-  const renderCryptoBot = () => (
-    <div className={styles.section}>
-      <div className={styles.subtitle}>{t('deposit.cryptoSubtitle')}</div>
-      <Button onClick={() => window.open('https://t.me/CryptoBot', '_blank')}>{t('deposit.openCrypto')}</Button>
-      <Button variant="secondary" onClick={() => setMethod('select')}>{t('deposit.back')}</Button>
-    </div>
-  );
-
-  const renderGifts = () => (
-    <div className={styles.section}>
-      <div className={styles.subtitle}>{t('deposit.giftsSubtitle')}</div>
-      <Button disabled>{t('deposit.comingSoon')}</Button>
-      <Button variant="secondary" onClick={() => setMethod('select')}>{t('deposit.back')}</Button>
     </div>
   );
 
@@ -261,21 +185,17 @@ export const DepositModal: React.FC<DepositModalProps> = ({ isOpen, onClose }) =
     <>
       <Modal
         isOpen={isOpen}
-        onClose={() => { setMethod('select'); onClose(); }}
-        title={method === 'ton' ? t('deposit.modalTitleTon') : t('deposit.modalTitleSelect')}
-        subtitle={method === 'ton' ? t('deposit.modalSubtitleTon') : undefined}
+        onClose={() => { onClose(); }}
+        title={t('deposit.modalTitleUSDT')}
+        subtitle={t('deposit.modalSubtitleUSDT')}
         size="md"
-        onBack={method !== 'select' ? () => setMethod('select') : undefined}
         variant="bottomSheet"
         bottomSheetAnimated
         keyboardActive={keyboardActive}
         className={styles.depositModal}
         overlayClassName={styles.depositOverlay}
       >
-        {method === 'select' && renderSelection()}
-        {method === 'ton' && renderTon()}
-        {method === 'cryptobot' && renderCryptoBot()}
-        {method === 'gifts' && renderGifts()}
+        {renderUsdt()}
       </Modal>
       <SuccessModal
         isOpen={showSuccess}

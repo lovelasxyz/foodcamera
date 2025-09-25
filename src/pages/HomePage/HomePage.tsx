@@ -20,8 +20,8 @@ export const HomePage: React.FC = () => {
   const [hideCasesError, setHideCasesError] = React.useState(false);
   const [casesPhase, setCasesPhase] = React.useState<'idle' | 'loading' | 'error'>('idle');
 
-  // Слайды для баннера
-  const slides = React.useMemo<Slide[]>(() => [
+  // Статический исходный набор слайдов (текст + изображения + mp4)
+  const slides: Slide[] = [
     { kind: 'text', text: t('Free case') },
     { kind: 'image', image: ASSETS.IMAGES.DRAGON, href: 'https://t.me/BotFather' },
     { kind: 'video', video: ASSETS.VIDEOS.DARKSIDE, href: 'https://t.me/BotFather' },
@@ -30,11 +30,11 @@ export const HomePage: React.FC = () => {
     { kind: 'image', image: ASSETS.IMAGES.TEDDY, href: 'https://t.me/BotFather' },
     { kind: 'text', text: t('messages.freeBanner6') },
     { kind: 'text', text: t('messages.freeBanner7') },
-  ], [t]);
+  ];
 
-  // Предзагрузка баннерных ресурсов
+  // Предзагрузка ресурсов баннеров (динамичных + fallback)
   React.useEffect(() => {
-    const bannerAssets = [
+    const all = [
       ASSETS.IMAGES.LIGHTNING,
       ASSETS.IMAGES.DRAGON,
       ASSETS.IMAGES.DIAMOND,
@@ -43,8 +43,10 @@ export const HomePage: React.FC = () => {
       ASSETS.IMAGES.TON,
       ASSETS.IMAGES.FREE_CASE_LABEL,
     ];
-    preloadBannerAssets(bannerAssets);
+    preloadBannerAssets(all);
   }, [preloadBannerAssets]);
+
+  // (dynamic banners disabled — original static variant restored)
 
   // Предзагрузка изображений кейсов
   React.useEffect(() => {

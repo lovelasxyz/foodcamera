@@ -4,18 +4,22 @@ interface ProgressiveImgProps extends React.ImgHTMLAttributes<HTMLImageElement> 
   previewSrc?: string;
   cacheKey?: string; // для обратной совместимости
   lazy?: boolean; // по умолчанию true
+  fallbackSrc?: string; // на случай ошибки
 }
 
 export const ProgressiveImg: React.FC<ProgressiveImgProps> = ({ 
   previewSrc, 
   src,
   style,
-  cacheKey, // игнорируется, но принимается для совместимости
+  cacheKey: _cacheKey, // игнорируется, но принимается для совместимости
   lazy = true,
+  fallbackSrc,
   onLoad,
+  onError,
   ...rest 
 }) => {
   const [loaded, setLoaded] = React.useState(false);
+  const [failed, setFailed] = React.useState(false);
   const imgRef = React.useRef<HTMLImageElement | null>(null);
 
   const handleLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
@@ -33,9 +37,14 @@ export const ProgressiveImg: React.FC<ProgressiveImgProps> = ({
     }
   }, [src]);
 
-  const handleError = () => {
-    // В случае ошибки убираем блюр/прозрачность, чтобы не прятать элемент
+  const handleError = (e: React.SyntheticEvent<HTMLImageElement>) => {
+    setFailed(true);
     setLoaded(true);
+    if (fallbackSrc && imgRef.current && imgRef.current.src !== fallbackSrc) {
+      imgRef.current.src = fallbackSrc;
+      return; // повторная попытка отображения fallback
+    }
+    onError?.(e);
   };
 
   return (
@@ -55,7 +64,7 @@ export const ProgressiveImg: React.FC<ProgressiveImgProps> = ({
       )}
       <img
         {...rest}
-        src={src}
+        src={failed && fallbackSrc ? fallbackSrc : src}
         ref={imgRef}
         style={{
           ...style,
@@ -69,5 +78,16 @@ export const ProgressiveImg: React.FC<ProgressiveImgProps> = ({
         decoding="async"
       />
     </>
+  );
+};
+
+// Упрощённый wrapper для безопасной отрисовки (можно использовать напрямую, если нужны значения по умолчанию)
+export const SafeImg: React.FC<Omit<ProgressiveImgProps, 'previewSrc'>> = (props) => {
+  return (
+    <ProgressiveImg
+      {...props}
+      lazy={props.lazy ?? true}
+      fallbackSrc={props.fallbackSrc || '/assets/images/loader.png'}
+    />
   );
 };

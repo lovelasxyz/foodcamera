@@ -14,12 +14,18 @@ interface UserState {
   error: string | null;
   isAuthenticated: boolean;
   inventoryFetched?: boolean;
+  token?: string | null;
+  refreshToken?: string | null;
+  tokenExpiry?: number | null; // epoch ms
 }
 
 interface UserActions {
   setUser: (user: User) => void;
   setTelegramUser: (telegramUser: ParsedTelegramUser) => void;
+  setToken: (token: string | null) => void;
+  setTokenMeta?: (refreshToken?: string | null, expiresInSec?: number | null) => void;
   updateBalance: (amount: number) => void;
+  applyServerUserPatch: (patch: { balance?: number; stats?: { spinsCount?: number; lastAuthAt?: number | null }; [k: string]: unknown }) => void;
   awardPrize: (prize: Prize, fromCase: string) => void;
   addToInventory: (prize: Prize, fromCase: string) => void;
   receiveInventoryItem: (inventoryItemId: string) => void;
@@ -45,13 +51,67 @@ const defaultUser: User = UserFactory.createGuest();
 const createUserFromTelegram = (telegramUser: ParsedTelegramUser): User => UserFactory.createFromTelegram(telegramUser);
 
 import { AwardPrizeUseCase } from '@/application/inventory/AwardPrizeUseCase';
+import { apiService } from '@/services/apiService';
+import { isApiEnabled } from '@/config/api.config';
+import { mapUser } from '@/services/apiMappers';
+
+// Local storage key for auth token
+const TOKEN_STORAGE_KEY = 'app_token_v1';
+const BALANCE_STORAGE_KEY = 'user_balance_v1';
+
+// Attempt immediate token hydrate (safe for SSR-less environment)
+let initialToken: string | null = null;
+try {
+  if (typeof window !== 'undefined') {
+    initialToken = window.localStorage.getItem(TOKEN_STORAGE_KEY);
+  }
+} catch { /* ignore storage access errors */ }
+
+// Dev local snapshot keys
+const DEV_USER_SNAPSHOT_KEY = 'dev_user_snapshot_v1';
+
+// Helper: detect dev & mocks (no real API authority)
+const isDev = typeof window !== 'undefined' && (import.meta as any)?.env?.MODE !== 'production';
+const shouldUseDevPersistence = isDev && !isApiEnabled();
+
+// Attempt dev hydrate
+let devHydratedUser: Partial<User> | null = null;
+let persistedBalance: number | null = null;
+if (shouldUseDevPersistence) {
+  try {
+    const raw = window.localStorage.getItem(DEV_USER_SNAPSHOT_KEY);
+    if (raw) devHydratedUser = JSON.parse(raw);
+  } catch { /* ignore */ }
+}
+// Read persisted balance (works for all modes). In dev snapshot mode we let snapshot win.
+try {
+  if (typeof window !== 'undefined') {
+    const b = window.localStorage.getItem(BALANCE_STORAGE_KEY);
+    if (b != null) {
+      const num = Number(b);
+      if (Number.isFinite(num) && num >= 0) persistedBalance = num;
+    }
+  }
+} catch { /* ignore */ }
 
 export const useUserStore = create<UserState & UserActions>((set, get) => ({
-  user: defaultUser,
+  user: (() => {
+    if (devHydratedUser) {
+      // dev snapshot already has balance; do not override
+      return { ...defaultUser, ...devHydratedUser, inventory: devHydratedUser.inventory || [] } as User;
+    }
+    if (persistedBalance != null) {
+      return { ...defaultUser, balance: persistedBalance } as User;
+    }
+    return defaultUser;
+  })(),
   isLoading: false,
   error: null,
   isAuthenticated: false,
   inventoryFetched: false,
+  token: initialToken,
+  refreshToken: null,
+  tokenExpiry: null,
 
   setUser: (user) => set({ 
     user, 
@@ -69,6 +129,24 @@ export const useUserStore = create<UserState & UserActions>((set, get) => ({
     });
   },
 
+  setToken: (token) => {
+    try {
+      if (typeof window !== 'undefined') {
+        if (token) window.localStorage.setItem(TOKEN_STORAGE_KEY, token);
+        else window.localStorage.removeItem(TOKEN_STORAGE_KEY);
+      }
+    } catch { /* ignore quota / privacy errors */ }
+    set({ token });
+  },
+
+  // internal helpers for future refresh flow
+  setTokenMeta: (refreshToken?: string | null, expiresInSec?: number | null) => {
+    set(() => ({
+      refreshToken: refreshToken ?? null,
+      tokenExpiry: expiresInSec ? Date.now() + expiresInSec * 1000 : null
+    }));
+  },
+
   updateBalance: (amount) => 
     set((state) => ({
       user: {
@@ -76,6 +154,32 @@ export const useUserStore = create<UserState & UserActions>((set, get) => ({
         balance: Math.max(0, state.user.balance + amount)
       }
     })),
+
+  applyServerUserPatch: (patch) =>
+    set((state) => {
+      const next = { ...state.user } as User & { stats?: any };
+      if (typeof patch.balance === 'number' && Number.isFinite(patch.balance)) {
+        next.balance = Math.max(0, patch.balance);
+      }
+      if (patch.stats) {
+        const prevStats = next.stats || { spinsCount: 0, lastAuthAt: null };
+        next.stats = {
+          ...prevStats,
+          ...('spinsCount' in patch.stats ? { spinsCount: patch.stats.spinsCount } : {}),
+          ...('lastAuthAt' in patch.stats ? { lastAuthAt: patch.stats.lastAuthAt } : {})
+        };
+      }
+      // Merge any other simple scalar fields (defensive for future backend patches)
+      for (const k of Object.keys(patch)) {
+        if (k === 'balance' || k === 'stats') continue;
+        const v = (patch as any)[k];
+        if (v == null) continue;
+        if (typeof v === 'string' || typeof v === 'number' || typeof v === 'boolean') {
+          (next as any)[k] = v;
+        }
+      }
+      return { user: next };
+    }),
 
   awardPrize: (prize, fromCase) => {
     const useCase = new AwardPrizeUseCase(
@@ -198,12 +302,27 @@ export const useUserStore = create<UserState & UserActions>((set, get) => ({
   setError: (error) => set({ error }),
 
   disconnectWallet: () =>
-    set((state) => ({
-      user: {
-        ...state.user,
-        wallet: undefined
-      }
-    })),
+    set((state) => {
+      // Очистка dev снапшота (баланс + инвентарь) при отключении кошелька в режиме dev без API
+      try {
+        if (shouldUseDevPersistence) {
+          window.localStorage.removeItem(DEV_USER_SNAPSHOT_KEY);
+        }
+        window.localStorage.removeItem(BALANCE_STORAGE_KEY);
+      } catch { /* ignore */ }
+      return {
+        user: {
+          ...state.user,
+          wallet: undefined,
+          // Также обнулим баланс и инвентарь только в dev persist режиме (чтобы симулировать чистый старт)
+          ...(shouldUseDevPersistence ? { balance: 0, inventory: [], shards: {}, shardUpdatedAt: {} } : {})
+        }
+      };
+    }),
+
+  // DEV helper: clear local snapshot when explicitly disconnecting wallet (only in dev & mocks)
+  // (Placed after disconnectWallet for clarity)
+  // We'll override disconnectWallet to also clear snapshot if dev persistence active.
 
   resetUser: () => set({
     user: defaultUser,
@@ -248,7 +367,8 @@ export const useUserStore = create<UserState & UserActions>((set, get) => ({
     set({ isLoading: true, error: null });
     const repo: IUserRepository = RepositoryFactory.getUserRepository();
     try {
-      const fetched = await repo.fetchUser();
+  const fetchedRaw = isApiEnabled() ? await apiService.getCurrentUser() : await repo.fetchUser();
+  const fetched = isApiEnabled() ? mapUser(fetchedRaw as any) : fetchedRaw; // ensure domain shape
       set((state) => {
         const existingInv = state.user.inventory || [];
         const fetchedInv = fetched.inventory || [];
@@ -282,3 +402,29 @@ export const useUserStore = create<UserState & UserActions>((set, get) => ({
     }
   }
 })); 
+
+// Subscribe for dev persistence
+if (typeof window !== 'undefined') {
+  useUserStore.subscribe((state, prev) => {
+    // Persist balance always
+    if (state.user.balance !== prev.user.balance) {
+      try { window.localStorage.setItem(BALANCE_STORAGE_KEY, String(state.user.balance)); } catch { /* ignore */ }
+    }
+    // Dev snapshot logic (inventory + balance + shards) only when enabled
+    if (shouldUseDevPersistence && (state.user.balance !== prev.user.balance || state.user.inventory !== prev.user.inventory)) {
+      try {
+        const MAX_ITEMS = 500;
+        const inv = state.user.inventory || [];
+        const trimmed = inv.length > MAX_ITEMS ? inv.slice(inv.length - MAX_ITEMS) : inv;
+        const snapshot = {
+          balance: state.user.balance,
+          inventory: trimmed,
+          stats: state.user.stats,
+          shards: state.user.shards,
+          shardUpdatedAt: state.user.shardUpdatedAt
+        };
+        window.localStorage.setItem(DEV_USER_SNAPSHOT_KEY, JSON.stringify(snapshot));
+      } catch { /* ignore quota */ }
+    }
+  });
+}

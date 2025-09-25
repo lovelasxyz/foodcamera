@@ -17,6 +17,8 @@ interface UIState {
   notifications: Notification[];
   showWinModal: boolean;
   isOffline: boolean;
+  sessionExpired: boolean;
+  lastError?: { message: string; code?: string | number; at: number } | null;
 }
 
 interface UIActions {
@@ -29,6 +31,8 @@ interface UIActions {
   clearNotifications: () => void;
   setShowWinModal: (show: boolean) => void;
   setOffline: (offline: boolean) => void;
+  setSessionExpired: (expired: boolean) => void;
+  setLastError: (err: { message: string; code?: string | number } | null) => void;
 }
 
 export const useUIStore = create<UIState & UIActions>()(
@@ -41,6 +45,8 @@ export const useUIStore = create<UIState & UIActions>()(
       notifications: [],
       showWinModal: true,
       isOffline: false,
+  sessionExpired: false,
+  lastError: null,
 
       setActivePage: (activePage) => set({ activePage }),
 
@@ -78,6 +84,8 @@ export const useUIStore = create<UIState & UIActions>()(
 
       setShowWinModal: (show) => set({ showWinModal: show }),
       setOffline: (offline) => set({ isOffline: offline }),
+  setSessionExpired: (expired) => set({ sessionExpired: expired }),
+  setLastError: (err) => set({ lastError: err ? { ...err, at: Date.now() } : null }),
     }),
     {
       name: 'ui-storage', // unique name

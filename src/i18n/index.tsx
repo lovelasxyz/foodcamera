@@ -65,6 +65,8 @@ const en: TranslationDict = {
     modalTitleSelect: 'Deposit',
     modalTitleTon: 'USDT Deposit',
     modalSubtitleTon: 'Enter the amount to deposit',
+  modalTitleUSDT: 'USDT Deposit',
+  modalSubtitleUSDT: 'Enter the amount to deposit',
     apiError: 'Failed to prepare transaction. Please try again.',
     successTitle: 'Payment received',
     successSubtitle: 'Your balance has been updated'
@@ -201,6 +203,8 @@ const ru: TranslationDict = {
     modalTitleSelect: 'Пополнение',
     modalTitleTon: 'Пополнение USDT',
     modalSubtitleTon: 'Введите сумму пополнения',
+  modalTitleUSDT: 'Пополнение USDT',
+  modalSubtitleUSDT: 'Введите сумму пополнения',
     apiError: 'Не удалось подготовить транзакцию. Попробуйте ещё раз.',
     successTitle: 'Платёж получен',
     successSubtitle: 'Ваш баланс обновлён'

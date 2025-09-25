@@ -10,6 +10,10 @@ import { UserRepository } from './UserRepository';
 import { InventoryRepository } from './InventoryRepository';
 import { IProductRepository } from '@/application/product/IProductRepository';
 import { MockProductRepository } from '@/application/product/MockProductRepository';
+import { ProductRepository } from './ProductRepository';
+import { IBannerRepository } from '@/application/banner/IBannerRepository';
+import { MockBannerRepository } from '@/application/banner/MockBannerRepository';
+import { BannerRepository } from './BannerRepository';
 
 export class RepositoryFactory {
   static getCaseRepository(): ICaseRepository {
@@ -26,8 +30,11 @@ export class RepositoryFactory {
   }
 
   static getProductRepository(): IProductRepository {
-    // пока только мок
-    return new MockProductRepository();
+    return (shouldUseGuestMode() ? new MockProductRepository() : new ProductRepository()) as IProductRepository;
+  }
+
+  static getBannerRepository(): IBannerRepository {
+    return (shouldUseGuestMode() ? new MockBannerRepository() : new BannerRepository()) as IBannerRepository;
   }
 }
 

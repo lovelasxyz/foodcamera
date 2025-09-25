@@ -2,21 +2,23 @@ import { ICaseRepository } from '@/application/case/ICaseRepository';
 import { Case } from '@/types/game';
 import { apiClient } from '@/services/apiClient';
 import { mockCases } from '@/mocks/cases.mock';
+import { ApiCase } from '@/types/api';
+import { mapApiCase } from '@/application/case/mapApiCase';
 
 export class CaseRepository implements ICaseRepository {
   async fetchAll(): Promise<Case[]> {
-    // Replace '/api/cases' with real endpoint when backend is ready
     try {
-      return await apiClient.get<Case[]>('/api/cases');
+      const apiCases = await apiClient.get<ApiCase[]>('/cases');
+      return apiCases.map(mapApiCase);
     } catch {
-      // Fallback to mock for resilience in dev
-      return mockCases;
+      return mockCases; // fallback
     }
   }
 
   async fetchById(id: number): Promise<Case> {
     try {
-      return await apiClient.get<Case>(`/api/cases/${id}`);
+      const apiCase = await apiClient.get<ApiCase>(`/cases/${id}`);
+      return mapApiCase(apiCase);
     } catch {
       const found = mockCases.find(c => c.id === id);
       if (!found) throw new Error('Case not found');

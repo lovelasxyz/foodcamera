@@ -44,7 +44,7 @@ export const useSpinLogic = (): [SpinLogicState, SpinLogicApi] => {
     resetForNextSpin,
     closeCase
   } = useGameStore();
-  const { user, awardPrize, addToInventory, addInventoryItem, updateBalance, incrementSpinsCount } = useUserStore();
+  const { user, awardPrize, addToInventory, addInventoryItem, updateBalance, incrementSpinsCount, applyServerUserPatch } = useUserStore();
   const { showWinModal } = useUIStore();
   const { playSound } = useSoundEffects();
   const isOnline = useOnlineStatus();
@@ -145,6 +145,10 @@ export const useSpinLogic = (): [SpinLogicState, SpinLogicApi] => {
       }
     );
     if (!result) { clickLockRef.current = false; return; }
+    // Apply authoritative server user patch if provided
+    if (result.server?.userPatch) {
+      applyServerUserPatch(result.server.userPatch as any);
+    }
   incrementSpinsCount();
 
     setInstantPosition(true);
@@ -167,7 +171,7 @@ export const useSpinLogic = (): [SpinLogicState, SpinLogicApi] => {
         finalizeSpin(300); // shorter settle on fallback
       }
     }, ROULETTE_CONFIG.SPIN_DURATION + 800) as unknown as number;
-  }, [currentCase, isSpinning, isOnline, spinUseCase, user.balance, user.inventory, user.telegram, user.perks, user.avatar, user.stats?.spinsCount, playSound, startSpin, incrementSpinsCount, finalizeSpin]);
+  }, [currentCase, isSpinning, isOnline, spinUseCase, user.balance, user.inventory, user.telegram, user.perks, user.avatar, user.stats?.spinsCount, playSound, startSpin, incrementSpinsCount, applyServerUserPatch, finalizeSpin]);
 
   const handleKeepPrize = useCallback(() => {
     if (spinResult && currentCase) {
