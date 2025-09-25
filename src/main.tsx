@@ -33,7 +33,6 @@ if (!shouldUseGuestMode() && window.Telegram?.WebApp) {
     logDebug('Error initializing Telegram WebApp');
   }
 } else if (shouldUseGuestMode()) {
-  // Guest mode - skipping Telegram WebApp initialization (removed in production)
 } else {
   // Telegram WebApp not available - running in fallback mode (removed in production)
 }
