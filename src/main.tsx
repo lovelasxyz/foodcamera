@@ -30,7 +30,6 @@ if (!shouldUseGuestMode() && window.Telegram?.WebApp) {
         
     // Telegram WebApp initialized successfully (removed in production)
   } catch {
-    // Ignore TG init errors in non-prod
     logDebug('Error initializing Telegram WebApp');
   }
 } else if (shouldUseGuestMode()) {
