@@ -1,17 +1,14 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Modal } from '@/components/ui/Modal';
+import { Button } from '@/components/ui/Button';
 import { useUserStore } from '@/store/userStore';
-import { useDepositStore } from '@/store/depositStore';
 import styles from './DepositModal.module.css';
+import { ASSETS } from '@/constants/assets';
 import { SuccessModal } from '@/components/ui/SuccessModal/SuccessModal';
 import { ErrorBanner } from '@/components/ui/ErrorBanner/ErrorBanner';
 import { useI18n } from '@/i18n';
-import { DomainEventBus } from '@/domain/events/EventBus';
-import { DomainEventNames } from '@/domain/events/DomainEvents';
-import { isApiEnabled } from '@/config/api.config';
 
-// Simplified: only USDT via internal balance top-up
-type DepositMethod = 'usdt';
+type DepositMethod = 'select' | 'usdt' | 'cryptobot';
 
 interface DepositModalProps {
   isOpen: boolean;
@@ -19,10 +16,9 @@ interface DepositModalProps {
 }
 
 export const DepositModal: React.FC<DepositModalProps> = ({ isOpen, onClose }) => {
+  const { user, updateBalance } = useUserStore();
   const { t } = useI18n();
-  useUserStore(); // retain for potential user data (no direct balance mutation here)
-  const { createDeposit, isLoading } = useDepositStore();
-  useState<DepositMethod>('usdt');
+  const [method, setMethod] = useState<DepositMethod>('select');
   const [amount, setAmount] = useState<string>('');
   const [promoCode, setPromoCode] = useState<string>('');
   const [showSuccess, setShowSuccess] = useState<boolean>(false);
@@ -31,7 +27,11 @@ export const DepositModal: React.FC<DepositModalProps> = ({ isOpen, onClose }) =
 
   // Reset form when modal opens to avoid autofill/cached state
   useEffect(() => {
-    if (isOpen) { setAmount(''); setPromoCode(''); }
+    if (isOpen) {
+      setAmount('');
+      setPromoCode('');
+      setMethod('select');
+    }
   }, [isOpen]);
 
   // Hide error when user clears or edits promo
@@ -42,7 +42,11 @@ export const DepositModal: React.FC<DepositModalProps> = ({ isOpen, onClose }) =
   }, [promoCode]);
 
   // Keep a short address helper for potential future UI needs
-  // shortAddress removed (no on-chain transfer in simplified USDT flow)
+  const shortAddress = useMemo(() => {
+    const addr = user.wallet || 'UQDKd...hxwP';
+    if (!addr || addr.length < 10) return addr;
+    return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
+  }, [user.wallet]);
 
   const getBonusMultiplier = () => {
     const code = promoCode.trim().toUpperCase();
@@ -55,7 +59,7 @@ export const DepositModal: React.FC<DepositModalProps> = ({ isOpen, onClose }) =
     return code === 'PROMO' || code === 'CLAP';
   };
 
-  const performDeposit = async () => {
+  const performDeposit = () => {
     const numericAmount = Number(amount);
     if (!Number.isFinite(numericAmount) || numericAmount <= 0) return;
     const code = promoCode.trim().toUpperCase();
@@ -68,16 +72,37 @@ export const DepositModal: React.FC<DepositModalProps> = ({ isOpen, onClose }) =
     const flatBonus = code === 'PROMO' ? 1 : 0;
     const percentBonus = getBonusMultiplier();
     const total = numericAmount + flatBonus + numericAmount * percentBonus;
-    if (isApiEnabled()) {
-      await createDeposit(total);
-    } else {
-      await createDeposit(total); // mock path auto-confirms & credits
-    }
-    DomainEventBus.emit(DomainEventNames.DepositMade, { type: 'DepositMade', amount: total, method: 'usdt', timestamp: Date.now() });
+    updateBalance(total);
     setShowSuccess(true);
     onClose();
   };
-  const handleSubmit = () => { void performDeposit(); };
+
+  const openUsdtTransfer = () => {
+    // Placeholder: integrate actual USDT payment initiation (e.g., redirect to gateway)
+    // For now we just no-op; you can hook into a payment API here.
+    return;
+  };
+
+  const handleSubmit = () => {
+    performDeposit();
+    openUsdtTransfer();
+  };
+
+  const renderSelection = () => (
+    <div className={styles.section}>
+  <div className={styles.subtitle}>{t('deposit.selectMethod')}</div>
+      <div className={styles.methodsGrid}>
+        <button className={`${styles.methodCard} ${styles.usdt || styles.ton}`} onClick={() => setMethod('usdt')}>
+          <img src={ASSETS.IMAGES.TOKEN} alt={t('deposit.methodTon')} className={styles.methodIcon} />
+          <div className={styles.methodTitle}>{t('deposit.methodTon')}</div>
+        </button>
+        <button className={`${styles.methodCard} ${styles.cryptobot}`} onClick={() => setMethod('cryptobot')}>
+          <img src={ASSETS.IMAGES.TOKEN} alt={t('deposit.methodCryptoBot')} className={styles.methodIcon} />
+          <div className={styles.methodTitle}>{t('deposit.methodCryptoBot')}</div>
+        </button>
+      </div>
+    </div>
+  );
 
   const renderUsdt = () => (
     <div className={styles.section}>
@@ -100,7 +125,7 @@ export const DepositModal: React.FC<DepositModalProps> = ({ isOpen, onClose }) =
               placeholder={t('deposit.promoPlaceholder')}
               className={styles.promoInput}
               onFocus={() => setKeyboardActive(true)}
-              onBlur={() => { setKeyboardActive(false); const c = promoCode.trim(); if (c && !isPromoValid(c)) setPromoError(t('deposit.promoInvalid')); }}
+              onBlur={() => { setKeyboardActive(false); const c = promoCode.trim(); if (c && !isPromoValid(c)) setPromoError('Promocode not found or limit exceeded'); }}
             />
               {promoCode.trim().toUpperCase() === 'CLAP' && (
               <div className={styles.bonusBadge}>+30%</div>
@@ -113,45 +138,19 @@ export const DepositModal: React.FC<DepositModalProps> = ({ isOpen, onClose }) =
       )}
       <div className={styles.amountGroup}>
         <input
-          type="text"
+          type="number"
           inputMode="decimal"
           value={amount}
-          onChange={(e) => {
-            const raw = e.target.value.replace(",", ".");
-            // allow only digits and one dot
-            const cleaned = raw
-              .replace(/[^0-9.]/g, '')
-              .replace(/(\..*)\./g, '$1');
-            // prevent leading zeros like 00, keep 0.x
-            const normalized = cleaned.startsWith('00') ? cleaned.replace(/^0+/, '0') : cleaned;
-            setAmount(normalized);
-          }}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') { handleSubmit(); }
-            // block minus, plus, exponent markers
-            if (e.key === '-' || e.key === '+' || e.key.toLowerCase() === 'e') {
-              e.preventDefault();
-            }
-          }}
+          onChange={(e) => setAmount(e.target.value)}
+          onKeyDown={(e) => { if (e.key === 'Enter') { handleSubmit(); } }}
           onFocus={() => setKeyboardActive(true)}
-          onBlur={() => {
-            setKeyboardActive(false);
-            // trim trailing dot and normalize to positive number
-            if (amount) {
-              let v = amount.replace(/\.$/, '');
-              const n = Number(v);
-              if (!Number.isFinite(n) || n <= 0) {
-                setAmount('');
-              } else {
-                setAmount(String(n));
-              }
-            }
-          }}
+          onBlur={() => setKeyboardActive(false)}
           placeholder={t('deposit.amountPlaceholder')}
           className={styles.amountInput}
-          aria-label={t('deposit.amountAria')}
         />
-        <div className={styles.coin}>USDT</div>
+        <div className={styles.coin}>
+          <img src={ASSETS.IMAGES.TOKEN} alt={t('deposit.methodTon')} style={{ width: 20, height: 20 }} />
+        </div>
       </div>
       {/* To receive row: show only when valid promo is applied */}
       {isPromoValid(promoCode) && (
@@ -167,17 +166,35 @@ export const DepositModal: React.FC<DepositModalProps> = ({ isOpen, onClose }) =
             })()} 
             
           </span>
-          <span style={{ fontSize: 12, marginLeft: 4 }}>USDT</span>
+          <img src={ASSETS.IMAGES.TOKEN} alt="usdt" style={{ width: 16, height: 16 }} />
         </div>
       )}
-      {/* QR / address removed for simplified USDT flow (handled externally) */}
+      <div className={styles.qr}>
+        <img
+          className={styles.qrImage}
+          src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(user.wallet || 'UQDKd...hxwP')}`}
+          alt="Wallet QR"
+        />
+      </div>
+      <div className={styles.addressRow}>
+        <div className={styles.addressText}>{shortAddress}</div>
+  <Button onClick={() => navigator.clipboard.writeText(user.wallet || 'UQDKd...hxwP')}>{t('deposit.copy')}</Button>
+      </div>
       <button
         className={`${styles.depositButton} ${!amount ? styles.depositButtonDisabled : ''}`}
         onClick={handleSubmit}
-        disabled={!amount || isLoading}
+        disabled={!amount}
       >
-        <div className={styles.buttonLabel}>{isLoading ? t('common.loading') : `${t('deposit.buttonDeposit')} USDT`}</div>
+        <div className={styles.buttonLabel}>{t('deposit.buttonDeposit')}</div>
       </button>
+    </div>
+  );
+
+  const renderCryptoBot = () => (
+    <div className={styles.section}>
+      <div className={styles.subtitle}>{t('deposit.cryptoSubtitle')}</div>
+      <Button onClick={() => window.open('https://t.me/CryptoBot', '_blank')}>{t('deposit.openCrypto')}</Button>
+      <Button variant="secondary" onClick={() => setMethod('select')}>{t('deposit.back')}</Button>
     </div>
   );
 
@@ -185,17 +202,18 @@ export const DepositModal: React.FC<DepositModalProps> = ({ isOpen, onClose }) =
     <>
       <Modal
         isOpen={isOpen}
-        onClose={() => { onClose(); }}
-        title={t('deposit.modalTitleUSDT')}
-        subtitle={t('deposit.modalSubtitleUSDT')}
+        onClose={() => { setMethod('select'); onClose(); }}
+  title={method === 'usdt' ? t('deposit.modalTitleUSDT') : t('deposit.modalTitleSelect')}
+  subtitle={method === 'usdt' ? t('deposit.modalSubtitleUSDT') : undefined}
         size="md"
+        onBack={method !== 'select' ? () => setMethod('select') : undefined}
         variant="bottomSheet"
         bottomSheetAnimated
         keyboardActive={keyboardActive}
-        className={styles.depositModal}
-        overlayClassName={styles.depositOverlay}
       >
-        {renderUsdt()}
+        {method === 'select' && renderSelection()}
+        {method === 'usdt' && renderUsdt()}
+        {method === 'cryptobot' && renderCryptoBot()}
       </Modal>
       <SuccessModal
         isOpen={showSuccess}
