@@ -29,7 +29,8 @@ export const API_CONFIG = {
   FORCE_MOCKS: forceMocks,
   ENDPOINTS: {
     AUTH_TELEGRAM: '/auth/telegram',
-    USER_ME: '/user/me',
+    USER_ME: '/user/me', // legacy / transitional (will be deprecated)
+    USER_PROFILE: '/user/profile',
     SPIN: '/spin',
     DEPOSIT_CREATE: '/billing/deposit',
     INVENTORY: '/inventory',

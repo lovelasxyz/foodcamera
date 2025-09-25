@@ -45,8 +45,18 @@ export class ApiService {
     if (!isApiEnabled()) {
       return mockUser();
     }
-    const url = resolveApiUrl(API_CONFIG.ENDPOINTS.USER_ME);
-    try { return await apiClient.get<User>(url); } catch (e) { throw normalizeApiError(e); }
+    const profileUrl = resolveApiUrl(API_CONFIG.ENDPOINTS.USER_PROFILE);
+    try {
+      return await apiClient.get<User>(profileUrl);
+    } catch (primaryErr) {
+      // Fallback to legacy endpoint for backward compatibility
+      try {
+        const legacyUrl = resolveApiUrl(API_CONFIG.ENDPOINTS.USER_ME);
+        return await apiClient.get<User>(legacyUrl);
+      } catch (fallbackErr) {
+        throw normalizeApiError(primaryErr || fallbackErr);
+      }
+    }
   }
 
   async spin(caseId: string): Promise<ApiSpinResult> {

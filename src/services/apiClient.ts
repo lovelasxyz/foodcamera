@@ -1,88 +1,142 @@
 import { DevLogger } from '@/services/devtools/loggerService';
 import { useUserStore } from '@/store/userStore';
 import { useUIStore } from '@/store/uiStore';
+import { resolveApiUrl, isApiEnabled } from '@/config/api.config';
+import { captureError, addBreadcrumb } from '@/services/errorTracking';
 
 export interface HttpClient {
-  get<T>(url: string): Promise<T>;
-  post<T>(url: string, body?: any): Promise<T>;
+  get<T>(url: string, opts?: RequestOptions): Promise<T>;
+  post<T>(url: string, body?: any, opts?: RequestOptions): Promise<T>;
+}
+
+export interface RequestOptions {
+  timeoutMs?: number; // request timeout
+  baseUrl?: string;   // override base URL
+  signal?: AbortSignal;
+  headers?: Record<string, string>;
+  raw?: boolean; // if true, return Response json untouched
+}
+
+interface InternalRequestMeta {
+  method: string;
+  url: string;
+  startedAt: number;
+  requestId: string;
+}
+
+interface StructuredApiError extends Error {
+  status?: number;
+  requestId?: string;
+  endpoint?: string;
+  meta?: Record<string, unknown>;
 }
 
 class FetchHttpClient implements HttpClient {
-  async get<T>(url: string): Promise<T> {
-    const start = performance.now();
-    DevLogger.logRequest('GET', url);
+  private async request<T>(method: 'GET' | 'POST', url: string, body?: any, opts?: RequestOptions): Promise<T> {
+    const meta: InternalRequestMeta = {
+      method,
+      url,
+      startedAt: performance.now(),
+      requestId: (crypto as any).randomUUID?.() || `req-${Date.now()}-${Math.random().toString(36).slice(2,8)}`
+    };
+    const token = useUserStore.getState().token;
+    const controller = new AbortController();
+    const timeoutMs = opts?.timeoutMs ?? 15000;
+    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+    const baseUrl = opts?.baseUrl || (isApiEnabled() ? undefined : undefined); // left for future custom base override
+    const finalUrl = baseUrl ? `${baseUrl}${url}` : url;
+
+    DevLogger.logRequest(method, finalUrl, { body, requestId: meta.requestId });
+    addBreadcrumb('api.request', `${method} ${finalUrl}`, { requestId: meta.requestId });
     try {
-  const token = useUserStore.getState().token;
-  const requestId = (crypto as any).randomUUID?.() || `req-${Date.now()}-${Math.random().toString(36).slice(2,8)}`;
-  const res = await fetch(url, { credentials: 'include', headers: { 'X-Request-Id': requestId, ...(token ? { Authorization: `Bearer ${token}` } : {}) } });
-  (apiClient as any).lastRequestId = requestId;
-      const duration = performance.now() - start;
+      const headers: Record<string, string> = {
+        'X-Request-Id': meta.requestId,
+        ...(method === 'POST' ? { 'Content-Type': 'application/json' } : {}),
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...(opts?.headers || {})
+      };
+      const res = await fetch(finalUrl, {
+        method,
+        credentials: 'include',
+        headers,
+        body: method === 'POST' && body != null ? JSON.stringify(body) : undefined,
+        signal: opts?.signal || controller.signal
+      });
+      clearTimeout(timeoutId);
+      (apiClient as any).lastRequestId = meta.requestId;
+      const duration = performance.now() - meta.startedAt;
       const cloned = res.clone();
-      let body: unknown = undefined;
-      try { body = await cloned.json(); } catch { /* ignore */ }
-      DevLogger.logResponse('GET', url, res.status, res.ok, { durationMs: Math.round(duration), body });
+      let json: any = undefined;
+      try { json = await cloned.json(); } catch { /* ignore non-JSON */ }
+      DevLogger.logResponse(method, finalUrl, res.status, res.ok, { durationMs: Math.round(duration), body: json });
+      addBreadcrumb('api.response', `${method} ${finalUrl} ${res.status}`, { ok: res.ok });
+
       if (res.status === 401) {
         useUserStore.getState().setToken(null);
         useUIStore.getState().setSessionExpired(true);
         useUIStore.getState().setLastError({ message: 'Session expired', code: 401 });
-        throw new Error('Unauthorized');
+        const unauth: StructuredApiError = new Error('Unauthorized');
+        unauth.status = 401;
+        unauth.requestId = meta.requestId;
+        unauth.endpoint = finalUrl;
+        captureError(unauth, { level: 'error', tags: { type: 'api', status: '401' }, extra: { method } });
+        throw unauth;
       }
+
       if (!res.ok) {
-        // Attempt structured error envelope parsing
-        if (body && typeof body === 'object' && (body as any).error) {
-          const errObj = (body as any).error;
-          const code = errObj.code || res.status;
-            const message = errObj.message || `GET ${url} failed`;
-          useUIStore.getState().setLastError({ message, code });
-          throw new Error(message);
-        }
-        throw new Error(`GET ${url} failed: ${res.status}`);
+        const structured = this.buildError(method, finalUrl, res.status, json, meta.requestId);
+        useUIStore.getState().setLastError({ message: structured.message, code: structured.status });
+        captureError(structured, { level: 'error', tags: { type: 'api', status: String(res.status) } });
+        throw structured;
       }
-      return (body as T) ?? (res.json() as Promise<T>);
-    } catch (err) {
-      DevLogger.logError(`GET ${url} failed`, err);
+      return (json as T) ?? (res.json() as Promise<T>);
+    } catch (err: any) {
+      if (err?.name === 'AbortError') {
+        const timeoutErr: StructuredApiError = new Error(`Request timeout after ${timeoutMs}ms`);
+        timeoutErr.status = 0;
+        timeoutErr.requestId = meta.requestId;
+        timeoutErr.endpoint = url;
+        captureError(timeoutErr, { level: 'error', tags: { type: 'api', kind: 'timeout' } });
+        DevLogger.logError(`${meta.method} ${url} timeout`, timeoutErr);
+        throw timeoutErr;
+      }
+      DevLogger.logError(`${meta.method} ${url} failed`, err, { requestId: meta.requestId });
+      captureError(err, { level: 'error', tags: { type: 'api', kind: 'exception' } });
       throw err;
+    } finally {
+      clearTimeout(timeoutId);
     }
   }
-  async post<T>(url: string, body?: any): Promise<T> {
-    const start = performance.now();
-    DevLogger.logRequest('POST', url, { body });
-    try {
-      const token = useUserStore.getState().token;
-      const requestId = (crypto as any).randomUUID?.() || `req-${Date.now()}-${Math.random().toString(36).slice(2,8)}`;
-      const res = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-Request-Id': requestId, ...(token ? { Authorization: `Bearer ${token}` } : {}) },
-        body: body ? JSON.stringify(body) : undefined,
-        credentials: 'include'
-      });
-      (apiClient as any).lastRequestId = requestId;
-      const duration = performance.now() - start;
-      const cloned = res.clone();
-      let responseBody: unknown = undefined;
-      try { responseBody = await cloned.json(); } catch { /* ignore */ }
-      DevLogger.logResponse('POST', url, res.status, res.ok, { durationMs: Math.round(duration), body: responseBody });
-      if (res.status === 401) {
-        useUserStore.getState().setToken(null);
-        useUIStore.getState().setSessionExpired(true);
-        useUIStore.getState().setLastError({ message: 'Session expired', code: 401 });
-        throw new Error('Unauthorized');
+
+  private buildError(method: string, url: string, status: number, body: any, requestId: string): StructuredApiError {
+    let message = `${method} ${url} failed: ${status}`;
+    if (body && typeof body === 'object') {
+      if (body.error) {
+        message = body.error.message || message;
+      } else if (body.message && typeof body.message === 'string') {
+        message = body.message;
       }
-      if (!res.ok) {
-        if (responseBody && typeof responseBody === 'object' && (responseBody as any).error) {
-          const errObj = (responseBody as any).error;
-          const code = errObj.code || res.status;
-          const message = errObj.message || `POST ${url} failed`;
-          useUIStore.getState().setLastError({ message, code });
-          throw new Error(message);
-        }
-        throw new Error(`POST ${url} failed: ${res.status}`);
-      }
-      return (responseBody as T) ?? (res.json() as Promise<T>);
-    } catch (err) {
-      DevLogger.logError(`POST ${url} failed`, err, { body });
-      throw err;
     }
+    const err: StructuredApiError = new Error(message);
+    err.status = status;
+    err.requestId = requestId;
+    err.endpoint = url;
+    err.meta = { body };
+    return err;
+  }
+
+  async get<T>(url: string, opts?: RequestOptions): Promise<T> {
+    const final = this.prepareUrl(url);
+    return this.request<T>('GET', final, undefined, opts);
+  }
+  async post<T>(url: string, body?: any, opts?: RequestOptions): Promise<T> {
+    const final = this.prepareUrl(url);
+    return this.request<T>('POST', final, body, opts);
+  }
+
+  private prepareUrl(url: string): string {
+    if (/^https?:/i.test(url)) return url; // already absolute
+    return resolveApiUrl(url);
   }
 }
 
