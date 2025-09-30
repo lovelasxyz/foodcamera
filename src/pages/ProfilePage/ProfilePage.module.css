@@ -131,7 +131,7 @@ background: linear-gradient(115.39deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255,
 .tokenIcon {
   width: 32px;
   height: 32px;
-  background: #0090FF;
+  background: #00CC66;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -142,7 +142,7 @@ background: linear-gradient(115.39deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255,
 }
 
 .depositButton {
-  background: #0090FF;
+  background: #00c964;
   color: white;
   width: 111px;
   font-size: 14px;
@@ -158,7 +158,7 @@ background: linear-gradient(115.39deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255,
 
 /* Wallet Section */
 .walletContainer {
-    background: linear-gradient(115.39deg, rgba(255, 255, 255, 0) 0%, rgba(0, 117, 255, .15) 100%);
+    background: linear-gradient(115.39deg, rgba(255, 255, 255, 0) 0%, rgba(0, 204, 102, .15) 100%);
     border-radius: 12px;
     padding: 12px 16px;
     display: flex
@@ -205,7 +205,7 @@ background: linear-gradient(115.39deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255,
 
 /* Invite Friends Section */
 .inviteContainer {
-  background: linear-gradient(115.39deg, #0098EA 0%, #3FBCFF 100%);
+  background: linear-gradient(115.39deg, #00CC66 0%, #55FF99 100%);
   border-radius: 16px;
   padding: 15px;
   display: flex
@@ -214,7 +214,7 @@ background: linear-gradient(115.39deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255,
   align-items: center;
   justify-content: space-between;
   position: relative;
-  box-shadow: 0 0 20px #3fbcff59;
+  box-shadow: 0 0 20px #55ff9959;
   overflow: hidden;
   width: 100%;
 }
@@ -248,7 +248,7 @@ background: linear-gradient(115.39deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255,
 
 .inviteButton {
   background: white;
-  color: #0090FF;
+  color: #00CC66;
   color: black;
   border: none;
   padding: var(--spacing-8) var(--spacing-16);
@@ -357,7 +357,7 @@ background: linear-gradient(115.39deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255,
   height: 40px;
   border-radius: 50%;
   border: 3px solid rgba(255,255,255,.2);
-  border-top-color: #0075ff;
+  border-top-color: #00c964;
   animation: spinInv 1s infinite linear;
   margin-bottom: 16px;
 }
@@ -442,7 +442,7 @@ background: linear-gradient(115.39deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255,
 }
 
 .openCasesButton {
-  background: #0090FF;
+  background: #00CC66;
   color: white;
   border: none;
   padding: var(--spacing-12) var(--spacing-16);
@@ -453,7 +453,7 @@ background: linear-gradient(115.39deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255,
 }
 
 .openCasesButton:hover {
-  background: #0080E6;
+  background: #00BB55;
 }
 
 .inventoryGrid {
@@ -602,8 +602,8 @@ background: linear-gradient(115.39deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255,
 }
 
 .statusSold {
-  color:rgb(0, 117, 255);
-  border-color:rgb(0, 117, 255);
+  color:rgb(0, 204, 102);
+  border-color:rgb(0, 204, 102);
 }
 
 .inventoryHeader {
@@ -617,7 +617,7 @@ background: linear-gradient(115.39deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255,
 }
 
 .inventoryCount {
-  background: #667eea;
+  background: #00CC66;
   color: white;
   font-size: 12px;
   padding: 4px 8px;
@@ -666,7 +666,7 @@ background: linear-gradient(115.39deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255,
 }
 
 .itemPrice {
-  color: #667eea;
+  color: #00CC66;
   font-weight: 700;
   font-size: 14px;
 } 
@@ -682,7 +682,7 @@ background: linear-gradient(115.39deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255,
 }
 
 .receiveBtn {
-  background: #0075FF;
+  background: #00c964;
   border-radius: var(--radius-md);
   display: flex
 ;

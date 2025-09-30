@@ -138,9 +138,9 @@
 }
 
 /* Free Case Card - специальный стиль */
-.freeCaseCard {
+/* .freeCaseCard {
   background: rgb(0, 152, 234);
-}
+} */
 
 /* Free Case Image Container */
 .freeCaseImageContainer {
@@ -198,31 +198,31 @@
 
 /* NEW Badge */
 .caseNewBadge {
-  background: #0075FF;
-  border-radius: 16px;
-  padding: 6px 10px;
-  display: flex;
-  flex-direction: row;
-  gap: 10px;
-  align-items: center;
-  justify-content: center;
-  height: 26px;
-  position: absolute;
-  left: 8px;
-  top: 8px;
-  z-index: 10;
-  box-shadow: 0 2px 8px rgba(0, 117, 255, 0.3);
+    background: radial-gradient(85.17% 48.67% at 50% 50%, #FFF 0%, #231F20 100%), linear-gradient(0deg, #FFD041 0%, #FFD041 100%), #FFAF39;
+    background-blend-mode: soft-light, normal, normal;
+    border-radius: 16px;
+    padding: 10px 12px;
+    display: flex
+;
+    flex-direction: row;
+    gap: 10px;
+    align-items: center;
+    justify-content: center;
+    height: 30px;
+    position: absolute;
+    left: 3px;
+    top: 3px;
+    z-index: 11;
 }
 
 .caseNewLabel {
-  color: #fff;
-  text-align: center;
-  font-family: "Inter", sans-serif;
-  font-size: 10px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  position: relative;
+color: #000;
+    text-align: center;
+    font-family: Inter-SemiBold, sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    position: relative;
 }
 
 /* Coin */

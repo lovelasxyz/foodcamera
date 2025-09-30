@@ -64,8 +64,8 @@
 
 .fullWidth { grid-column: 1 / span 2; }
 
-.ton { background: linear-gradient(180deg, #1A6BFF 0%, #24A8FF 100%); }
-.cryptobot { background: linear-gradient(180deg, #14B8FF 0%, #07A1F9 100%); }
+.ton { background: linear-gradient(180deg, #1A9966 0%, #24CC77 100%); }
+.cryptobot { background: linear-gradient(180deg, #14CC77 0%, #07B359 100%); }
 .gifts { background: linear-gradient(180deg, #27DB84 0%, #13C36E 100%); }
 
 .banner {
@@ -123,7 +123,7 @@
 }
 
 .mainCta {
-    background: #0075ff;
+    background: #00c964;
     border-radius: 12px;
     display: flex
 ;
@@ -169,7 +169,7 @@
   color: rgba(255,255,255,0.7);
   font-weight: 700;
 }
-.receiveValue { color: #6ab8ff; }
+.receiveValue { color: #6aff99; }
 
 /* Promo input active state and tag */
 .inputPromoActive { border-color: rgba(111, 242, 160, 0.45); }
@@ -203,7 +203,7 @@
 .coin { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); }
 
 /* Deposit button styles */
-.depositButton { background: #0075ff; border-radius: 12px; width: 100%; height: 50px; display: flex; align-items: center; justify-content: center; border: none; color: #fff; font-weight: 700; margin-bottom: 0; }
+.depositButton { background: #00de6f; border-radius: 12px; width: 100%; height: 50px; display: flex; align-items: center; justify-content: center; border: none; color: #fff; font-weight: 700; margin-bottom: 0; }
 .depositButtonDisabled { opacity: .6; cursor: not-allowed; }
 
 /* Error banner */

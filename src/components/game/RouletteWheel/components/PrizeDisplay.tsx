@@ -69,7 +69,7 @@ export const PrizeDisplay: React.FC<PrizeDisplayProps> = ({
         <button onClick={handleKeep} className={`${styles.spinButton} ${styles.centered}`} disabled={isKeeping}>
           <div className={styles.buttonLabel}>{keepLabel}</div>
         </button>
-        {showSell && (
+        {/* {showSell && (
           <button 
             className={styles.quickSellButton}
             onClick={onSell}
@@ -87,7 +87,7 @@ export const PrizeDisplay: React.FC<PrizeDisplayProps> = ({
               </div>
             )}
           </button>
-        )}
+        )} */}
       </div>
     </div>
   );

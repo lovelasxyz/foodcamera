@@ -1,5 +1,5 @@
 export const THEME_COLORS = {
-  primary: '#0075ff',
+  primary: '##00c964',
   secondary: '#ffae00',
   background: '#0c0c0d',
   surface: '#141415',

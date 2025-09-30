@@ -60,7 +60,7 @@ export const CaseCard: React.FC<CaseCardProps> = ({ caseData }) => {
         {/* NEW Badge для новых кейсов */}
         {caseData.isNew && (
           <div className={styles.caseNewBadge}>
-            <div className={styles.caseNewLabel}>NEW</div>
+            <div className={styles.caseNewLabel}>🔥 HOT</div>
           </div>
         )}
         <ProgressiveImg className={styles.caseImage} src={caseData.image} cacheKey={String(caseData.id)} alt="Case Image" />

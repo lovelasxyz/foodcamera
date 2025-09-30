@@ -58,7 +58,7 @@
   background: rgba(255, 255, 255, .01);
     border-width: 2px;
     border-style: solid;
-    border-image: linear-gradient(-90deg, rgba(61, 68, 92, 0) 9.77%, rgba(10, 93, 201, .6) 50.17%, rgba(61, 68, 92, 0) 90.43%);
+    border-image: linear-gradient(-90deg, rgba(61, 68, 92, 0) 9.77%, rgba(0, 204, 102, .6) 50.17%, rgba(61, 68, 92, 0) 90.43%);
     opacity: .4;
     border-image-slice: 1;
     position: absolute;
@@ -192,8 +192,8 @@
 }
 
 .multiplierTab.active {
-  background: rgba(0, 117, 255, 0.2);
-  border-color: rgba(0, 117, 255, 0.4);
+  background: rgba(0, 204, 102, 0.2);
+  border-color: rgba(0, 204, 102, 0.4);
   color: white;
 }
 
@@ -251,7 +251,7 @@
     top: 0;
     transform: translateX(-50%);
     overflow: visible;
-    filter: drop-shadow(0 0 3px rgba(10, 93, 201, .6));
+    filter: drop-shadow(0 0 3px rgba(0, 204, 102, .6));
 }
 .unionBottom{
       box-sizing: border-box;
@@ -263,7 +263,7 @@
     bottom: 0;
     transform: translateX(-50%) rotate(180deg);
     overflow: visible;
-    filter: drop-shadow(0 0 3px rgba(10, 93, 201, .6));
+    filter: drop-shadow(0 0 3px rgba(0, 204, 102, .6));
 }
 .buttonLabel{
   color: white;
@@ -304,7 +304,7 @@
   height: 100%;
 }
 .spinButton {
-  background: #0075FF;
+  background: #00c964;
   border-radius: var(--radius-md);
   padding: 0 0 0 15px;
   display: flex
@@ -435,7 +435,7 @@
 }
 
 .keepButton {
-  background: #0075FF;
+  background: #00c964;
   border-radius: var(--radius-md);
   padding: 0 0 0 15px;
   display: flex
@@ -575,10 +575,10 @@
 
 @keyframes prizeGlow {
   0%, 100% {
-    filter: drop-shadow(0 4px 12px rgba(0, 117, 255, 0.3));
+    filter: drop-shadow(0 4px 12px rgba(0, 204, 102, 0.3));
   }
   50% {
-    filter: drop-shadow(0 4px 20px rgba(0, 117, 255, 0.6));
+    filter: drop-shadow(0 4px 20px rgba(0, 204, 102, 0.6));
   }
 }
 
@@ -605,7 +605,7 @@
 @media (max-width: 768px) {
   .rouletteViewport {
     height: 140px;
-    margin: 15px 0px 5px 0;
+    margin: 20px 0px 5px 0;
   }
   
   .rouletteItem {

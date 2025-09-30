@@ -3,7 +3,7 @@ import { DevLogger, LogEntry } from '@/services/devtools/loggerService';
 
 const levelColors: Record<string, string> = {
   debug: '#6b7280',
-  info: '#2563eb',
+  info: '#16a34a',
   warn: '#d97706',
   error: '#dc2626',
 };

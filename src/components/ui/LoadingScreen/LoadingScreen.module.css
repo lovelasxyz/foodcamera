@@ -216,7 +216,7 @@
 }
 
 .retryButton {
-  background: rgba(0, 136, 204, 0.8);
+  background: rgba(0, 179, 89, 0.8);
   color: #fff;
   border-radius: 12px;
   padding: 12px 24px;
@@ -229,7 +229,7 @@
 }
 
 .retryButton:hover {
-  background: rgba(0, 136, 204, 1);
+  background: rgba(0, 179, 89, 1);
   transform: translateY(-2px);
 }
 
@@ -238,7 +238,7 @@
   width: 48px;
   height: 48px;
   border: 4px solid rgba(255, 255, 255, 0.1);
-  border-top-color: #08c;
+  border-top-color: #00b359;
   border-radius: 50%;
   animation: spin 1.2s linear infinite;
 }

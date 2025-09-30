@@ -200,7 +200,7 @@ export const ProfilePage: React.FC = () => {
             >
               {t('common.receive')}
             </Button>
-            {!(selectedInventoryItem.prize.nonRemovableGift) && !selectedInventoryItem.prize.benefit && (
+            {/* {!(selectedInventoryItem.prize.nonRemovableGift) && !selectedInventoryItem.prize.benefit && (
               <Button
                 className={styles.quickSellBtn}
                 onClick={() => {
@@ -219,7 +219,7 @@ export const ProfilePage: React.FC = () => {
                   <img src={ASSETS.IMAGES.TON} alt="TON" className={styles.tonIconSmall} />
                 </span>
               </Button>
-            )}
+            )} */}
           </div>
         )}
       />

@@ -63,7 +63,10 @@ const RouletteView: React.FC<RouletteViewProps> = ({
               tonIcon={tonIcon}
               unionIcon={unionIcon}
             />
-
+            <div style={{ display: 'flex', justifyContent: 'left', alignItems: 'center', marginLeft: '14px', color: 'grey', fontSize: '14px' }}>
+              <input type="checkbox" id="show-win-modal" checked={showWinModal} onChange={(e) => setShowWinModal(e.target.checked)} style={{ marginRight: '8px' }} />
+              <label htmlFor="show-win-modal">{t('roulette.showWin')}</label>
+            </div>
             <SpinControls
               isSpinning={isSpinning}
               hasEnoughFunds={hasEnoughFunds}
@@ -74,11 +77,6 @@ const RouletteView: React.FC<RouletteViewProps> = ({
               labelSpin={isSpinning ? t('roulette.spinning') : t('roulette.spin')}
               labelDeposit={t('roulette.deposit')}
             />
-
-            <div style={{ display: 'flex', justifyContent: 'left', alignItems: 'center', marginLeft: '14px', color: 'grey', fontSize: '14px' }}>
-              <input type="checkbox" id="show-win-modal" checked={showWinModal} onChange={(e) => setShowWinModal(e.target.checked)} style={{ marginRight: '8px' }} />
-              <label htmlFor="show-win-modal">{t('roulette.showWin')}</label>
-            </div>
 
             <PossiblePrizes title={t('roulette.possiblePrizes')} prizes={sortedPrizes} onPreview={(item) => api.setPreviewPrize(item)} />
           </div>

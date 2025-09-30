@@ -47,7 +47,7 @@ export const ROUTES = {
 // Цвета градиентов для кейсов
 export const CASE_GRADIENT_COLORS = {
   FREE: '#23C265',
-  LOW: '#0095EA',      // 0-1 TON
+  LOW: '#00CC66',      // 0-1 TON
   MEDIUM: '#8A2BFF',   // 1-5 TON
   HIGH: '#FF5C2B',     // 5-15 TON
   EXPENSIVE: '#FFAE00', // 15-50 TON

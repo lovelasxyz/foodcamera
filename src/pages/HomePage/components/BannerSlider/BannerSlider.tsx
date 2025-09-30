@@ -3,6 +3,7 @@ import { ConnectivityGuard } from '@/services/ConnectivityGuard';
 import { useSlider, Slide } from '../hooks/useSlider';
 import { useTouchSwipe } from '../hooks/useTouchSwipe';
 import { SlideView } from '../SlideView';
+import { useDominantColor } from '@/hooks/useDominantColor';
 import styles from '../../HomePage.module.css';
 
 interface BannerSliderProps {
@@ -13,15 +14,31 @@ interface BannerSliderProps {
 export const BannerSlider: React.FC<BannerSliderProps> = ({ slides, className }) => {
   const { currentIndex, currentSlide, nextSlide, prevSlide, goToSlide } = useSlider(slides);
   const { handleTouchStart, handleTouchMove, handleTouchEnd } = useTouchSwipe(nextSlide, prevSlide);
-  const [shadowColor, setShadowColor] = React.useState('rgba(63, 188, 255, 0.35)');
+  const [shadowColor, setShadowColor] = React.useState('rgba(85, 255, 153, 0.35)');
+
+  // Получаем доминантный цвет из изображения
+  const imageUrl = currentSlide?.kind === 'image' ? currentSlide.image : undefined;
+  const { rgba } = useDominantColor(imageUrl);
 
   // Вычисление цвета тени
   React.useEffect(() => {
     if (currentSlide?.kind === 'text') {
-      setShadowColor('rgba(63, 188, 255, 0.35)');
+      // Для текстовых слайдов используем зелёный цвет
+      setShadowColor('rgba(85, 255, 153, 0.35)');
+    } else if (currentSlide?.kind === 'image' && imageUrl) {
+      // Для изображений используем вычисленный доминантный цвет
+      const dominantColor = rgba(0.35);
+      if (dominantColor !== 'rgba(0,0,0,0)') {
+        setShadowColor(dominantColor);
+      } else {
+        // Fallback на зелёный если цвет не вычислен
+        setShadowColor('rgba(85, 255, 153, 0.35)');
+      }
+    } else {
+      // Для видео и других типов - зелёный
+      setShadowColor('rgba(85, 255, 153, 0.35)');
     }
-    // Здесь можно добавить логику для вычисления цвета из изображений
-  }, [currentSlide]);
+  }, [currentSlide, rgba, imageUrl]);
 
   if (!currentSlide) return null;
 
