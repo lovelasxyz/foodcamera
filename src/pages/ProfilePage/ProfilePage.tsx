@@ -14,7 +14,6 @@ import { BalanceSection } from './components/BalanceSection';
 import { InventorySection } from './components/InventorySection';
 import { ShardProgress } from './components/ShardProgress';
 import { PrizeItem } from '@/domain/items/PrizeItem';
-import { ASSETS } from '@/constants/assets';
 import { runIdle } from '@/utils/idle';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { useI18n } from '@/i18n';
