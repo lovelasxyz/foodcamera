@@ -10,23 +10,36 @@ interface AuthBootstrapState {
   initialized: boolean;
 }
 
+// Минимальное время показа загрузочного экрана (в мс)
+const MIN_LOADING_TIME = 1500;
+
 // Encapsulates previous auth/bootstrap logic from App.tsx
 export function useAuthBootstrap(): AuthBootstrapState {
   const { setTelegramUser, loadUser } = useUserStore();
   const { user: telegramUser, status: authStatus } = useTelegramAuth();
   const [initialized, setInitialized] = useState(false);
   const [showLoading, setShowLoading] = useState(true);
+  const [loadingStartTime] = useState(() => Date.now());
+
+  // Функция для скрытия загрузки с учётом минимального времени
+  const hideLoadingWithDelay = () => {
+    const elapsed = Date.now() - loadingStartTime;
+    const remainingTime = Math.max(0, MIN_LOADING_TIME - elapsed);
+
+    setTimeout(() => {
+      setInitialized(true);
+      setShowLoading(false);
+    }, remainingTime);
+  };
 
   useEffect(() => {
     if (shouldUseGuestMode()) {
-      setInitialized(true);
-      setShowLoading(false);
+      hideLoadingWithDelay();
       return;
     }
     if (telegramUser && authStatus === 'authenticated') {
       setTelegramUser(telegramUser as ParsedTelegramUser);
-      setInitialized(true);
-      setShowLoading(false);
+      hideLoadingWithDelay();
     } else if (authStatus === 'error' || authStatus === 'loading') {
       setShowLoading(true);
     } else if (authStatus === 'idle') {
@@ -36,8 +49,7 @@ export function useAuthBootstrap(): AuthBootstrapState {
             // eslint-disable-next-line no-console
             console.debug('Auth timeout - proceeding without Telegram auth');
           }
-          setInitialized(true);
-          setShowLoading(false);
+          hideLoadingWithDelay();
         }
       }, 1200);
       return () => clearTimeout(timeoutId);
