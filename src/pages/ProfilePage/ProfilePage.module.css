@@ -131,7 +131,7 @@ background: linear-gradient(115.39deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255,
 .tokenIcon {
   width: 32px;
   height: 32px;
-  background: #00CC66;
+  background: #00bc78;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -142,7 +142,7 @@ background: linear-gradient(115.39deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255,
 }
 
 .depositButton {
-  background: #00c964;
+  background: #00bc78;
   color: white;
   width: 111px;
   font-size: 14px;
@@ -205,7 +205,7 @@ background: linear-gradient(115.39deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255,
 
 /* Invite Friends Section */
 .inviteContainer {
-  background: linear-gradient(115.39deg, #00CC66 0%, #55FF99 100%);
+  background: linear-gradient(115.39deg, #00bc78 0%, #55FF99 100%);
   border-radius: 16px;
   padding: 15px;
   display: flex
@@ -248,7 +248,7 @@ background: linear-gradient(115.39deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255,
 
 .inviteButton {
   background: white;
-  color: #00CC66;
+  color: #00bc78;
   color: black;
   border: none;
   padding: var(--spacing-8) var(--spacing-16);
@@ -357,7 +357,7 @@ background: linear-gradient(115.39deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255,
   height: 40px;
   border-radius: 50%;
   border: 3px solid rgba(255,255,255,.2);
-  border-top-color: #00c964;
+  border-top-color: #00bc78;
   animation: spinInv 1s infinite linear;
   margin-bottom: 16px;
 }
@@ -442,7 +442,7 @@ background: linear-gradient(115.39deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255,
 }
 
 .openCasesButton {
-  background: #00CC66;
+  background: #00bc78;
   color: white;
   border: none;
   padding: var(--spacing-12) var(--spacing-16);
@@ -617,7 +617,7 @@ background: linear-gradient(115.39deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255,
 }
 
 .inventoryCount {
-  background: #00CC66;
+  background: #00bc78;
   color: white;
   font-size: 12px;
   padding: 4px 8px;
@@ -666,7 +666,7 @@ background: linear-gradient(115.39deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255,
 }
 
 .itemPrice {
-  color: #00CC66;
+  color: #00bc78;
   font-weight: 700;
   font-size: 14px;
 } 
@@ -682,7 +682,7 @@ background: linear-gradient(115.39deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255,
 }
 
 .receiveBtn {
-  background: #00c964;
+  background: #00bc78;
   border-radius: var(--radius-md);
   display: flex
 ;

@@ -304,7 +304,7 @@
   height: 100%;
 }
 .spinButton {
-  background: #00c964;
+  background: #00bc78;
   border-radius: var(--radius-md);
   padding: 0 0 0 15px;
   display: flex
@@ -435,7 +435,7 @@
 }
 
 .keepButton {
-  background: #00c964;
+  background: #00bc78;
   border-radius: var(--radius-md);
   padding: 0 0 0 15px;
   display: flex

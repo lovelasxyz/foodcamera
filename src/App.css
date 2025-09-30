@@ -397,7 +397,7 @@ body {
 }
 
 .news-banner {
-  background: linear-gradient(90deg, #009955 0%, #00CC66 100%);
+  background: linear-gradient(90deg, #009955 0%, #00bc78 100%);
   border-radius: 15px;
   padding: 15px;
   margin: 15px 0;
@@ -720,7 +720,7 @@ body {
   min-width: 110px;
   width: auto;
   padding: 10px 15px;
-  background-color: #00CC66;
+  background-color: #00bc78;
   border: none;
   border-radius: 10px;
   color: #ffffff;
@@ -848,7 +848,7 @@ body {
 }
 
 .invite-container {
-  background-color: #00CC66;
+  background-color: #00bc78;
   border-radius: 15px;
   padding: 15px;
   display: flex;
@@ -931,7 +931,7 @@ body {
 }
 
 .open-cases-button {
-  background-color: #00CC66;
+  background-color: #00bc78;
   border: none;
   border-radius: 10px;
   color: #ffffff;
@@ -953,7 +953,7 @@ body {
 .spin-button {
   width: 100%;
   padding: 15px;
-  background-color: #00CC66;
+  background-color: #00bc78;
   border: none;
   border-radius: 10px;
   color: #ffffff;
