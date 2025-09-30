@@ -20,11 +20,11 @@ export const PrizeDisplay: React.FC<PrizeDisplayProps> = ({
   price,
   image,
   keepLabel,
-  sellLabel,
-  isSpinning,
+ // sellLabel,
+  //isSpinning,
   onKeep,
-  onSell,
-  showSell = true
+  //onSell,
+ // showSell = true
 }) => {
   const [isKeeping, setIsKeeping] = React.useState(false);
 

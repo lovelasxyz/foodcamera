@@ -23,7 +23,7 @@ import { usePrizeDescription } from '@/i18n/prizeDescriptions';
 export const ProfilePage: React.FC = () => {
   const { t } = useI18n();
   const getDescription = usePrizeDescription();
-  const { user, disconnectWallet, craftFromShards, sellInventoryItem, receiveInventoryItem, isLoading, loadInventory, inventoryFetched } = useUserStore();
+  const { user, disconnectWallet, craftFromShards, receiveInventoryItem, isLoading, loadInventory, inventoryFetched } = useUserStore();
   const { isModalOpen, modalType, openModal, closeModal } = useUIStore();
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
   const [selectedShardKey, setSelectedShardKey] = useState<string | null>(null);
@@ -199,7 +199,8 @@ export const ProfilePage: React.FC = () => {
             >
               {t('common.receive')}
             </Button>
-            {/* {!(selectedInventoryItem.prize.nonRemovableGift) && !selectedInventoryItem.prize.benefit && (
+{/*             
+            {!(selectedInventoryItem.prize.nonRemovableGift) && !selectedInventoryItem.prize.benefit && (
               <Button
                 className={styles.quickSellBtn}
                 onClick={() => {
