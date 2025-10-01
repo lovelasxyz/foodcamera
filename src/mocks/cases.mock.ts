@@ -42,6 +42,14 @@ const SKIP_TURN_PRIZE: Prize = {
   description: 'Пропуск хода. Ничего не происходит.'
 };
 
+// Скидки как отдельные призы (не осколки)
+const DISCOUNT_PRIZES: Prize[] = [
+  { id: 60001, name: 'Discount 10%', price: 0, image: ASSETS.IMAGES.SCROLL, rarity: 'epic', benefit: { type: 'discount', percent: 10 }, nonRemovableGift: true, description: 'Скидка 10% на следующую покупку кейса.' },
+  { id: 60002, name: 'Discount 15%', price: 0, image: ASSETS.IMAGES.SCROLL, rarity: 'epic', benefit: { type: 'discount', percent: 15 }, nonRemovableGift: true, description: 'Скидка 15% на следующую покупку кейса.' },
+  { id: 60003, name: 'Discount 30%', price: 0, image: ASSETS.IMAGES.SCROLL, rarity: 'legendary', benefit: { type: 'discount', percent: 30 }, nonRemovableGift: true, description: 'Скидка 30% на следующую покупку кейса.' },
+  { id: 60004, name: 'Discount 50%', price: 0, image: ASSETS.IMAGES.SCROLL, rarity: 'legendary', benefit: { type: 'discount', percent: 50 }, nonRemovableGift: true, description: 'Скидка 50% на следующую покупку кейса.' },
+];
+
 export const mockCases: Case[] = [
   {
     id: 1,
@@ -68,6 +76,7 @@ export const mockCases: Case[] = [
       { id: 2, name: 'Scroll', price: 24.06, image: ASSETS.IMAGES.SCROLL, rarity: 'rare' },
       { id: 3, name: 'Frog', price: 1562, image: ASSETS.IMAGES.FROG, rarity: 'legendary' },
       { id: 4, name: 'Diamond', price: 48.15, image: ASSETS.IMAGES.DIAMOND, rarity: 'epic' },
+      ...DISCOUNT_PRIZES,
     ])
   },
   {
@@ -81,6 +90,7 @@ export const mockCases: Case[] = [
       { id: 4, name: 'Diamond', price: 48.15, image: ASSETS.IMAGES.DIAMOND, rarity: 'epic' },
       { id: 9, name: 'Dragon', price: 89.99, image: ASSETS.IMAGES.DRAGON, rarity: 'epic' },
       ...USDT_PRIZES,
+      ...DISCOUNT_PRIZES,
       WEEKLY_TICKET_PRIZE,
       PERMANENT_TOKEN_PRIZE,
     ])
@@ -95,6 +105,7 @@ export const mockCases: Case[] = [
       { id: 2, name: 'Scroll', price: 24.06, image: ASSETS.IMAGES.SCROLL, rarity: 'rare' },
       { id: 10, name: 'Frog', price: 1562, image: ASSETS.IMAGES.FROG, rarity: 'legendary' },
       ...USDT_PRIZES,
+      ...DISCOUNT_PRIZES,
       WEEKLY_TICKET_PRIZE,
       PERMANENT_TOKEN_PRIZE,
     ])
@@ -109,6 +120,7 @@ export const mockCases: Case[] = [
       { id: 2, name: 'Scroll', price: 24.06, image: ASSETS.IMAGES.SCROLL, rarity: 'rare' },
       { id: 10, name: 'Frog', price: 1562, image: ASSETS.IMAGES.FROG, rarity: 'legendary' },
       ...USDT_PRIZES,
+      ...DISCOUNT_PRIZES,
       WEEKLY_TICKET_PRIZE,
       PERMANENT_TOKEN_PRIZE,
     ])
@@ -122,6 +134,7 @@ export const mockCases: Case[] = [
     items: PrizeSorter.sortByRarity([
       { id: 4, name: 'Gift', price: 25.00, image: ASSETS.IMAGES.GIFT, rarity: 'rare' },
       ...USDT_PRIZES,
+      ...DISCOUNT_PRIZES,
       WEEKLY_TICKET_PRIZE,
       PERMANENT_TOKEN_PRIZE,
     ])
@@ -135,6 +148,7 @@ export const mockCases: Case[] = [
     items: PrizeSorter.sortByRarity([
       { id: 4, name: 'Gift', price: 25.00, image: ASSETS.IMAGES.GIFT, rarity: 'rare' },
       ...USDT_PRIZES,
+      ...DISCOUNT_PRIZES,
       WEEKLY_TICKET_PRIZE,
       PERMANENT_TOKEN_PRIZE,
     ])
@@ -148,6 +162,7 @@ export const mockCases: Case[] = [
     items: PrizeSorter.sortByRarity([
       { id: 4, name: 'Gift', price: 25.00, image: ASSETS.IMAGES.GIFT, rarity: 'rare' },
       ...USDT_PRIZES,
+      ...DISCOUNT_PRIZES,
       WEEKLY_TICKET_PRIZE,
       PERMANENT_TOKEN_PRIZE,
     ])

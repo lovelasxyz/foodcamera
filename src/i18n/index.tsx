@@ -48,7 +48,7 @@ const en: TranslationDict = {
     methodCryptoBot: 'CryptoBot',
     methodGifts: 'Gifts',
     promoTitle: 'Get a bonus on your deposit',
-    promoSubtitle: 'Look for promo codes in @casebot or in the channels of our partners.',
+    promoSubtitle: 'Look for promo codes in @casesbot or in the channels of our partners.',
     promoPlaceholder: 'Promocode',
     promoInvalid: 'Promocode not found or limit exceeded',
     toReceive: 'To receive:',
@@ -144,7 +144,7 @@ const en: TranslationDict = {
     freeBanner1: 'Check our news',
     freeBanner6: 'Spin the wheel and win',
     freeBanner7: 'Collect shards faster',
-    openCase: '@casebot',
+    openCase: '@casesbot',
     freeCase: 'Free Case'
   }
 };
@@ -191,7 +191,7 @@ const ru: TranslationDict = {
     methodCryptoBot: 'CryptoBot',
     methodGifts: 'Подарки',
     promoTitle: 'Получите бонус к пополнению',
-    promoSubtitle: 'Ищите промокоды в @casebot или у наших партнёров.',
+    promoSubtitle: 'Ищите промокоды в @casesbot или у наших партнёров.',
     promoPlaceholder: 'Промокод',
     promoInvalid: 'Промокод не найден или лимит исчерпан',
     toReceive: 'К получению:',
@@ -287,7 +287,7 @@ const ru: TranslationDict = {
     freeBanner1: 'Следите за новостями',
     freeBanner6: 'Крути рулетку и побеждай',
     freeBanner7: 'Собирайте осколки',
-    openCase: '@casebot',
+    openCase: '@casesbot',
     freeCase: 'Free case'
   }
 };

@@ -69,7 +69,7 @@ export const MESSAGES = {
   LOADING_CASES: 'Loading cases...',
   SPINNING: 'Spinning...',
   CHECK_NEWS: 'Check our news',
-  OPEN_CASE: '@casebot',
+  OPEN_CASE: '@casesbot',
   FREE_CASE: 'Free Case',
   POSSIBLE_PRIZES: 'Possible prizes:',
   INSUFFICIENT_BALANCE: 'Insufficient balance. Need',

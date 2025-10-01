@@ -88,7 +88,7 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({
         </div>
       )}
 
-      <div className={styles.loaderSocialHandle}>@casebot</div>
+      <div className={styles.loaderSocialHandle}>@casesbot</div>
     </div>
   );
 }; 
