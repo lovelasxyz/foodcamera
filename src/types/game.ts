@@ -2,7 +2,11 @@ export type ProductBenefit =
   | { type: 'discount'; percent: 10 | 15 | 30 | 50 }
   | { type: 'subscription'; service: 'tg_premium'; months: 3 }
   | { type: 'lottery_ticket' }
-  | { type: 'bigwin' };
+  | { type: 'bigwin' }
+  | { type: 'fiat_usdt'; amount: number } // Фиат USDT, зачисляется сразу на баланс
+  | { type: 'weekly_ticket' } // Накапливающийся билет на еженедельный розыгрыш (истекает через неделю)
+  | { type: 'permanent_token'; amount: number } // Постоянный токен (накапливается без срока действия)
+  | { type: 'skip_turn' }; // Пропуск хода - ничего не дается
 
 export interface Prize {
   id: number;

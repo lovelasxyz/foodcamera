@@ -3,7 +3,6 @@ import { useUserStore } from '@/store/userStore';
 import { useUIStore } from '@/store/uiStore';
 import { Button } from '@/components/ui/Button';
 import styles from './ProfilePage.module.css';
-import { ShardRecipeMapper } from '@/domain/shards/ShardRecipeMapper';
 import { Modal } from '@/components/ui/Modal';
 import { PrizeModal } from '@/components/game/PrizeCard';
 import { DepositModal } from '@/components/profile/DepositModal';
@@ -13,12 +12,11 @@ import { InviteBanner } from './components/InviteBanner';
 import { BalanceSection } from './components/BalanceSection';
 import { InventorySection } from './components/InventorySection';
 import { ShardProgress } from './components/ShardProgress';
-import { PrizeItem } from '@/domain/items/PrizeItem';
 import { runIdle } from '@/utils/idle';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { useI18n } from '@/i18n';
 import { usePrizeDescription } from '@/i18n/prizeDescriptions';
-// removed unused, commented imports
+import { useInventoryGrouping } from './hooks/useInventoryGrouping';
 
 export const ProfilePage: React.FC = () => {
   const { t } = useI18n();
@@ -48,47 +46,18 @@ export const ProfilePage: React.FC = () => {
     // Вернулись онлайн — сброс
     setHideInventoryError(false);
     setInventoryOfflinePhase('idle');
-    // подгрузим инвентарь только один раз при первом заходе
-    if (!inventoryFetched && !isLoading) {
+  }, [isOnline]);
+
+  // Загрузка инвентаря при монтировании
+  React.useEffect(() => {
+    if (isOnline && !inventoryFetched && !isLoading) {
       const cancel = runIdle(() => void loadInventory());
       return () => { cancel?.(); };
     }
-  }, [isOnline, inventoryFetched, isLoading, loadInventory]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const selectedInventoryItem = useMemo(() => user.inventory.find(i => i.id === selectedItemId) || null, [user.inventory, selectedItemId]);
-
-  // Единая лента карточек: полноценные предметы + осколки, отсортированные по дате получения/обновления
-  const combinedInventory = useMemo(() => {
-    // Карточки предметов с временем получения
-    const items = user.inventory.map((inv) => {
-      const dto = new PrizeItem(inv.prize);
-      return {
-        kind: 'item' as const,
-        id: inv.id,
-        image: dto.data.image,
-        price: dto.price,
-        item: inv,
-        updatedAt: inv.obtainedAt || 0
-      };
-    });
-    // Карточки осколков с последним временем изменения количества
-    const shards = Object.entries(user.shards || {}).map(([key, count]) => {
-        const cfg = ShardRecipeMapper.fromConstants().find(r => r.key === key);
-      return {
-        kind: 'shard' as const,
-        id: `shard-${key}`,
-          image: cfg?.shardImage,
-        label: t('common.ofPattern', { count, total: cfg?.required ?? 10 }),
-        shardKey: key,
-        count,
-        required: cfg?.required ?? 10,
-        rarity: 'common' as const,
-        updatedAt: (user as any).shardUpdatedAt?.[key] || 0
-      };
-    });
-    // Сортируем по updatedAt по убыванию, чтобы новые всегда сверху
-    const combined = [...items, ...shards].sort((a: any, b: any) => (b.updatedAt || 0) - (a.updatedAt || 0));
-    return combined;
-  }, [user, t]);
+  const combinedInventory = useInventoryGrouping(user);
 
   // Отфильтрованный список с учетом режима отображения
   const visibleInventory = useMemo(() => {

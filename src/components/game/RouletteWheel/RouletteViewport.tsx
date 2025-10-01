@@ -28,7 +28,7 @@ export const RouletteViewport: React.FC<RouletteViewportProps> = ({
 
   return (
     <div className={styles.rouletteViewport}>
-      <div 
+      <div
         className={styles.rouletteItems}
         onTransitionEnd={onTransitionEnd}
         style={animationStyle}

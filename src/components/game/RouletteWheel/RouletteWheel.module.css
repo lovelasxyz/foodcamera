@@ -760,9 +760,10 @@ ease-in-out infinite alternate;
 
 /* Dedicated image class for roulette items (no animation) */
 .roulettePrizeImage {
-  width: 100px;
-  height: 100px;
-  object-fit: contain;
+
+   width: '75px';
+  height: '75px'; 
+   object-fit: 'contain';
 }
 
 @keyframes float-874682fd {

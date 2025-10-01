@@ -18,27 +18,26 @@ export const BannerSlider: React.FC<BannerSliderProps> = ({ slides, className })
 
   // Получаем доминантный цвет из изображения
   const imageUrl = currentSlide?.kind === 'image' ? currentSlide.image : undefined;
-  const { rgba } = useDominantColor(imageUrl);
+  const { colorHex } = useDominantColor(imageUrl);
 
   // Вычисление цвета тени
   React.useEffect(() => {
     if (currentSlide?.kind === 'text') {
       // Для текстовых слайдов используем зелёный цвет
       setShadowColor('rgba(85, 255, 153, 0.35)');
-    } else if (currentSlide?.kind === 'image' && imageUrl) {
+    } else if (currentSlide?.kind === 'image' && imageUrl && colorHex) {
       // Для изображений используем вычисленный доминантный цвет
-      const dominantColor = rgba(0.35);
-      if (dominantColor !== 'rgba(0,0,0,0)') {
-        setShadowColor(dominantColor);
-      } else {
-        // Fallback на зелёный если цвет не вычислен
-        setShadowColor('rgba(85, 255, 153, 0.35)');
-      }
+      const cleaned = colorHex.replace('#', '');
+      const bigint = parseInt(cleaned, 16);
+      const r = (bigint >> 16) & 255;
+      const g = (bigint >> 8) & 255;
+      const b = bigint & 255;
+      setShadowColor(`rgba(${r}, ${g}, ${b}, 0.35)`);
     } else {
       // Для видео и других типов - зелёный
       setShadowColor('rgba(85, 255, 153, 0.35)');
     }
-  }, [currentSlide, rgba, imageUrl]);
+  }, [currentSlide, colorHex, imageUrl]);
 
   if (!currentSlide) return null;
 

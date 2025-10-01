@@ -20,7 +20,15 @@ const nameToKey: Record<string, keyof typeof PRIZE_KEYS> = {
   'Discount 10% Shard': 'discountShard10',
   'Discount 15% Shard': 'discountShard15',
   'Discount 30% Shard': 'discountShard30',
-  'Discount 50% Shard': 'discountShard50'
+  'Discount 50% Shard': 'discountShard50',
+  // New prizes
+  'USDT 0.2': 'usdt',
+  'USDT 0.3': 'usdt',
+  'USDT 0.5': 'usdt',
+  'USDT 0.8': 'usdt',
+  'Weekly Lottery Ticket': 'weeklyTicket',
+  'Permanent Token': 'permanentToken',
+  'Skip Turn': 'skipTurn'
 };
 
 const PRIZE_KEYS = {
@@ -39,7 +47,11 @@ const PRIZE_KEYS = {
   discountShard10: 'prizes.discountShard10.description',
   discountShard15: 'prizes.discountShard15.description',
   discountShard30: 'prizes.discountShard30.description',
-  discountShard50: 'prizes.discountShard50.description'
+  discountShard50: 'prizes.discountShard50.description',
+  usdt: 'prizes.usdt.description',
+  weeklyTicket: 'prizes.weeklyTicket.description',
+  permanentToken: 'prizes.permanentToken.description',
+  skipTurn: 'prizes.skipTurn.description'
 } as const;
 
 export function usePrizeDescription() {

@@ -4,13 +4,13 @@ import { InventoryGrid } from '@/components/widgets/InventoryGrid/InventoryGrid'
 import { Button } from '@/components/ui/Button';
 import { ASSETS } from '@/constants/assets';
 import { PrizeItem } from '@/domain/items/PrizeItem';
-import { ProgressiveImg } from '@/components/ui/ProgressiveImg';
+import { LazyImage } from '@/components/ui/LazyImage';
 import { useI18n } from '@/i18n';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '@/utils/constants';
 
 interface InventoryItemDTO {
-  kind: 'item' | 'shard';
+  kind: 'item' | 'shard' | 'stackable';
   id: string;
   image: string;
   price?: number;
@@ -19,6 +19,7 @@ interface InventoryItemDTO {
   count?: number;
   required?: number;
   updatedAt?: number;
+  benefitType?: string;
 }
 
 interface InventorySectionProps {
@@ -69,35 +70,6 @@ export const InventorySection: React.FC<InventorySectionProps> = ({
       window.localStorage.setItem(TOGGLE_KEY, showOnlyAvailable ? '1' : '0');
     } catch { /* ignore */ }
   }, [showOnlyAvailable]);
-  // Lazy batching: отображаем элементы партиями, чтобы не создавать сразу сотни <img>
-  const BATCH_SIZE = 40; // можно подстроить; 40 * 2 строки ~= 80 элементов визуально достаточно
-  const [batchCount, setBatchCount] = React.useState(1);
-  const sentinelRef = React.useRef<HTMLDivElement | null>(null);
-
-  // Когда список (visible) меняется (фильтр, поиск и т.п.) — сбрасываем батчи
-  React.useEffect(() => {
-    setBatchCount(1);
-  }, [visible]);
-
-  React.useEffect(() => {
-    const el = sentinelRef.current;
-    if (!el) return;
-    if (batchCount * BATCH_SIZE >= visible.length) return; // всё загружено — наблюдатель не нужен
-
-    const observer = new IntersectionObserver((entries) => {
-      for (const entry of entries) {
-        if (entry.isIntersecting) {
-          setBatchCount(c => c + 1);
-          break;
-        }
-      }
-    }, { root: null, rootMargin: '300px 0px 300px 0px', threshold: 0 });
-
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, [batchCount, visible.length]);
-
-  const sliced = React.useMemo(() => visible.slice(0, batchCount * BATCH_SIZE), [visible, batchCount]);
 
   return (
     <div className={styles.inventoryContainer}>
@@ -122,8 +94,34 @@ export const InventorySection: React.FC<InventorySectionProps> = ({
             </div>
           )}
           renderContent={() => {
-            // Убрали виртуализацию: возвращаем постоянную сетку (2 в ряд по CSS)
-            const cellRenderer = (card: any) => {
+            // Renderer for each inventory card
+            const cellRenderer = (card: InventoryItemDTO) => {
+                // Stackable prizes (weekly_ticket, permanent_token)
+                if (card.kind === 'stackable') {
+                  return (
+                    <div
+                      key={card.id}
+                      className={styles.inventoryItem}
+                      data-rarity={(card.item.prize?.rarity) as any}
+                      onClick={() => onSelectItem(card.item.id)}
+                      style={{ cursor: 'pointer' }}
+                    >
+                      <div style={{ position: 'relative', width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <LazyImage
+                          src={card.image}
+                          alt="item"
+                          className={styles.itemImage}
+                          rootMargin="400px"
+                        />
+                      </div>
+                      <div className={styles.shardBadge}>
+                        {card.count}
+                      </div>
+                    </div>
+                  );
+                }
+
+                // Regular prizes
                 if (card.kind === 'item' && card.item) {
                   const isSold = card.item.status === 'sold';
                   const isActive = card.item.status === 'active';
@@ -140,14 +138,12 @@ export const InventorySection: React.FC<InventorySectionProps> = ({
                       style={{ cursor: isDisabled ? 'not-allowed' : 'pointer' }}
                     >
                       <div style={{ position: 'relative', width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <ProgressiveImg
-                        src={card.image}
-                        previewSrc={card.item.prize?.previewImage}
-                        cacheKey={card.id}
-                        lazy={true}
-                        alt="item"
-                        className={styles.itemImage}
-                      />
+                        <LazyImage
+                          src={card.image}
+                          alt="item"
+                          className={styles.itemImage}
+                          rootMargin="400px"
+                        />
                       </div>
                       <div className={`${styles.hint} ${styles.prizeHint}`}>
                         <div className={styles.coinWrapper}>
@@ -163,28 +159,28 @@ export const InventorySection: React.FC<InventorySectionProps> = ({
                     </div>
                   );
                 }
+
+                // Shards (for crafting)
                 return (
                   <div key={card.id} className={styles.inventoryItem} onClick={() => card.shardKey && onSelectShard(card.shardKey)} style={{ cursor: 'pointer' }}>
-                    <img src={card.image} alt="shard" className={styles.itemImage} />
+                    <LazyImage
+                      src={card.image}
+                      alt="shard"
+                      className={styles.itemImage}
+                      rootMargin="400px"
+                    />
                     <div className={styles.shardBadge}>
                       {t('common.ofPattern', { count: card.count, total: card.required })}
                     </div>
                   </div>
                 );
             };
+
+            // Regular grid with LazyImage for memory efficiency
             return (
-              <>
-                <div className={styles.inventoryGrid}>
-                  {sliced.map(card => cellRenderer(card))}
-                </div>
-                {sliced.length < visible.length && (
-                  <div
-                    ref={sentinelRef}
-                    style={{ width: '100%', height: 1, opacity: 0 }}
-                    aria-hidden="true"
-                  />
-                )}
-              </>
+              <div className={styles.inventoryGrid}>
+                {visible.map(card => cellRenderer(card))}
+              </div>
             );
           }}
         />

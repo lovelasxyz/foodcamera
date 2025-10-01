@@ -40,6 +40,10 @@ export interface ApiPrize {
   shardKey?: string;
   shardsRequired?: number;
   description?: string;
+  benefit?: import('@/types/game').ProductBenefit;
+  uniqueKey?: string;
+  stackable?: boolean;
+  notAwardIfOwned?: boolean;
   nonRemovableGift?: boolean;
 }
 
@@ -97,6 +101,15 @@ export interface ApiCasePrizeRef {
   rarity: string;
   image: string;
   weight?: number; // optional server-provided weight for probability transparency
+  isShard?: boolean;
+  shardKey?: string;
+  shardsRequired?: number;
+  description?: string;
+  benefit?: import('@/types/game').ProductBenefit;
+  uniqueKey?: string;
+  stackable?: boolean;
+  notAwardIfOwned?: boolean;
+  nonRemovableGift?: boolean;
 }
 
 export interface ApiCase {

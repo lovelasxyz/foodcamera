@@ -13,6 +13,10 @@ export const mapPrize = (p: ApiPrize): Prize => ({
   shardKey: p.shardKey,
   shardsRequired: p.shardsRequired,
   description: p.description,
+  benefit: p.benefit,
+  uniqueKey: p.uniqueKey,
+  stackable: p.stackable,
+  notAwardIfOwned: p.notAwardIfOwned,
   nonRemovableGift: p.nonRemovableGift
 });
 

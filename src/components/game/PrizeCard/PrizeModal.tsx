@@ -50,7 +50,7 @@ export const PrizeModal: React.FC<PrizeModalProps> = ({
   actions
 }) => {
   const defaultDescription =
-    'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.';
+    'Description is not available for this prize. Please contact support for more information.';
   const resolvedDescription = description === undefined ? defaultDescription : description;
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={title} size="md" className={className} overlayClassName={overlayClassName}>

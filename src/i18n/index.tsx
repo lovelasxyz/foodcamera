@@ -127,7 +127,12 @@ const en: TranslationDict = {
     discountShard10: { description: 'Collect {required} shards to craft a 10% discount coupon.' },
     discountShard15: { description: 'Collect {required} shards to craft a 15% discount coupon.' },
     discountShard30: { description: 'Collect {required} shards to craft a 30% discount coupon.' },
-    discountShard50: { description: 'Collect {required} shards to craft a 50% discount coupon.' }
+    discountShard50: { description: 'Collect {required} shards to craft a 50% discount coupon.' },
+    // New prizes
+    usdt: { description: 'Fiat USDT. Credited immediately to balance.' },
+    weeklyTicket: { description: 'Weekly lottery ticket. Accumulates and automatically redeemed after one week.' },
+    permanentToken: { description: 'Permanent token. Accumulates indefinitely. Each drop adds 100 tokens.' },
+    skipTurn: { description: 'Skip turn. Nothing happens, better luck next time!' }
   },
   nav: {
     main: 'Main',
@@ -265,7 +270,12 @@ const ru: TranslationDict = {
     discountShard10: { description: 'Соберите {required} осколков, чтобы получить купон на скидку 10%.' },
     discountShard15: { description: 'Соберите {required} осколков, чтобы получить купон на скидку 15%.' },
     discountShard30: { description: 'Соберите {required} осколков, чтобы получить купон на скидку 30%.' },
-    discountShard50: { description: 'Соберите {required} осколков, чтобы получить купон на скидку 50%.' }
+    discountShard50: { description: 'Соберите {required} осколков, чтобы получить купон на скидку 50%.' },
+    // Новые призы
+    usdt: { description: 'Фиат USDT. Зачисляется сразу на баланс.' },
+    weeklyTicket: { description: 'Билет на еженедельный розыгрыш. Накапливаются и автоматически списываются через неделю.' },
+    permanentToken: { description: 'Постоянный токен. Накапливается без срока действия. Каждое выпадение добавляет 100 токенов.' },
+    skipTurn: { description: 'Пропуск хода. Ничего не происходит, в следующий раз повезёт больше!' }
   },
   nav: {
     main: 'Главная',

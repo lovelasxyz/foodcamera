@@ -44,7 +44,8 @@ export const HomePage: React.FC = () => {
       ASSETS.IMAGES.FREE_CASE_LABEL,
     ];
     preloadBannerAssets(all);
-  }, [preloadBannerAssets]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // (dynamic banners disabled — original static variant restored)
 
@@ -53,7 +54,8 @@ export const HomePage: React.FC = () => {
     if (cases.length > 0) {
       preloadCaseImages(cases);
     }
-  }, [cases, preloadCaseImages]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cases.length]);
 
   // Управление состоянием кейсов
   React.useEffect(() => {
@@ -66,24 +68,26 @@ export const HomePage: React.FC = () => {
     if (!isLoading) setHideCasesError(false);
   }, [isOnline, isLoading]);
 
-  // Загрузка кейсов
+  // Загрузка кейсов при монтировании
   React.useEffect(() => {
-    if (isOnline && !isLoading) {
+    if (isOnline && cases.length === 0) {
       loadCases();
     }
-  }, [isOnline, isLoading, loadCases]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Обновление при возвращении на вкладку
   React.useEffect(() => {
     const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible' && isOnline && !isLoading) {
+      if (document.visibilityState === 'visible' && isOnline) {
         loadCases();
       }
     };
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
-  }, [isOnline, isLoading, loadCases]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOnline]);
 
   return (
     <div className={styles.homePage}>

@@ -1,46 +1,66 @@
-import { Inventory } from '@/domain/inventory/Inventory';
 import type { Prize } from '@/types/game';
 import type { InventoryItem } from '@/types/user';
+import type { AwardOutcome, AwardContext, IPrizeAwardStrategy } from './strategies/PrizeAwardStrategy';
+import { FiatUsdtStrategy } from './strategies/FiatUsdtStrategy';
+import { SkipTurnStrategy } from './strategies/SkipTurnStrategy';
+import { StackablePrizeStrategy } from './strategies/StackablePrizeStrategy';
+import { ShardStrategy } from './strategies/ShardStrategy';
+import { RegularPrizeStrategy } from './strategies/RegularPrizeStrategy';
 
-type GetInventoryFn = () => InventoryItem[];
-type AddInventoryFn = (item: InventoryItem) => void;
-type GetShardCountFn = (key: string) => number;
-type SetShardCountFn = (key: string, newCount: number) => void;
+// Re-export for backward compatibility
+export type { AwardOutcome };
 
-export type AwardOutcome =
-  | { kind: 'added'; inventoryItem: InventoryItem }
-  | { kind: 'skipped_owned'; reason: 'already_owned' }
-  | { kind: 'shard_increment'; key: string; before: number; after: number };
-
+/**
+ * Use Case for awarding prizes to players.
+ * Follows Strategy Pattern for extensibility and Single Responsibility Principle.
+ * New prize types can be added by creating new strategies without modifying this class.
+ */
 export class AwardPrizeUseCase {
+  private readonly strategies: IPrizeAwardStrategy[];
+  private readonly context: AwardContext;
+
   constructor(
-    private readonly getInventory: GetInventoryFn,
-    private readonly addInventoryItem: AddInventoryFn,
-    private readonly getShardCount: GetShardCountFn,
-    private readonly setShardCount: SetShardCountFn
-  ) {}
+    getInventory: () => InventoryItem[],
+    addInventoryItem: (item: InventoryItem) => void,
+    getShardCount: (key: string) => number,
+    setShardCount: (key: string, newCount: number) => void,
+    addBalance: (amount: number) => void
+  ) {
+    // Build context once
+    this.context = {
+      getInventory,
+      addInventoryItem,
+      getShardCount,
+      setShardCount,
+      addBalance
+    };
 
+    // Initialize strategies in priority order
+    // Each strategy is checked in order until one handles the prize
+    this.strategies = [
+      new FiatUsdtStrategy(),
+      new SkipTurnStrategy(),
+      new StackablePrizeStrategy(),
+      new ShardStrategy(),
+      new RegularPrizeStrategy() // Fallback strategy, always last
+    ];
+  }
+
+  /**
+   * Awards a prize to the player.
+   * Delegates to the first matching strategy.
+   *
+   * @param prize - The prize to award
+   * @param fromCase - Source case identifier
+   * @returns Outcome of the award operation
+   */
   public award(prize: Prize, fromCase: string = 'Case'): AwardOutcome {
-    // 1) Осколки: увеличиваем прогресс (без авто-крафтинга)
-    if (prize.isShard && prize.shardKey) {
-      const key = prize.shardKey;
-      const before = this.getShardCount(key) || 0;
-      const after = before + 1;
-      this.setShardCount(key, after);
+    const strategy = this.strategies.find(s => s.canHandle(prize));
 
-      return { kind: 'shard_increment', key, before, after };
+    if (!strategy) {
+      throw new Error(`No strategy found to handle prize: ${prize.name}`);
     }
 
-    // 2) Обычные призы: проверка уникальности и выдача
-    if (prize.notAwardIfOwned && prize.uniqueKey) {
-      const exists = this.getInventory().some(i => i.prize.uniqueKey === prize.uniqueKey);
-      if (exists) {
-        return { kind: 'skipped_owned', reason: 'already_owned' };
-      }
-    }
-
-    const item = Inventory.createInventoryItem(prize, fromCase);
-    this.addInventoryItem(item);
-    return { kind: 'added', inventoryItem: item };
+    return strategy.award(prize, fromCase, this.context);
   }
 }

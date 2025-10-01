@@ -1,7 +1,8 @@
 import React from 'react';
 import { Modal } from '@/components/ui/Modal';
 import styles from './RouletteWheel.module.css';
-import { SpinControls, PrizeDisplay, PossiblePrizes } from './components';
+import { SpinControls, PrizeDisplay } from './components';
+import { PossiblePrizes } from './PossiblePrizes';
 import { RouletteViewport } from './RouletteViewport';
 import { PrizeModal } from '@/components/game/PrizeCard';
 import { SpinLogicState, SpinLogicApi } from './hooks/useSpinLogic';
@@ -78,7 +79,7 @@ const RouletteView: React.FC<RouletteViewProps> = ({
               labelDeposit={t('roulette.deposit')}
             />
 
-            <PossiblePrizes title={t('roulette.possiblePrizes')} prizes={sortedPrizes} onPreview={(item) => api.setPreviewPrize(item)} />
+            <PossiblePrizes title={t('roulette.possiblePrizes')} prizes={sortedPrizes} onPreview={(item: Prize) => api.setPreviewPrize(item)} />
           </div>
         ) : (
           <>
@@ -100,7 +101,7 @@ const RouletteView: React.FC<RouletteViewProps> = ({
                 return true;
               })()}
             />
-            <PossiblePrizes title={t('roulette.possiblePrizes')} prizes={sortedPrizes} onPreview={(item) => api.setPreviewPrize(item)} />
+            <PossiblePrizes title={t('roulette.possiblePrizes')} prizes={sortedPrizes} onPreview={(item: Prize) => api.setPreviewPrize(item)} />
           </>
         )}
       </Modal>

@@ -15,27 +15,49 @@ import { IBannerRepository } from '@/application/banner/IBannerRepository';
 import { MockBannerRepository } from '@/application/banner/MockBannerRepository';
 import { BannerRepository } from './BannerRepository';
 
+/**
+ * Singleton Factory for repositories
+ * Uses lazy initialization to create instances only once
+ */
 export class RepositoryFactory {
+  private static caseRepo?: ICaseRepository;
+  private static userRepo?: IUserRepository;
+  private static inventoryRepo?: IInventoryRepository;
+  private static productRepo?: IProductRepository;
+  private static bannerRepo?: IBannerRepository;
+
   static getCaseRepository(): ICaseRepository {
-    // In guest/dev mode, prefer mock; otherwise infra
-    return (shouldUseGuestMode() ? new MockCaseRepository() : new CaseRepository()) as ICaseRepository;
+    if (!this.caseRepo) {
+      this.caseRepo = shouldUseGuestMode() ? new MockCaseRepository() : new CaseRepository();
+    }
+    return this.caseRepo;
   }
 
   static getUserRepository(): IUserRepository {
-    return (shouldUseGuestMode() ? new MockUserRepository() : new UserRepository()) as IUserRepository;
+    if (!this.userRepo) {
+      this.userRepo = shouldUseGuestMode() ? new MockUserRepository() : new UserRepository();
+    }
+    return this.userRepo;
   }
 
   static getInventoryRepository(): IInventoryRepository {
-    return (shouldUseGuestMode() ? new MockInventoryRepository() : new InventoryRepository()) as IInventoryRepository;
+    if (!this.inventoryRepo) {
+      this.inventoryRepo = shouldUseGuestMode() ? new MockInventoryRepository() : new InventoryRepository();
+    }
+    return this.inventoryRepo;
   }
 
   static getProductRepository(): IProductRepository {
-    return (shouldUseGuestMode() ? new MockProductRepository() : new ProductRepository()) as IProductRepository;
+    if (!this.productRepo) {
+      this.productRepo = shouldUseGuestMode() ? new MockProductRepository() : new ProductRepository();
+    }
+    return this.productRepo;
   }
 
   static getBannerRepository(): IBannerRepository {
-    return (shouldUseGuestMode() ? new MockBannerRepository() : new BannerRepository()) as IBannerRepository;
+    if (!this.bannerRepo) {
+      this.bannerRepo = shouldUseGuestMode() ? new MockBannerRepository() : new BannerRepository();
+    }
+    return this.bannerRepo;
   }
 }
-
-

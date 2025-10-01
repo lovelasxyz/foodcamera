@@ -9,6 +9,7 @@ import { ASSETS } from '@/constants/assets';
 import { useSpinLogic } from './hooks/useSpinLogic';
 import RouletteView from './RouletteView';
 import { RouletteItem } from '@/types/game';
+import { PrizeSorter } from '@/utils/prizeSorter';
 
 export const RouletteContainer: React.FC = () => {
   const { t } = useI18n();
@@ -52,7 +53,7 @@ export const RouletteContainer: React.FC = () => {
 
   const sortedPrizes = useMemo(() => {
     if (!currentCase) return [];
-    return [...currentCase.items].sort((a, b) => b.price - a.price);
+    return PrizeSorter.sortByRarity(currentCase.items);
   }, [currentCase]);
 
   if (!currentCase) return null;
