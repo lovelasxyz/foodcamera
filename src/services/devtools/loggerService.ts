@@ -140,6 +140,18 @@ class LoggerService {
     this.push(entry);
     return entry;
   }
+
+  logInfo(message: string, context?: Record<string, unknown>) {
+    this.log('info', message, context);
+  }
+
+  logWarn(message: string, context?: Record<string, unknown>) {
+    this.log('warn', message, context);
+  }
+
+  logDebug(message: string, context?: Record<string, unknown>) {
+    this.log('debug', message, context);
+  }
 }
 
 export const DevLogger = new LoggerService();

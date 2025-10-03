@@ -1,5 +1,4 @@
 import { Case, Prize, RouletteConfig } from '@/types/game';
-import { useUserStore } from '@/store/userStore';
 
 export interface SpinOutcome {
 	position: number;
@@ -14,9 +13,14 @@ export interface SpinOutcome {
 	};
 }
 
+export interface BigWinState {
+	sinceBigwin: number;
+}
+
 /**
  * Объектно-ориентированный движок рулетки.
  * Содержит правила выбора приза и вычисления конечной позиции анимации.
+ * FIXED: Removed dependency on UI store (useUserStore) - now accepts state as parameter
  */
 export class RouletteEngine {
 	private readonly config: RouletteConfig;
@@ -28,22 +32,16 @@ export class RouletteEngine {
 	/**
 	 * Генерирует исход спина: выбранный приз и финальную позицию контейнера.
 	 * reelLength — длина ленты (количество DOM-элементов), чтобы целиться в «дальнюю» часть для красивой анимации.
+	 * bigWinState — внешнее состояние счетчика bigwin (передается извне, не зависит от UI store)
 	 */
-	public generateSpinOutcome(currentCase: Case, reelLength: number): SpinOutcome {
+	public generateSpinOutcome(currentCase: Case, reelLength: number, bigWinState?: BigWinState): SpinOutcome {
 		const ITEM_WIDTH = this.config.ITEM_WIDTH;
 		const totalItems = currentCase.items.length;
 		const containerCenter = (reelLength * ITEM_WIDTH) / 2;
 
 		// 1. Выбираем приз с учетом extra логики (bigwin pity + baseline probability)
-		// Access store to potentially extend logic later (currently only for persisted pity counter via static field)
-		useUserStore.getState();
 		const BIGWIN_PITY_THRESHOLD = 120; // гарантировано после 120 спинов без bigwin
-		// Извлечь информацию был ли bigwin недавно: можно косвенно по последнему предмету (нет прямого поля benefit)
-		// Поэтому делаем собственный счётчик через внутренний closure (статическое поле)
-		(RouletteEngine as any)._sinceBigwin = (RouletteEngine as any)._sinceBigwin ?? 0;
-		let sinceBigwin: number = (RouletteEngine as any)._sinceBigwin;
-		// Если последняя награда bigwin — сбросим (пока напрямую не распознаём, оставим интерфейс для будущего)
-		// Признаём bigwin если ранее мы вручную выбрали benefit.type === 'bigwin'
+		let sinceBigwin: number = bigWinState?.sinceBigwin ?? 0;
 
 		// Сканируем текущий кейс на наличие bigwin призов
 		const bigwinIndices: number[] = [];
@@ -74,7 +72,12 @@ export class RouletteEngine {
 			// Нет bigwin призов в кейсе — обычный случай
 			chosenIndex = Math.floor(Math.random() * totalItems);
 		}
-		(RouletteEngine as any)._sinceBigwin = sinceBigwin;
+
+		// Update state externally if provided
+		if (bigWinState) {
+			bigWinState.sinceBigwin = sinceBigwin;
+		}
+
 		const randomPrizeIndex = chosenIndex;
 		const selectedPrize = currentCase.items[randomPrizeIndex];
 

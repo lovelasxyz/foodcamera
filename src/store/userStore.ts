@@ -97,7 +97,10 @@ export const useUserStore = create<UserState & UserActions>((set, get) => ({
   },
 
   updateBalance: (amount) =>
-    set((state) => ({ user: helpers.updateUserBalance(state.user, amount) })),
+    set((state) => {
+      const newBalance = state.user.balance + amount;
+      return { user: { ...state.user, balance: Math.max(0, newBalance) } };
+    }),
 
   applyServerUserPatch: (patch) =>
     set((state) => {

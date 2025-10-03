@@ -203,7 +203,7 @@
 .coin { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); }
 
 /* Deposit button styles */
-.depositButton { background: #00de6f; border-radius: 12px; width: 100%; height: 50px; display: flex; align-items: center; justify-content: center; border: none; color: #fff; font-weight: 700; margin-bottom: 0; }
+.depositButton { background: #5067E5; border-radius: 12px; width: 100%; height: 50px; display: flex; align-items: center; justify-content: center; border: none; color: #fff; font-weight: 700; margin-bottom: 0; }
 .depositButtonDisabled { opacity: .6; cursor: not-allowed; }
 
 /* Error banner */
