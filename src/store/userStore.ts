@@ -12,6 +12,7 @@ import { isApiEnabled } from '@/config/api.config';
 import { mapUser } from '@/services/apiMappers';
 import { userStorage } from './userStorage';
 import * as helpers from './userHelpers';
+import { OptimisticUpdateFactory } from '@/infrastructure/optimistic/OptimisticUpdateManager';
 
 interface UserState {
   user: User;
@@ -67,6 +68,15 @@ const initialUser = (() => {
   return defaultUser;
 })();
 
+// Optimistic update manager available for future use
+// Usage: const manager = getOptimisticManager();
+export const getOptimisticManager = () => {
+  return OptimisticUpdateFactory.forStore<UserState & UserActions>(
+    () => useUserStore.getState(),
+    (updater) => useUserStore.setState(updater)
+  );
+};
+
 export const useUserStore = create<UserState & UserActions>((set, get) => ({
   user: initialUser,
   isLoading: false,
@@ -97,10 +107,7 @@ export const useUserStore = create<UserState & UserActions>((set, get) => ({
   },
 
   updateBalance: (amount) =>
-    set((state) => {
-      const newBalance = state.user.balance + amount;
-      return { user: { ...state.user, balance: Math.max(0, newBalance) } };
-    }),
+    set((state) => ({ user: helpers.updateUserBalance(state.user, amount) })),
 
   applyServerUserPatch: (patch) =>
     set((state) => {

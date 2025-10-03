@@ -4,14 +4,26 @@ import { apiClient } from '@/services/apiClient';
 import { mockCases } from '@/mocks/cases.mock';
 import { ApiCase } from '@/types/api';
 import { mapApiCase } from '@/application/case/mapApiCase';
+import { DevLogger } from '@/services/devtools/loggerService';
+import { isApiEnabled } from '@/config/api.config';
 
 export class CaseRepository implements ICaseRepository {
   async fetchAll(): Promise<Case[]> {
     try {
       const apiCases = await apiClient.get<ApiCase[]>('/cases');
       return apiCases.map(mapApiCase);
-    } catch {
-      return mockCases; // fallback
+    } catch (error) {
+      DevLogger.logError('Failed to fetch cases from API', error);
+
+      // Only fallback to mock if API is disabled or service unavailable
+      const shouldFallback = !isApiEnabled() || (error as any)?.status === 503;
+
+      if (shouldFallback) {
+        DevLogger.logWarn('Falling back to mock cases');
+        return mockCases;
+      }
+
+      throw error;
     }
   }
 
@@ -19,10 +31,20 @@ export class CaseRepository implements ICaseRepository {
     try {
       const apiCase = await apiClient.get<ApiCase>(`/cases/${id}`);
       return mapApiCase(apiCase);
-    } catch {
-      const found = mockCases.find(c => c.id === id);
-      if (!found) throw new Error('Case not found');
-      return found;
+    } catch (error) {
+      DevLogger.logError(`Failed to fetch case ${id} from API`, error);
+
+      // Only fallback to mock if API is disabled or service unavailable
+      const shouldFallback = !isApiEnabled() || (error as any)?.status === 503;
+
+      if (shouldFallback) {
+        DevLogger.logWarn(`Falling back to mock case ${id}`);
+        const found = mockCases.find(c => c.id === id);
+        if (!found) throw new Error('Case not found');
+        return found;
+      }
+
+      throw error;
     }
   }
 

@@ -3,6 +3,7 @@ import { useUserStore } from '@/store/userStore';
 import { useUIStore } from '@/store/uiStore';
 import { resolveApiUrl, isApiEnabled } from '@/config/api.config';
 import { captureError, addBreadcrumb } from '@/services/errorTracking';
+import { apiService } from '@/services/apiService';
 
 export interface HttpClient {
   get<T>(url: string, opts?: RequestOptions): Promise<T>;
@@ -32,7 +33,44 @@ interface StructuredApiError extends Error {
 }
 
 class FetchHttpClient implements HttpClient {
+  private refreshPromise: Promise<string | null> | null = null;
+
+  /**
+   * Check if token is expiring soon and refresh if needed
+   */
+  private async ensureValidToken(): Promise<void> {
+    const { token, tokenExpiry } = useUserStore.getState();
+    if (!token || !tokenExpiry) return;
+
+    const REFRESH_THRESHOLD = 60000; // 1 minute before expiry
+    const now = Date.now();
+
+    if (now >= tokenExpiry - REFRESH_THRESHOLD) {
+      DevLogger.logInfo('Token expiring soon, refreshing...', { tokenExpiry, now });
+
+      // Prevent concurrent refresh calls
+      if (!this.refreshPromise) {
+        this.refreshPromise = (async () => {
+          try {
+            const newToken = await apiService.refreshToken();
+            return newToken;
+          } catch (error) {
+            DevLogger.logError('Token refresh failed', error);
+            return null;
+          } finally {
+            this.refreshPromise = null;
+          }
+        })();
+      }
+
+      await this.refreshPromise;
+    }
+  }
+
   private async request<T>(method: 'GET' | 'POST', url: string, body?: any, opts?: RequestOptions): Promise<T> {
+    // Ensure token is valid before request
+    await this.ensureValidToken();
+
     const meta: InternalRequestMeta = {
       method,
       url,
