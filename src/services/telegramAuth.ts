@@ -14,7 +14,21 @@ class TelegramAuthService {
    */
   isAvailable(): boolean {
     this.webApp = window.Telegram?.WebApp || this.webApp;
-    return !!this.webApp;
+
+    if (!this.webApp) {
+      return false;
+    }
+
+    const hasInitData = Boolean(this.webApp.initData) || Boolean(this.webApp.initDataUnsafe?.user);
+
+    if (!hasInitData) {
+      if (process.env.NODE_ENV !== 'production') {
+        logDebug('Telegram WebApp detected but no init data available');
+      }
+      return false;
+    }
+
+    return true;
   }
 
   /**
