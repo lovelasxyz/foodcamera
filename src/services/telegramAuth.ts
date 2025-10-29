@@ -21,11 +21,27 @@ class TelegramAuthService {
 
     const hasInitData = Boolean(this.webApp.initData) || Boolean(this.webApp.initDataUnsafe?.user);
 
-    if (!hasInitData) {
+    if (hasInitData) {
+      return true;
+    }
+
+    const hasTgLaunchParams = (() => {
+      if (typeof window === 'undefined') {
+        return false;
+      }
+      const params = new URLSearchParams(window.location.search);
+      return params.has('tgWebAppPlatform') || params.has('tgWebAppVersion');
+    })();
+
+    if (!hasTgLaunchParams) {
       if (process.env.NODE_ENV !== 'production') {
-        logDebug('Telegram WebApp detected but no init data available');
+        logDebug('Telegram WebApp detected but no init data, assuming external browser');
       }
       return false;
+    }
+
+    if (process.env.NODE_ENV !== 'production') {
+      logDebug('Telegram WebApp init data pending – launch params detected, waiting for ready state');
     }
 
     return true;
