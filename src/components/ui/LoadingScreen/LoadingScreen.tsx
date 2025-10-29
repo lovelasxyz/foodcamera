@@ -5,7 +5,7 @@ import { shouldUseGuestMode } from '@/utils/environment';
 import styles from './LoadingScreen.module.css';
 import { useI18n } from '@/i18n';
 import { TELEGRAM_CONFIG } from '@/constants/telegram';
-import { TelegramLoginButton } from './TelegramLoginButton';
+import { TelegramLoginButton } from './TelegramLoginButton.tsx';
 
 interface LoadingScreenProps {
   // Режим работы
