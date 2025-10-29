@@ -19,9 +19,9 @@ const unifiedForceMocks = (viteEnv.VITE_USE_MOCKS || '').toLowerCase() === 'true
 // 1. BASE_URL: prefer unified VITE_API_BASE_URL; else fallback to legacy spin base; else default example.
 // 2. USE_API: if unified flag explicitly set -> use it; else if legacy base present & not legacyForceLocal -> treat as enabled.
 // 3. FORCE_MOCKS: unified flag OR legacyForceLocal (legacy local spin implies mocks for now).
-const rawBase = unifiedBase || legacySpinBase || 'https://api.example.com';
-const useApi = unifiedUseApiFlag || (!!legacySpinBase && !legacyForceLocal);
+const rawBase = unifiedBase || legacySpinBase || 'http://localhost:5053/api';
 const forceMocks = unifiedForceMocks || legacyForceLocal;
+const useApi = unifiedUseApiFlag || (!!unifiedBase && !forceMocks) || (!!legacySpinBase && !legacyForceLocal);
 
 export const API_CONFIG = {
   BASE_URL: rawBase,
@@ -29,8 +29,9 @@ export const API_CONFIG = {
   FORCE_MOCKS: forceMocks,
   ENDPOINTS: {
     AUTH_TELEGRAM: '/auth/telegram',
-    USER_ME: '/user/me', // legacy / transitional (will be deprecated)
-    USER_PROFILE: '/user/profile',
+    USER_ME: '/users/me',
+    USER_PROFILE: '/users/me',
+    USERS: '/users',
     SPIN: '/spin',
     DEPOSIT_CREATE: '/billing/deposit',
     INVENTORY: '/inventory',

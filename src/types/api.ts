@@ -81,6 +81,9 @@ export interface AuthResponse {
   token: string; // bearer token
   expiresIn?: number; // seconds
   refreshToken?: string; // optional if refresh flow needed
+  expiresAt?: string | number; // ISO timestamp or epoch ms
+  accessToken?: string; // backend legacy compatibility
+  user?: unknown; // backend may return lightweight user payload
 }
 
 export interface ApiSpinResult {

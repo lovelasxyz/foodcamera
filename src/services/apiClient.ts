@@ -110,7 +110,7 @@ class FetchHttpClient implements HttpClient {
       addBreadcrumb('api.response', `${method} ${finalUrl} ${res.status}`, { ok: res.ok });
 
       if (res.status === 401) {
-        useUserStore.getState().setToken(null);
+        apiService.setToken(null);
         useUIStore.getState().setSessionExpired(true);
         useUIStore.getState().setLastError({ message: 'Session expired', code: 401 });
         const unauth: StructuredApiError = new Error('Unauthorized');

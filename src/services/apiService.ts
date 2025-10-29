@@ -11,8 +11,13 @@ import { useUserStore } from '@/store/userStore';
 export class ApiService {
   private authToken: string | null = null;
 
-  setToken(token: string) {
+  setToken(token: string | null) {
     this.authToken = token;
+    try {
+      useUserStore.getState().setToken(token);
+    } catch {
+      // Store might not be initialised yet (e.g. server-side rendering / tests)
+    }
   }
 
   private withAuthHeaders(init?: RequestInit): RequestInit {
@@ -33,9 +38,14 @@ export class ApiService {
       const res = await fetch(url, { method: 'POST', body: JSON.stringify({ initData }), ...this.withAuthHeaders() });
       if (!res.ok) throw new Error('Auth failed');
       const data = (await res.json()) as AuthResponse;
-  this.setToken(data.token);
-  useUserStore.getState().setTokenMeta?.(data.refreshToken || null, data.expiresIn || null);
-      return data.token;
+      const token = data.token || (data as any).accessToken;
+      if (!token) {
+        throw new Error('Auth response does not contain token');
+      }
+      const expiresIn = resolveExpiresIn(data);
+      this.setToken(token);
+      useUserStore.getState().setTokenMeta?.(data.refreshToken || null, expiresIn);
+      return token;
     } catch (e) {
       throw normalizeApiError(e);
     }
@@ -86,10 +96,14 @@ export class ApiService {
       const res = await fetch(url, { method: 'POST', body: JSON.stringify({ refreshToken: refresh }), headers: { 'Content-Type': 'application/json' } });
       if (!res.ok) return null;
       const data = (await res.json()) as AuthResponse;
-      this.setToken(data.token);
-      useUserStore.getState().setTokenMeta?.(data.refreshToken || refresh, data.expiresIn || null);
-      useUserStore.getState().setToken(data.token);
-      return data.token;
+      const token = data.token || (data as any).accessToken;
+      if (!token) {
+        return null;
+      }
+      const expiresIn = resolveExpiresIn(data) ?? null;
+      this.setToken(token);
+      useUserStore.getState().setTokenMeta?.(data.refreshToken || refresh, expiresIn);
+      return token;
     } catch {
       return null;
     }
@@ -97,3 +111,30 @@ export class ApiService {
 }
 
 export const apiService = new ApiService();
+
+try {
+  const storedToken = useUserStore.getState().token;
+  if (storedToken) {
+    apiService.setToken(storedToken);
+  }
+} catch {
+  // Store might not be available in certain environments (tests / SSR)
+}
+
+function resolveExpiresIn(data: AuthResponse): number | null {
+  if (typeof data.expiresIn === 'number') {
+    return data.expiresIn;
+  }
+
+  if (data.expiresAt) {
+    const expiresAt = typeof data.expiresAt === 'string' ? Date.parse(data.expiresAt) : data.expiresAt;
+    if (!Number.isNaN(expiresAt)) {
+      const diffMs = expiresAt - Date.now();
+      if (Number.isFinite(diffMs) && diffMs > 0) {
+        return Math.floor(diffMs / 1000);
+      }
+    }
+  }
+
+  return null;
+}

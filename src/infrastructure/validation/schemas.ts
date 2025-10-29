@@ -136,7 +136,9 @@ export const AuthResponseSchema = z.object({
 	token: z.string().min(1),
 	refreshToken: z.string().optional(),
 	expiresIn: z.number().int().positive().optional(),
-	user: ApiUserSchema.optional()
+	expiresAt: z.union([z.string(), z.number()]).optional(),
+	accessToken: z.string().optional(),
+	user: z.unknown().optional()
 });
 
 // ============================================
