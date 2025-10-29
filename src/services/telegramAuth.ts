@@ -13,6 +13,7 @@ class TelegramAuthService {
    * Проверяет доступность Telegram WebApp
    */
   isAvailable(): boolean {
+    this.webApp = window.Telegram?.WebApp || this.webApp;
     return !!this.webApp;
   }
 

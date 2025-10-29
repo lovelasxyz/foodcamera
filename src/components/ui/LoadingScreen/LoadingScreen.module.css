@@ -233,6 +233,56 @@
   transform: translateY(-2px);
 }
 
+.loginCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
+  padding: 24px;
+  width: 100%;
+  max-width: 320px;
+  animation: fadeIn 0.3s ease;
+}
+
+.loginIcon {
+  font-size: 40px;
+}
+
+.loginTitle {
+  color: var(--color-text);
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.loginSubtitle {
+  color: var(--color-text);
+  opacity: 0.8;
+  font-size: 16px;
+  line-height: 1.4;
+}
+
+.telegramLoginContainer {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.loginUnavailable {
+  color: var(--color-text);
+  opacity: 0.7;
+  font-size: 14px;
+}
+
+.loginError {
+  color: var(--color-text);
+  font-size: 14px;
+  line-height: 1.4;
+  opacity: 0.9;
+}
+
 /* Общие стили для спиннера */
 .spinner {
   width: 48px;

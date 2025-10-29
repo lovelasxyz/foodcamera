@@ -89,6 +89,9 @@ const en: TranslationDict = {
     noTelegramData: 'No Telegram initialization data available',
     appName: 'Gift Cases',
     casesByPortal: 'Cases by Portal',
+    signInTitle: 'Sign in with Telegram',
+    signInSubtitle: 'To access Gift Cases by TON',
+    loginUnavailable: 'Telegram login is not configured yet.',
     copyright: 'Copyright © 2025'
   },
   roulette: {
@@ -232,6 +235,9 @@ const ru: TranslationDict = {
     noTelegramData: 'Нет данных инициализации Telegram',
     appName: 'Gift Cases',
     casesByPortal: 'Cases by Portal',
+    signInTitle: 'Войдите через Telegram',
+    signInSubtitle: 'Чтобы получить доступ к Gift Cases by TON',
+    loginUnavailable: 'Вход через Telegram не настроен.',
     copyright: 'Copyright © 2025'
   },
   roulette: {

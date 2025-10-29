@@ -4,7 +4,6 @@ import { shouldUseGuestMode } from '@/utils/environment';
 import { useTelegramAuth } from '@/hooks/useTelegramAuth';
 import { ParsedTelegramUser } from '@/types/telegram';
 import { apiService } from '@/services/apiService';
-import { telegramAuth } from '@/services/telegramAuth';
 
 interface AuthBootstrapState {
   initializing: boolean;
@@ -18,7 +17,13 @@ const MIN_LOADING_TIME = 1500;
 // Encapsulates previous auth/bootstrap logic from App.tsx
 export function useAuthBootstrap(): AuthBootstrapState {
   const { setTelegramUser, loadUser, setError: setUserError, setLoading: setUserLoading } = useUserStore();
-  const { user: telegramUser, status: authStatus, error: authError } = useTelegramAuth();
+  const {
+    user: telegramUser,
+    status: authStatus,
+    error: authError,
+    initData,
+    mode: authMode,
+  } = useTelegramAuth();
   const [initialized, setInitialized] = useState(false);
   const [showLoading, setShowLoading] = useState(true);
   const [loadingStartTime] = useState(() => Date.now());
@@ -41,14 +46,13 @@ export function useAuthBootstrap(): AuthBootstrapState {
       hideLoadingWithDelay();
       return;
     }
-    if (telegramUser && authStatus === 'authenticated') {
+    if (telegramUser && authStatus === 'authenticated' && initData) {
       setTelegramUser(telegramUser as ParsedTelegramUser);
 
       if (!backendAuthInFlight.current) {
         backendAuthInFlight.current = true;
         setShowLoading(true);
         setUserLoading(true);
-        const initData = telegramAuth.getInitData();
 
         void (async () => {
           try {
@@ -63,16 +67,16 @@ export function useAuthBootstrap(): AuthBootstrapState {
           }
         })();
       }
-    } else if (authStatus === 'error' || authStatus === 'loading') {
+    } else if (authStatus === 'error') {
       setShowLoading(true);
-      if (authStatus === 'error') {
-        if (authError) {
-          setUserError(authError);
-        }
-        setUserLoading(false);
+      if (authError) {
+        setUserError(authError);
+      }
+      setUserLoading(false);
+      if (authMode !== 'widget') {
         hideLoadingWithDelay();
       }
-    } else if (authStatus === 'idle') {
+    } else if (authStatus === 'idle' && authMode !== 'widget') {
       const timeoutId = setTimeout(() => {
         if (!initialized) {
           if (process.env.NODE_ENV !== 'production') {
@@ -84,7 +88,7 @@ export function useAuthBootstrap(): AuthBootstrapState {
       }, 1200);
       return () => clearTimeout(timeoutId);
     }
-  }, [telegramUser, authStatus, authError, setTelegramUser, loadUser, setUserError, setUserLoading, initialized, guestMode]);
+  }, [telegramUser, authStatus, authError, initData, authMode, setTelegramUser, loadUser, setUserError, setUserLoading, initialized, guestMode]);
 
   useEffect(() => {
     if (guestMode) {

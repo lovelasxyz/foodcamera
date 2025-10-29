@@ -123,12 +123,24 @@ export interface TelegramWebApp {
   HapticFeedback: TelegramWebAppHapticFeedback;
 }
 
+export interface TelegramLoginAuthData {
+  id: number;
+  first_name: string;
+  last_name?: string;
+  username?: string;
+  photo_url?: string;
+  auth_date: number;
+  hash: string;
+  is_premium?: boolean;
+}
+
 // Расширение глобального объекта Window
 declare global {
   interface Window {
     Telegram?: {
       WebApp: TelegramWebApp;
     };
+    TelegramLoginWidget_onAuth?: (user: TelegramLoginAuthData) => void;
   }
 }
 
