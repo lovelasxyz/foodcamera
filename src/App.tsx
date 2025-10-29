@@ -32,7 +32,6 @@ const AppContentInner: React.FC = () => {
     }
   }, [closeCase]);
 
-  // Auth / bootstrap logic (old behavior)
   // App-level initializer start/stop & error tracking init
   useEffect(() => {
     const initializer = new AppInitializer();
