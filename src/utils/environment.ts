@@ -30,6 +30,16 @@ export const shouldUseGuestMode = (): boolean => {
     return true;
   }
 
+  // Always use guest mode when running on localhost (developer convenience)
+  try {
+    const hostname = window.location.hostname;
+    if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1' || hostname.endsWith('.localhost')) {
+      return true;
+    }
+  } catch {
+    // ignore any access errors and proceed with normal detection
+  }
+
   if (isTelegramWebApp()) {
     return false;
   }

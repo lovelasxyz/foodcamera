@@ -3,12 +3,12 @@ import { User } from '@/types/user';
 import { apiClient } from '@/services/apiClient';
 import { MockUserRepository } from '@/application/user/MockUserRepository';
 import { DevLogger } from '@/services/devtools/loggerService';
-import { isApiEnabled } from '@/config/api.config';
+import { API_CONFIG, isApiEnabled } from '@/config/api.config';
 
 export class UserRepository implements IUserRepository {
   async fetchUser(): Promise<User> {
     try {
-      return await apiClient.get<User>('/api/me');
+  return await apiClient.get<User>(API_CONFIG.ENDPOINTS.USER_PROFILE);
     } catch (error) {
       DevLogger.logError('Failed to fetch user from API', error);
 
@@ -26,7 +26,7 @@ export class UserRepository implements IUserRepository {
 
   async saveUser(user: User): Promise<void> {
     try {
-      await apiClient.post<void>('/api/me', user);
+  await apiClient.post<void>(API_CONFIG.ENDPOINTS.USER_PROFILE, user);
     } catch (error) {
       DevLogger.logError('Failed to save user to API', error);
 

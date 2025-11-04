@@ -3,16 +3,14 @@ import { User } from '@/types/user';
 import { Prize } from '@/types/game';
 import { ParsedTelegramUser } from '@/types/telegram';
 import { IUserRepository } from '@/application/user/IUserRepository';
-import { RepositoryFactory } from '@/infrastructure/repositories/RepositoryFactory';
 import { IInventoryRepository } from '@/application/inventory/IInventoryRepository';
 import { UserFactory } from '@/application/user/UserFactory';
 import { AwardPrizeUseCase } from '@/application/inventory/AwardPrizeUseCase';
-import { apiService } from '@/services/apiService';
 import { isApiEnabled } from '@/config/api.config';
-import { mapUser } from '@/services/apiMappers';
 import { userStorage } from './userStorage';
 import * as helpers from './userHelpers';
 import { OptimisticUpdateFactory } from '@/infrastructure/optimistic/OptimisticUpdateManager';
+import { getUserStoreDependencies, ensureUserStoreDependenciesConfigured } from './userStoreDependencies';
 
 interface UserState {
   user: User;
@@ -48,6 +46,8 @@ interface UserActions {
   loadUser: () => Promise<void>;
   saveUser: () => Promise<void>;
 }
+
+ensureUserStoreDependenciesConfigured();
 
 const defaultUser: User = UserFactory.createGuest();
 const isDev = typeof window !== 'undefined' && (import.meta as any)?.env?.MODE !== 'production';
@@ -206,7 +206,8 @@ export const useUserStore = create<UserState & UserActions>((set, get) => ({
 
   loadInventory: async () => {
     set({ isLoading: true, error: null });
-    const repo: IInventoryRepository = RepositoryFactory.getInventoryRepository();
+    const { getInventoryRepository } = getUserStoreDependencies();
+    const repo: IInventoryRepository = getInventoryRepository();
     try {
       const fetched = await repo.fetchInventory('guest');
       set((state) => ({
@@ -222,7 +223,8 @@ export const useUserStore = create<UserState & UserActions>((set, get) => ({
 
   loadUser: async () => {
     set({ isLoading: true, error: null });
-    const repo: IUserRepository = RepositoryFactory.getUserRepository();
+    const { apiService, getUserRepository, mapUser } = getUserStoreDependencies();
+    const repo: IUserRepository = getUserRepository();
     try {
       const fetchedRaw = isApiEnabled() ? await apiService.getCurrentUser() : await repo.fetchUser();
       const fetched = isApiEnabled() ? mapUser(fetchedRaw as any) : fetchedRaw;
@@ -242,7 +244,8 @@ export const useUserStore = create<UserState & UserActions>((set, get) => ({
   },
 
   saveUser: async () => {
-    const repo: IUserRepository = RepositoryFactory.getUserRepository();
+    const { getUserRepository } = getUserStoreDependencies();
+    const repo: IUserRepository = getUserRepository();
     const { user } = get();
     try {
       await repo.saveUser(user);

@@ -3,26 +3,20 @@ import { normalizeApiError } from './apiError';
 import { API_CONFIG, resolveApiUrl, isApiEnabled } from '@/config/api.config';
 import { User } from '@/types/user';
 import { mockUser, mockSpin, mockDeposit } from './apiMocks';
-import { ApiSpinResult, ApiDeposit, CreateDepositRequest, AuthResponse, SpinRequestDto } from '@/types/api';
-import { useUserStore } from '@/store/userStore';
+import { ApiSpinResult, ApiDeposit, CreateDepositRequest, SpinRequestDto, AuthResponse } from '@/types/api';
+import { getAuthToken, setAuthToken, setTokenMeta, refreshAuthToken, resolveExpiresIn } from './authTokenManager';
 
 // Deprecated inline interfaces removed – using central API types.
 
 export class ApiService {
-  private authToken: string | null = null;
-
   setToken(token: string | null) {
-    this.authToken = token;
-    try {
-      useUserStore.getState().setToken(token);
-    } catch {
-      // Store might not be initialised yet (e.g. server-side rendering / tests)
-    }
+    setAuthToken(token);
   }
 
   private withAuthHeaders(init?: RequestInit): RequestInit {
     const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-    if (this.authToken) headers['Authorization'] = `Bearer ${this.authToken}`;
+    const token = getAuthToken();
+    if (token) headers['Authorization'] = `Bearer ${token}`;
     return { ...(init || {}), headers: { ...(init?.headers || {}), ...headers } };
   }
 
@@ -44,7 +38,7 @@ export class ApiService {
       }
       const expiresIn = resolveExpiresIn(data);
       this.setToken(token);
-      useUserStore.getState().setTokenMeta?.(data.refreshToken || null, expiresIn);
+      setTokenMeta(data.refreshToken || null, expiresIn);
       return token;
     } catch (e) {
       throw normalizeApiError(e);
@@ -87,54 +81,8 @@ export class ApiService {
   }
 
   async refreshToken(): Promise<string | null> {
-    if (!isApiEnabled()) return this.authToken;
-    const state = useUserStore.getState();
-    const refresh = state.refreshToken;
-    if (!refresh) return null;
-    try {
-      const url = resolveApiUrl('/auth/refresh');
-      const res = await fetch(url, { method: 'POST', body: JSON.stringify({ refreshToken: refresh }), headers: { 'Content-Type': 'application/json' } });
-      if (!res.ok) return null;
-      const data = (await res.json()) as AuthResponse;
-      const token = data.token || (data as any).accessToken;
-      if (!token) {
-        return null;
-      }
-      const expiresIn = resolveExpiresIn(data) ?? null;
-      this.setToken(token);
-      useUserStore.getState().setTokenMeta?.(data.refreshToken || refresh, expiresIn);
-      return token;
-    } catch {
-      return null;
-    }
+    return refreshAuthToken();
   }
 }
 
 export const apiService = new ApiService();
-
-try {
-  const storedToken = useUserStore.getState().token;
-  if (storedToken) {
-    apiService.setToken(storedToken);
-  }
-} catch {
-  // Store might not be available in certain environments (tests / SSR)
-}
-
-function resolveExpiresIn(data: AuthResponse): number | null {
-  if (typeof data.expiresIn === 'number') {
-    return data.expiresIn;
-  }
-
-  if (data.expiresAt) {
-    const expiresAt = typeof data.expiresAt === 'string' ? Date.parse(data.expiresAt) : data.expiresAt;
-    if (!Number.isNaN(expiresAt)) {
-      const diffMs = expiresAt - Date.now();
-      if (Number.isFinite(diffMs) && diffMs > 0) {
-        return Math.floor(diffMs / 1000);
-      }
-    }
-  }
-
-  return null;
-}

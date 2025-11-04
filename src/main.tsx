@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { HashRouter } from 'react-router-dom';
+import '@/infrastructure/di/registerUserStoreDependencies';
 import App from './App.tsx';
 import { I18nProvider } from '@/i18n';
 import { shouldUseGuestMode } from '@/utils/environment';

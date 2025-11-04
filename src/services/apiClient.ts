@@ -1,9 +1,8 @@
 import { DevLogger } from '@/services/devtools/loggerService';
-import { useUserStore } from '@/store/userStore';
 import { useUIStore } from '@/store/uiStore';
 import { resolveApiUrl, isApiEnabled } from '@/config/api.config';
 import { captureError, addBreadcrumb } from '@/services/errorTracking';
-import { apiService } from '@/services/apiService';
+import { getAuthToken, getTokenExpiry, refreshAuthToken, clearAuthSession } from '@/services/authTokenManager';
 
 export interface HttpClient {
   get<T>(url: string, opts?: RequestOptions): Promise<T>;
@@ -39,7 +38,8 @@ class FetchHttpClient implements HttpClient {
    * Check if token is expiring soon and refresh if needed
    */
   private async ensureValidToken(): Promise<void> {
-    const { token, tokenExpiry } = useUserStore.getState();
+    const token = getAuthToken();
+    const tokenExpiry = getTokenExpiry();
     if (!token || !tokenExpiry) return;
 
     const REFRESH_THRESHOLD = 60000; // 1 minute before expiry
@@ -52,8 +52,7 @@ class FetchHttpClient implements HttpClient {
       if (!this.refreshPromise) {
         this.refreshPromise = (async () => {
           try {
-            const newToken = await apiService.refreshToken();
-            return newToken;
+            return await refreshAuthToken();
           } catch (error) {
             DevLogger.logError('Token refresh failed', error);
             return null;
@@ -77,7 +76,7 @@ class FetchHttpClient implements HttpClient {
       startedAt: performance.now(),
       requestId: (crypto as any).randomUUID?.() || `req-${Date.now()}-${Math.random().toString(36).slice(2,8)}`
     };
-    const token = useUserStore.getState().token;
+    const token = getAuthToken();
     const controller = new AbortController();
     const timeoutMs = opts?.timeoutMs ?? 15000;
     const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
@@ -110,7 +109,7 @@ class FetchHttpClient implements HttpClient {
       addBreadcrumb('api.response', `${method} ${finalUrl} ${res.status}`, { ok: res.ok });
 
       if (res.status === 401) {
-        apiService.setToken(null);
+        clearAuthSession();
         useUIStore.getState().setSessionExpired(true);
         useUIStore.getState().setLastError({ message: 'Session expired', code: 401 });
         const unauth: StructuredApiError = new Error('Unauthorized');
