@@ -9,17 +9,34 @@ import { isApiEnabled } from '@/config/api.config';
 
 export class CaseRepository implements ICaseRepository {
   async fetchAll(): Promise<Case[]> {
+    DevLogger.logInfo('[CaseRepository] fetchAll started', { isApiEnabled: isApiEnabled() });
+
     try {
       const apiCases = await apiClient.get<ApiCase[]>('/cases');
+      DevLogger.logInfo('[CaseRepository] fetchAll success', { count: apiCases.length });
       return apiCases.map(mapApiCase);
     } catch (error) {
-      DevLogger.logError('Failed to fetch cases from API', error);
+      const errorStatus = (error as any)?.status;
+      const errorMessage = (error as any)?.message;
+      const isApiCurrentlyEnabled = isApiEnabled();
+
+      DevLogger.logError('[CaseRepository] Failed to fetch cases from API', error, {
+        errorStatus,
+        errorMessage,
+        isApiEnabled: isApiCurrentlyEnabled,
+        errorType: error?.constructor?.name
+      });
 
       // Only fallback to mock if API is disabled or service unavailable
-      const shouldFallback = !isApiEnabled() || (error as any)?.status === 503;
+      const shouldFallback = !isApiCurrentlyEnabled || errorStatus === 503;
+
+      DevLogger.logInfo('[CaseRepository] Fallback decision', {
+        shouldFallback,
+        reason: shouldFallback ? (!isApiCurrentlyEnabled ? 'API disabled' : 'Service unavailable (503)') : 'Will throw error'
+      });
 
       if (shouldFallback) {
-        DevLogger.logWarn('Falling back to mock cases');
+        DevLogger.logWarn('[CaseRepository] Falling back to mock cases');
         return mockCases;
       }
 
