@@ -3,6 +3,8 @@
 // Backwards compatibility: we already had legacy spin env vars (.env.development / .env.production)
 //   VITE_SPIN_API_URL, VITE_FORCE_LOCAL_SPIN. We gracefully read them so existing files keep working.
 
+import { DevLogger } from '@/services/devtools/loggerService';
+
 // Access Vite env safely (typed as any for broader compatibility with Vite's dynamic import.meta.env shape)
 const viteEnv: any = (import.meta as any)?.env || {};
 
@@ -42,6 +44,22 @@ const realtimeBase = deriveRealtimeBaseUrl(rawBase);
 const forceMocks = unifiedForceMocks || legacyForceLocal;
 const useApi = unifiedUseApiFlag || (!!unifiedBase && !forceMocks) || (!!legacySpinBase && !legacyForceLocal);
 
+DevLogger.logInfo('[API Config] Configuration loaded', {
+  unifiedUseApiFlag,
+  unifiedBase,
+  unifiedForceMocks,
+  legacySpinBase,
+  legacyForceLocal,
+  forceMocks,
+  useApi,
+  rawBase,
+  viteEnv: {
+    VITE_USE_API: viteEnv.VITE_USE_API,
+    VITE_USE_MOCKS: viteEnv.VITE_USE_MOCKS,
+    VITE_API_BASE_URL: viteEnv.VITE_API_BASE_URL
+  }
+});
+
 export const API_CONFIG = {
   BASE_URL: rawBase,
   REALTIME_BASE_URL: realtimeBase,
@@ -61,7 +79,16 @@ export const API_CONFIG = {
   }
 } as const;
 
-export const isApiEnabled = (): boolean => API_CONFIG.USE_API && !API_CONFIG.FORCE_MOCKS;
+export const isApiEnabled = (): boolean => {
+  const enabled = API_CONFIG.USE_API && !API_CONFIG.FORCE_MOCKS;
+  DevLogger.logInfo('[API Config] isApiEnabled', {
+    enabled,
+    USE_API: API_CONFIG.USE_API,
+    FORCE_MOCKS: API_CONFIG.FORCE_MOCKS,
+    BASE_URL: API_CONFIG.BASE_URL
+  });
+  return enabled;
+};
 
 export type ApiEndpointKey = keyof typeof API_CONFIG.ENDPOINTS;
 

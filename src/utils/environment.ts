@@ -3,6 +3,7 @@
  */
 
 import { TELEGRAM_CONFIG } from '@/constants/telegram';
+import { DevLogger } from '@/services/devtools/loggerService';
 
 export const isDevelopment = (): boolean => {
   return (import.meta as any).env?.DEV || process.env.NODE_ENV === 'development';
@@ -23,6 +24,7 @@ export const shouldUseGuestMode = (): boolean => {
     : Boolean(forceGuestRaw);
 
   if (forceGuest) {
+    DevLogger.logInfo('[Environment] Guest mode FORCED via VITE_FORCE_GUEST_MODE=true');
     return true;
   }
 
@@ -31,18 +33,29 @@ export const shouldUseGuestMode = (): boolean => {
     ? useApiRaw.trim().toLowerCase() === 'true'
     : Boolean(useApiRaw);
 
+  DevLogger.logInfo('[Environment] shouldUseGuestMode check', {
+    useApiRaw,
+    useApi,
+    forceGuest,
+    hostname: typeof window !== 'undefined' ? window.location.hostname : 'SSR'
+  });
+
   if (useApi) {
+    DevLogger.logInfo('[Environment] API is enabled (VITE_USE_API=true), guest mode = FALSE');
     return false;
   }
 
   if (typeof window === 'undefined') {
+    DevLogger.logInfo('[Environment] SSR mode, guest mode = TRUE');
     return true;
   }
 
   // Always use guest mode when running on localhost (developer convenience)
+  // BUT this is now AFTER the useApi check, so explicit VITE_USE_API=true takes precedence
   try {
     const hostname = window.location.hostname;
     if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1' || hostname.endsWith('.localhost')) {
+      DevLogger.logInfo('[Environment] Running on localhost, guest mode = TRUE (fallback)');
       return true;
     }
   } catch {
@@ -50,9 +63,12 @@ export const shouldUseGuestMode = (): boolean => {
   }
 
   if (isTelegramWebApp()) {
+    DevLogger.logInfo('[Environment] Running in Telegram WebApp, guest mode = FALSE');
     return false;
   }
 
   const hasLoginWidget = Boolean(TELEGRAM_CONFIG.botUsername);
-  return !hasLoginWidget;
+  const result = !hasLoginWidget;
+  DevLogger.logInfo('[Environment] Final guest mode decision', { result, reason: 'no login widget' });
+  return result;
 };
