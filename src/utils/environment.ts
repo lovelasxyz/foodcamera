@@ -26,6 +26,15 @@ export const shouldUseGuestMode = (): boolean => {
     return true;
   }
 
+  const useApiRaw = env.VITE_USE_API ?? process.env?.VITE_USE_API;
+  const useApi = typeof useApiRaw === 'string'
+    ? useApiRaw.trim().toLowerCase() === 'true'
+    : Boolean(useApiRaw);
+
+  if (useApi) {
+    return false;
+  }
+
   if (typeof window === 'undefined') {
     return true;
   }

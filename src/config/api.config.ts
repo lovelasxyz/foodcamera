@@ -20,11 +20,31 @@ const unifiedForceMocks = (viteEnv.VITE_USE_MOCKS || '').toLowerCase() === 'true
 // 2. USE_API: if unified flag explicitly set -> use it; else if legacy base present & not legacyForceLocal -> treat as enabled.
 // 3. FORCE_MOCKS: unified flag OR legacyForceLocal (legacy local spin implies mocks for now).
 const rawBase = unifiedBase || legacySpinBase || 'http://localhost:5053/api';
+const deriveRealtimeBaseUrl = (apiBase: string): string => {
+  try {
+    const url = new URL(apiBase);
+    let path = url.pathname.replace(/\/+$/, '');
+    if (path.toLowerCase().endsWith('/api')) {
+      path = path.slice(0, -4);
+    }
+    if (!path) {
+      path = '/';
+    }
+    url.pathname = path;
+    const originWithPath = `${url.origin}${url.pathname === '/' ? '' : url.pathname}`;
+    return originWithPath.replace(/\/+$/, '');
+  } catch (_err) {
+    return apiBase.replace(/\/api\/?$/i, '').replace(/\/+$/, '');
+  }
+};
+
+const realtimeBase = deriveRealtimeBaseUrl(rawBase);
 const forceMocks = unifiedForceMocks || legacyForceLocal;
 const useApi = unifiedUseApiFlag || (!!unifiedBase && !forceMocks) || (!!legacySpinBase && !legacyForceLocal);
 
 export const API_CONFIG = {
   BASE_URL: rawBase,
+  REALTIME_BASE_URL: realtimeBase,
   USE_API: useApi,
   FORCE_MOCKS: forceMocks,
   ENDPOINTS: {
@@ -48,4 +68,9 @@ export type ApiEndpointKey = keyof typeof API_CONFIG.ENDPOINTS;
 export const resolveApiUrl = (path: string) => {
   if (!path.startsWith('/')) return `${API_CONFIG.BASE_URL}/${path}`;
   return `${API_CONFIG.BASE_URL}${path}`;
+};
+
+export const resolveRealtimeUrl = (path: string) => {
+  if (!path.startsWith('/')) return `${API_CONFIG.REALTIME_BASE_URL}/${path}`;
+  return `${API_CONFIG.REALTIME_BASE_URL}${path}`;
 };

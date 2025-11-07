@@ -7,6 +7,7 @@ import { RouletteWheel } from '@/components/game/RouletteWheel';
 import { ASSETS } from '@/constants/assets';
 import { useI18n } from '@/i18n';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+import { useCasesRealtime } from '@/hooks/useCasesRealtime';
 import { BannerSlider, CasesStateView, useImagePreload, Slide } from './components';
 import styles from './HomePage.module.css';
 
@@ -14,6 +15,7 @@ export const HomePage: React.FC = () => {
   const { t } = useI18n();
   const { cases, isLoading, loadCases } = useCasesStore();
   const isOnline = useOnlineStatus();
+  useCasesRealtime(isOnline);
   const { preloadBannerAssets, preloadCaseImages } = useImagePreload();
   
   // Простое состояние
