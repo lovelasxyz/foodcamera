@@ -2,7 +2,7 @@ import { shouldUseGuestMode } from '@/utils/environment';
 import { ConnectivityGuard } from '@/services/ConnectivityGuard';
 import { useUserStore } from '@/store/userStore';
 import { attachGlobalErrorHandlers, DevLogger } from '@/services/devtools/loggerService';
-import { getRealtimeSync } from '@/infrastructure/sync/RealtimeSync';
+import { getSignalRRealtimeSync } from '@/infrastructure/sync/SignalRRealtimeSync';
 import { isApiEnabled } from '@/config/api.config';
 
 /**
@@ -10,7 +10,7 @@ import { isApiEnabled } from '@/config/api.config';
  * Designed for composition in App component; keeps App.tsx cleaner.
  */
 export class AppInitializer {
-  private realtimeSync = getRealtimeSync();
+  private realtimeSync = getSignalRRealtimeSync();
 
   start(): void {
     ConnectivityGuard.start();
@@ -28,7 +28,7 @@ export class AppInitializer {
   }
 
   /**
-   * Initialize WebSocket for real-time synchronization
+   * Initialize SignalR for real-time synchronization
    */
   private initializeRealtimeSync(): void {
     if (!isApiEnabled()) {
@@ -38,8 +38,12 @@ export class AppInitializer {
 
     const { token } = useUserStore.getState();
     if (token) {
-      DevLogger.logInfo('Initializing real-time sync with token');
-      this.realtimeSync.connect(token);
+      DevLogger.logInfo('Initializing SignalR real-time sync with token');
+
+      // Connect to SignalR hub
+      this.realtimeSync.connect(token).catch((error) => {
+        DevLogger.logError('Failed to connect to SignalR hub', error);
+      });
 
       // Subscribe to real-time events
       this.realtimeSync.subscribe('balance.updated', ({ newBalance }) => {
@@ -62,7 +66,7 @@ export class AppInitializer {
       });
 
       this.realtimeSync.subscribe('connection.status', ({ connected }) => {
-        DevLogger.logInfo('Real-time connection status', { connected });
+        DevLogger.logInfo('SignalR connection status', { connected });
         if (connected) {
           // Re-sync user data on reconnection
           useUserStore.getState().loadUser();
