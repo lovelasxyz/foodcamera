@@ -26,9 +26,10 @@ interface DefaultBaseResolution {
 }
 
 const resolveDefaultBase = (): DefaultBaseResolution => {
+  // Default to hosted backend so dev builds talk to the live API unless overridden via env
   const localDefault: DefaultBaseResolution = {
-    base: 'http://localhost:5053/api',
-    shouldUseApi: false,
+    base: 'https://foodcameraserver-production.up.railway.app:8080/api',
+    shouldUseApi: true,
     source: 'local-default'
   };
 
