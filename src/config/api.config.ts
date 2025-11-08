@@ -17,11 +17,52 @@ const unifiedBase = viteEnv.VITE_API_BASE_URL as string | undefined;
 const unifiedUseApiFlag = (viteEnv.VITE_USE_API || '').toLowerCase() === 'true';
 const unifiedForceMocks = (viteEnv.VITE_USE_MOCKS || '').toLowerCase() === 'true';
 
-// Resolution rules:
-// 1. BASE_URL: prefer unified VITE_API_BASE_URL; else fallback to legacy spin base; else default example.
-// 2. USE_API: if unified flag explicitly set -> use it; else if legacy base present & not legacyForceLocal -> treat as enabled.
-// 3. FORCE_MOCKS: unified flag OR legacyForceLocal (legacy local spin implies mocks for now).
-const rawBase = unifiedBase || legacySpinBase || 'http://localhost:5053/api';
+type DefaultBaseSource = 'same-origin' | 'local-default' | 'ssr-default';
+
+interface DefaultBaseResolution {
+  base: string;
+  shouldUseApi: boolean;
+  source: DefaultBaseSource;
+}
+
+const resolveDefaultBase = (): DefaultBaseResolution => {
+  const localDefault: DefaultBaseResolution = {
+    base: 'http://localhost:5053/api',
+    shouldUseApi: false,
+    source: 'local-default'
+  };
+
+  if (typeof window === 'undefined') {
+    return { ...localDefault, source: 'ssr-default' };
+  }
+
+  try {
+    const { origin, hostname } = window.location;
+    if (!origin) {
+      return localDefault;
+    }
+
+    const isLocalHost = hostname === 'localhost'
+      || hostname === '127.0.0.1'
+      || hostname === '::1'
+      || hostname.endsWith('.localhost');
+
+    if (isLocalHost) {
+      return localDefault;
+    }
+
+    return {
+      base: `${origin.replace(/\/+$/, '')}/api`,
+      shouldUseApi: true,
+      source: 'same-origin'
+    };
+  } catch (_error) {
+    return localDefault;
+  }
+};
+
+const defaultBaseResolution = resolveDefaultBase();
+const rawBase = unifiedBase || legacySpinBase || defaultBaseResolution.base;
 const deriveRealtimeBaseUrl = (apiBase: string): string => {
   try {
     const url = new URL(apiBase);
@@ -42,7 +83,24 @@ const deriveRealtimeBaseUrl = (apiBase: string): string => {
 
 const realtimeBase = deriveRealtimeBaseUrl(rawBase);
 const forceMocks = unifiedForceMocks || legacyForceLocal;
-const useApi = unifiedUseApiFlag || (!!unifiedBase && !forceMocks) || (!!legacySpinBase && !legacyForceLocal);
+const hasExplicitBase = Boolean(unifiedBase || legacySpinBase);
+
+let useApi = false;
+if (!forceMocks) {
+  if (unifiedUseApiFlag) {
+    useApi = true;
+  } else if (hasExplicitBase) {
+    useApi = true;
+  } else if (defaultBaseResolution.shouldUseApi) {
+    useApi = true;
+  }
+}
+
+const baseSource: 'unified' | 'legacy' | DefaultBaseSource = unifiedBase
+  ? 'unified'
+  : legacySpinBase
+    ? 'legacy'
+    : defaultBaseResolution.source;
 
 DevLogger.logInfo('[API Config] Configuration loaded', {
   unifiedUseApiFlag,
@@ -53,6 +111,8 @@ DevLogger.logInfo('[API Config] Configuration loaded', {
   forceMocks,
   useApi,
   rawBase,
+  baseSource,
+  defaultBaseResolution,
   viteEnv: {
     VITE_USE_API: viteEnv.VITE_USE_API,
     VITE_USE_MOCKS: viteEnv.VITE_USE_MOCKS,
