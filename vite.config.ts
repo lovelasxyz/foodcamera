@@ -19,6 +19,18 @@ export default defineConfig(({ mode }) => ({
     outDir: 'dist',
     sourcemap: true,
     minify: 'esbuild',
-    rollupOptions: {}
+    rollupOptions: {
+      onwarn(warning, handler) {
+        const isSignalRAnnotation = warning?.code === 'ANNOTATION_POSITION'
+          && typeof warning?.id === 'string'
+          && warning.id.includes('@microsoft/signalr/dist/esm/Utils.js');
+
+        if (isSignalRAnnotation) {
+          return;
+        }
+
+        handler(warning);
+      }
+    }
   }
 }))

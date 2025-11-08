@@ -32,7 +32,6 @@ export type EventHandler<T = any> = (payload: T, event: RealtimeEvent<T>) => voi
 export class SignalRRealtimeSync {
 	private connection: signalR.HubConnection | null = null;
 	private handlers = new Map<RealtimeSyncEventType, Set<EventHandler>>();
-	private isManualDisconnect = false;
 
 	private readonly config: Required<RealtimeSyncConfig>;
 
@@ -52,8 +51,6 @@ export class SignalRRealtimeSync {
 			DevLogger.logWarn('Already connected to SignalR hub');
 			return;
 		}
-
-		this.isManualDisconnect = false;
 
 		// Build SignalR connection
 		const builder = new signalR.HubConnectionBuilder()
@@ -96,8 +93,6 @@ export class SignalRRealtimeSync {
 	 * Disconnect from SignalR hub
 	 */
 	async disconnect(): Promise<void> {
-		this.isManualDisconnect = true;
-
 		if (this.connection) {
 			try {
 				await this.connection.stop();
