@@ -28,7 +28,7 @@ interface DefaultBaseResolution {
 const resolveDefaultBase = (): DefaultBaseResolution => {
   // Default to hosted backend so dev builds talk to the live API unless overridden via env
   const localDefault: DefaultBaseResolution = {
-    base: 'https://foodcameraserver-production.up.railway.app:8080/api',
+    base: 'https://foodcameraserver-production.up.railway.app/api',
     shouldUseApi: true,
     source: 'local-default'
   };
@@ -38,25 +38,14 @@ const resolveDefaultBase = (): DefaultBaseResolution => {
   }
 
   try {
-    const { origin, hostname } = window.location;
+    const { origin } = window.location;
     if (!origin) {
       return localDefault;
     }
 
-    const isLocalHost = hostname === 'localhost'
-      || hostname === '127.0.0.1'
-      || hostname === '::1'
-      || hostname.endsWith('.localhost');
-
-    if (isLocalHost) {
-      return localDefault;
-    }
-
-    return {
-      base: `${origin.replace(/\/+$/, '')}/api`,
-      shouldUseApi: true,
-      source: 'same-origin'
-    };
+    // Always fallback to the hosted Railway API if no env var is provided.
+    // This avoids 404 errors on Vercel when it tries to call /api on itself.
+    return localDefault;
   } catch (_error) {
     return localDefault;
   }
