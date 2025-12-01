@@ -118,9 +118,10 @@ export function useAuthBootstrap(): AuthBootstrapState {
       if (authMode !== 'widget') {
         hideLoadingWithDelay();
       }
-    } else if (authStatus === 'idle' && authMode !== 'widget') {
-      // If Telegram is not available but API is enabled, try Guest Auth
-      if (!backendAuthInFlight.current) {
+    } else if (authStatus === 'idle' && authMode !== 'widget' && authMode !== 'webapp') {
+      // If Telegram is NOT available (authMode === 'none') and API is enabled, try Guest Auth
+      // Important: Don't fallback to guest if authMode is 'webapp' - wait for Telegram auth
+      if (!backendAuthInFlight.current && isApiEnabled()) {
         backendAuthInFlight.current = true;
         setShowLoading(true);
         
