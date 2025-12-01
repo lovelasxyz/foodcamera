@@ -7,7 +7,7 @@ import { isApiEnabled } from '@/config/api.config';
 export class InventoryRepository implements IInventoryRepository {
   async fetchInventory(userId: string): Promise<InventoryItem[]> {
     try {
-      return await apiClient.get<InventoryItem[]>(`/api/users/${userId}/inventory`);
+      return await apiClient.get<InventoryItem[]>(`/users/${userId}/inventory`);
     } catch (error) {
       DevLogger.logError('Failed to fetch inventory from API', error);
 
