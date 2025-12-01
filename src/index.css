@@ -18,7 +18,7 @@
   min-height: 100dvh;
   position: relative;
   overflow-x: hidden;
-  overflow-y: auto; /* Разрешаем вертикальный скролл */
+  overflow-y: auto;
 }
 
 /* Telegram Web App полноэкранные стили */
