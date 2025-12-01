@@ -9,7 +9,7 @@
   /* Для Telegram Web App полноэкранный режим */
   min-height: 100dvh;
   overflow-x: hidden;
-  overflow-y: auto; /* Разрешаем вертикальный скролл */
+  overflow-y: auto;
 }
 
 .app-container {
