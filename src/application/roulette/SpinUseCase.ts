@@ -95,8 +95,8 @@ export class SpinUseCase {
 						}
 						return this.enrichOutcomeWithServer(outcome, resp);
 					}
-				} catch {
-					// fallthrough to local calc
+				} catch (err) {
+  					console.error('[SpinUseCase] API spin failed, falling back to local:', err);
 				}
 			}
 			// Local probability-based selection (approximate spec)

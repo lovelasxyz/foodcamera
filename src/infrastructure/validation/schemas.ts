@@ -44,7 +44,7 @@ export const ApiPrizeSchema = z.object({
 	name: z.string().min(1),
 	price: z.number().min(0),
 	image: z.string(),
-	rarity: z.enum(['common', 'rare', 'epic', 'legendary']),
+	rarity: z.enum(['common', 'rare', 'epic', 'legendary']).optional(),
 	isShard: z.boolean().optional(),
 	benefit: z.object({
 		type: z.enum(['bigwin', 'multiplier', 'bonus']),
@@ -81,13 +81,13 @@ export const ApiInventoryItemSchema = z.object({
 // Spin schemas
 // ============================================
 export const SpinRequestSchema = z.object({
-	caseId: z.string().min(1),
-	items: z.array(z.object({
-		id: z.number().int(),
-		ev: z.number().min(0),
-		rarity: z.enum(['common', 'rare', 'epic', 'legendary']),
-		benefitType: z.enum(['bigwin', 'multiplier', 'bonus']).optional()
-	})).min(1)
+  caseId: z.union([z.string(), z.number()]).transform(val => String(val)),
+  items: z.array(z.object({
+    id: z.number().int(),
+    ev: z.number().min(0),
+    rarity: z.enum(['common', 'rare', 'epic', 'legendary']).optional(),
+    benefitType: z.enum(['bigwin', 'multiplier', 'bonus']).optional()
+  })).min(1)
 });
 
 export const SpinResponseSchema = z.object({

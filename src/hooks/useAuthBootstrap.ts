@@ -4,6 +4,7 @@ import { shouldUseGuestMode } from '@/utils/environment';
 import { useTelegramAuth } from '@/hooks/useTelegramAuth';
 import { ParsedTelegramUser } from '@/types/telegram';
 import { apiService } from '@/services/apiService';
+import { isApiEnabled } from '@/config/api.config';
 
 interface AuthBootstrapState {
   initializing: boolean;
@@ -13,6 +14,8 @@ interface AuthBootstrapState {
 
 // Минимальное время показа загрузочного экрана (в мс)
 const MIN_LOADING_TIME = 1500;
+
+import { userStorage } from '@/store/userStorage';
 
 // Encapsulates previous auth/bootstrap logic from App.tsx
 export function useAuthBootstrap(): AuthBootstrapState {
@@ -43,7 +46,46 @@ export function useAuthBootstrap(): AuthBootstrapState {
 
   useEffect(() => {
     if (guestMode) {
-      hideLoadingWithDelay();
+      if (isApiEnabled()) {
+        if (!backendAuthInFlight.current) {
+          backendAuthInFlight.current = true;
+          void (async () => {
+            try {
+              let { token } = useUserStore.getState();
+              
+              // Double check storage if store is empty (failsafe)
+              if (!token) {
+                const stored = userStorage.getToken();
+                if (stored) {
+                  console.log('[AuthBootstrap] Restored token from storage fallback:', stored);
+                  useUserStore.getState().setToken(stored);
+                  token = stored;
+                }
+              }
+
+              console.log('[AuthBootstrap] Checking token:', token);
+              if (!token) {
+                console.log('[AuthBootstrap] No token found, authenticating as guest...');
+                const newToken = await apiService.authGuest();
+                console.log('[AuthBootstrap] Guest auth successful, token:', newToken);
+                useUserStore.getState().setToken(newToken);
+                // Explicitly force save to storage to be absolutely sure
+                userStorage.setToken(newToken);
+              } else {
+                console.log('[AuthBootstrap] Token found, skipping guest auth.');
+              }
+              await loadUser();
+            } catch (e) {
+              // eslint-disable-next-line no-console
+              console.error('Guest auth failed', e);
+            } finally {
+              hideLoadingWithDelay();
+            }
+          })();
+        }
+      } else {
+        hideLoadingWithDelay();
+      }
       return;
     }
     if (telegramUser && authStatus === 'authenticated' && initData) {
@@ -77,23 +119,49 @@ export function useAuthBootstrap(): AuthBootstrapState {
         hideLoadingWithDelay();
       }
     } else if (authStatus === 'idle' && authMode !== 'widget') {
-      const timeoutId = setTimeout(() => {
-        if (!initialized) {
-          if (process.env.NODE_ENV !== 'production') {
+      // If Telegram is not available but API is enabled, try Guest Auth
+      if (!backendAuthInFlight.current) {
+        backendAuthInFlight.current = true;
+        setShowLoading(true);
+        
+        void (async () => {
+          try {
+            // Check if we already have a token (persisted in localStorage)
+            const { token } = useUserStore.getState();
+            
+            if (token) {
+              try {
+                // Try to load user with existing token
+                await loadUser();
+                // If successful, we are done
+                return;
+              } catch (e) {
+                // Token invalid or expired, proceed to guest auth
+                // eslint-disable-next-line no-console
+                console.warn('Existing token failed, falling back to guest auth', e);
+              }
+            }
+
+            // No token or invalid token -> Create new guest session
+            await apiService.authGuest();
+            await loadUser();
+          } catch (err) {
             // eslint-disable-next-line no-console
-            console.debug('Auth timeout - proceeding without Telegram auth');
+            console.error('Guest auth failed', err);
+            // Fallback to hiding loading, maybe user can retry or use app in limited state
+          } finally {
+            hideLoadingWithDelay();
           }
-          hideLoadingWithDelay();
-        }
-      }, 1200);
-      return () => clearTimeout(timeoutId);
+        })();
+      }
     }
   }, [telegramUser, authStatus, authError, initData, authMode, setTelegramUser, loadUser, setUserError, setUserLoading, initialized, guestMode]);
 
   useEffect(() => {
-    if (guestMode) {
-      void loadUser();
-    }
+    // In guest mode, we handle loading in the main effect above
+    // if (guestMode) {
+    //   void loadUser();
+    // }
   }, [guestMode, loadUser]);
 
   return { initializing: !initialized, showLoading, initialized };

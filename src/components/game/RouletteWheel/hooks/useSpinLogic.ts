@@ -44,7 +44,7 @@ export const useSpinLogic = (): [SpinLogicState, SpinLogicApi] => {
     resetForNextSpin,
     closeCase
   } = useGameStore();
-  const { user, awardPrize, addToInventory, addInventoryItem, updateBalance, incrementSpinsCount, applyServerUserPatch } = useUserStore();
+  const { user, awardPrize, addToInventory, addInventoryItem, updateBalance, incrementSpinsCount, applyServerUserPatch, loadUser } = useUserStore();
   const { showWinModal } = useUIStore();
   const { playSound } = useSoundEffects();
   const isOnline = useOnlineStatus();
@@ -57,6 +57,8 @@ export const useSpinLogic = (): [SpinLogicState, SpinLogicApi] => {
   const awardedRef = useRef(false);
   const endGuardRef = useRef(false);
   const spinEndTimerRef = useRef<number | null>(null);
+  // Track if server already handled the prize (to prevent duplication)
+  const serverHandledRef = useRef(false);
 
   const engine = useMemo(() => new RouletteEngine(ROULETTE_CONFIG), []);
   const gateway = useMemo(() => new HttpSpinGateway(), []);
@@ -67,16 +69,28 @@ export const useSpinLogic = (): [SpinLogicState, SpinLogicApi] => {
     setTargetReplicaIndex(null);
   }, []);
 
+  /**
+   * Helper to check if server already handled the prize/inventory update.
+   * If server returned userPatch, it means the backend already:
+   * - Deducted balance
+   * - Added prize to inventory
+   * So we should NOT do it again locally.
+   */
+  const wasHandledByServer = useCallback(() => {
+    return serverHandledRef.current;
+  }, []);
+
   const finalizeSpin = useCallback((settleDelay = 1000) => {
     if (endGuardRef.current) return;
     endGuardRef.current = true;
-    // Small settle delay to allow last frame and highlight
+    
     const t = window.setTimeout(() => {
       if (spinResult && currentCase) {
         if (showWinModal) {
           endSpin();
         } else {
-          if (!awardedRef.current) {
+          // Only award locally if server didn't handle it
+          if (!awardedRef.current && !wasHandledByServer()) {
             awardPrize(spinResult.prize, currentCase.name);
             awardedRef.current = true;
           }
@@ -91,9 +105,9 @@ export const useSpinLogic = (): [SpinLogicState, SpinLogicApi] => {
         spinEndTimerRef.current = null;
       }
     }, settleDelay);
-    // store timer id only if not already set (best-effort)
+    
     if (spinEndTimerRef.current == null) spinEndTimerRef.current = t as unknown as number;
-  }, [spinResult, currentCase, showWinModal, endSpin, awardPrize]);
+  }, [spinResult, currentCase, showWinModal, endSpin, awardPrize, wasHandledByServer]);
 
   const handleAnimationEnd = useCallback(() => {
     if (isSpinning) {
@@ -105,33 +119,33 @@ export const useSpinLogic = (): [SpinLogicState, SpinLogicApi] => {
 
   const handleSpin = useCallback(async (rouletteItemsLength: number) => {
     ConnectivityGuard.ensureOnline();
-  if (!currentCase || isSpinning || clickLockRef.current) return;
-  if (!isOnline) return;
-  const perks = user.perks || {};
-  const canAfford = spinUseCase.canAfford(currentCase, user.balance) || perks.freeSpins || perks.unlimitedBalance;
-  if (!canAfford) return;
-
+    if (!currentCase || isSpinning || clickLockRef.current) return;
+    if (!isOnline) return;
+    
+    const perks = user.perks || {};
+    const canAfford = spinUseCase.canAfford(currentCase, user.balance) || perks.freeSpins || perks.unlimitedBalance;
+    if (!canAfford) return;
 
     clickLockRef.current = true;
     awardedRef.current = false;
+    serverHandledRef.current = false; // Reset server handled flag
     setTargetReplicaIndex(null);
 
     playSound('spin');
     Analytics.trackCaseOpened(currentCase.id);
     DomainEventBus.emit(DomainEventNames.CaseOpened, { type: 'CaseOpened', caseId: currentCase.id, timestamp: Date.now() });
 
-  // Derive modifier context from user data (simple approximations)
+    // Derive modifier context from user data
     const hasAvatar = user.telegram?.hasPhoto
       ?? (!!user.avatar && !/default|avatar\.png/i.test(user.avatar));
     const spinsCount = user.stats?.spinsCount ?? 0;
     const registeredDays = user.telegram ? Math.floor((Date.now() - user.telegram.registeredAt) / 86400000) : undefined;
-    // Rough common wins bias: share of common items in inventory
     const inventory = user.inventory || [];
     const commonCount = inventory.filter(i => i.prize.rarity === 'common').length;
     const commonShare = inventory.length > 0 ? commonCount / inventory.length : 0;
     const historyCommonWinsBoost = commonShare > 0.6 ? 0.5 : commonShare < 0.2 ? -0.2 : 0;
 
-  const result = await spinUseCase.beginSpin(
+    const result = await spinUseCase.beginSpin(
       currentCase,
       user.balance,
       rouletteItemsLength,
@@ -144,12 +158,24 @@ export const useSpinLogic = (): [SpinLogicState, SpinLogicApi] => {
         historyCommonWinsBoost,
       }
     );
-    if (!result) { clickLockRef.current = false; return; }
-    // Apply authoritative server user patch if provided
-    if (result.server?.userPatch) {
-      applyServerUserPatch(result.server.userPatch as any);
+    
+    if (!result) { 
+      clickLockRef.current = false; 
+      return; 
     }
-  incrementSpinsCount();
+    
+    // Check if server handled the transaction
+    if (result.server?.userPatch) {
+      serverHandledRef.current = true;
+      applyServerUserPatch(result.server.userPatch as any);
+      
+      // IMPORTANT: Since server already added the prize to inventory,
+      // we should reload user data to get the fresh inventory from server
+      // instead of adding it locally (which would cause duplication)
+      // We'll do this after the spin animation completes
+    }
+    
+    incrementSpinsCount();
 
     setInstantPosition(true);
     setPosition(0);
@@ -159,16 +185,16 @@ export const useSpinLogic = (): [SpinLogicState, SpinLogicApi] => {
       setPosition(result.position);
       setTargetReplicaIndex(result.targetDomIndex);
     });
-    // Fallback: ensure we finish even if transitionend is dropped
+    
+    // Fallback timer
     if (spinEndTimerRef.current != null) {
       window.clearTimeout(spinEndTimerRef.current);
       spinEndTimerRef.current = null;
     }
     endGuardRef.current = false;
     spinEndTimerRef.current = window.setTimeout(() => {
-      // If still spinning after duration + buffer, finalize programmatically
       if (useGameStore.getState().isSpinning) {
-        finalizeSpin(300); // shorter settle on fallback
+        finalizeSpin(300);
       }
     }, ROULETTE_CONFIG.SPIN_DURATION + 800) as unknown as number;
   }, [currentCase, isSpinning, isOnline, spinUseCase, user.balance, user.inventory, user.telegram, user.perks, user.avatar, user.stats?.spinsCount, playSound, startSpin, incrementSpinsCount, applyServerUserPatch, finalizeSpin]);
@@ -177,53 +203,81 @@ export const useSpinLogic = (): [SpinLogicState, SpinLogicApi] => {
     if (spinResult && currentCase) {
       Analytics.trackSpinResult(currentCase.id, spinResult.prize);
       DomainEventBus.emit(DomainEventNames.PrizeWon, { type: 'PrizeWon', caseId: currentCase.id, prize: spinResult.prize, timestamp: Date.now() });
-  awardPrize(spinResult.prize, currentCase.name);
+      
+      // Only add prize locally if server didn't already handle it
+      if (!wasHandledByServer()) {
+        awardPrize(spinResult.prize, currentCase.name);
+      } else {
+        // Server handled it - reload user data to sync inventory
+        void loadUser();
+      }
+      
       awardedRef.current = true;
       resetForNextSpin();
       resetRoulette();
     }
-  }, [spinResult, currentCase, awardPrize, resetForNextSpin, resetRoulette]);
+  }, [spinResult, currentCase, awardPrize, resetForNextSpin, resetRoulette, wasHandledByServer, loadUser]);
 
   const handleQuickSell = useCallback(() => {
     if (spinResult) {
       const p = spinResult.prize;
+      
+      // Shards and benefits can't be quick-sold
       if (p.isShard || p.benefit) {
-        // Treat as keep: award and close like keep to avoid losing it
         if (currentCase) {
-          awardPrize(p, currentCase.name);
+          if (!wasHandledByServer()) {
+            awardPrize(p, currentCase.name);
+          } else {
+            void loadUser();
+          }
           awardedRef.current = true;
         }
         resetForNextSpin();
         resetRoulette();
         return;
       }
+      
+      // Non-removable gifts can't be sold
       if (p.nonRemovableGift) {
         if (currentCase) {
-          awardPrize(p, currentCase.name);
+          if (!wasHandledByServer()) {
+            awardPrize(p, currentCase.name);
+          } else {
+            void loadUser();
+          }
           awardedRef.current = true;
         }
         resetForNextSpin();
         resetRoulette();
         return;
       }
-      // Create an inventory record with status 'sold' for audit/history
-      const inventoryId = addInventoryItem(p, currentCase?.name || 'QuickSell', 'sold');
-      Analytics.trackItemSold(String(p.id), p.price);
-      DomainEventBus.emit(DomainEventNames.ItemSold, { type: 'ItemSold', inventoryItemId: String(inventoryId), amount: p.price, timestamp: Date.now() });
-      updateBalance(p.price);
+      
+      // Quick sell logic
+      if (wasHandledByServer()) {
+        // Server already added the item - we need to call a sell API endpoint
+        // For now, just reload user data (TODO: implement sell API call)
+        void loadUser();
+        Analytics.trackItemSold(String(p.id), p.price);
+        DomainEventBus.emit(DomainEventNames.ItemSold, { type: 'ItemSold', inventoryItemId: String(p.id), amount: p.price, timestamp: Date.now() });
+      } else {
+        // Local mode - add as sold and update balance
+        const inventoryId = addInventoryItem(p, currentCase?.name || 'QuickSell', 'sold');
+        Analytics.trackItemSold(String(p.id), p.price);
+        DomainEventBus.emit(DomainEventNames.ItemSold, { type: 'ItemSold', inventoryItemId: String(inventoryId), amount: p.price, timestamp: Date.now() });
+        updateBalance(p.price);
+      }
+      
       resetForNextSpin();
       resetRoulette();
     }
-  }, [spinResult, updateBalance, resetForNextSpin, resetRoulette, addInventoryItem, currentCase, awardPrize]);
+  }, [spinResult, updateBalance, resetForNextSpin, resetRoulette, addInventoryItem, currentCase, awardPrize, wasHandledByServer, loadUser]);
 
   const handleSkipSpin = useCallback(() => {
     if (!isSpinning) return;
     setInstantPosition(true);
 
     if (spinResult && currentCase) {
-      // Jump the wheel to the final absolute position immediately
       setPosition(spinResult.position);
-      // Allow DOM to update then finalize
       requestAnimationFrame(() => {
         finalizeSpin(0);
       });
@@ -235,15 +289,22 @@ export const useSpinLogic = (): [SpinLogicState, SpinLogicApi] => {
   }, [isSpinning, spinResult, currentCase, finalizeSpin, endSpin]);
 
   const handleCloseCase = useCallback(() => {
-    // Разрешаем закрытие кейса без потери выигрыша
     clickLockRef.current = false;
+    
     if (spinResult && currentCase && !awardedRef.current) {
-      awardPrize(spinResult.prize, currentCase.name);
+      // Only add prize locally if server didn't already handle it
+      if (!wasHandledByServer()) {
+        awardPrize(spinResult.prize, currentCase.name);
+      } else {
+        // Sync with server
+        void loadUser();
+      }
       awardedRef.current = true;
     }
+    
     resetRoulette();
     closeCase();
-  }, [spinResult, currentCase, awardPrize, resetRoulette, closeCase]);
+  }, [spinResult, currentCase, awardPrize, resetRoulette, closeCase, wasHandledByServer, loadUser]);
 
   useEffect(() => {
     if (!showResult && !isSpinning) {
@@ -252,7 +313,6 @@ export const useSpinLogic = (): [SpinLogicState, SpinLogicApi] => {
     }
   }, [showResult, isSpinning, resetRoulette]);
 
-  // Cleanup timer when unmounting or when spin ends externally
   useEffect(() => {
     if (!isSpinning && spinEndTimerRef.current != null) {
       window.clearTimeout(spinEndTimerRef.current);
@@ -271,5 +331,3 @@ export const useSpinLogic = (): [SpinLogicState, SpinLogicApi] => {
     { setPreviewPrize, handleSpin, handleAnimationEnd, handleKeepPrize, handleQuickSell, handleSkipSpin, resetRoulette, handleCloseCase }
   ];
 };
-
-

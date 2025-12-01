@@ -2,7 +2,6 @@ import type { Prize } from '@/types/game';
 import type { InventoryItem } from '@/types/user';
 import type { AwardOutcome, AwardContext, IPrizeAwardStrategy } from './strategies/PrizeAwardStrategy';
 import { FiatUsdtStrategy } from './strategies/FiatUsdtStrategy';
-import { SkipTurnStrategy } from './strategies/SkipTurnStrategy';
 import { StackablePrizeStrategy } from './strategies/StackablePrizeStrategy';
 import { ShardStrategy } from './strategies/ShardStrategy';
 import { RegularPrizeStrategy } from './strategies/RegularPrizeStrategy';
@@ -39,7 +38,6 @@ export class AwardPrizeUseCase {
     // Each strategy is checked in order until one handles the prize
     this.strategies = [
       new FiatUsdtStrategy(),
-      new SkipTurnStrategy(),
       new StackablePrizeStrategy(),
       new ShardStrategy(),
       new RegularPrizeStrategy() // Fallback strategy, always last

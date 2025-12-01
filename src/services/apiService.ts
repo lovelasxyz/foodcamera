@@ -29,8 +29,41 @@ export class ApiService {
     }
     const url = resolveApiUrl(API_CONFIG.ENDPOINTS.AUTH_TELEGRAM);
     try {
-      const res = await fetch(url, { method: 'POST', body: JSON.stringify({ initData }), ...this.withAuthHeaders() });
+      const res = await fetch(url, {
+        method: 'POST',
+        body: JSON.stringify({ initData }),
+        credentials: 'include',
+        ...this.withAuthHeaders()
+      });
       if (!res.ok) throw new Error('Auth failed');
+      const data = (await res.json()) as AuthResponse;
+      const token = data.token || (data as any).accessToken;
+      if (!token) {
+        throw new Error('Auth response does not contain token');
+      }
+      const expiresIn = resolveExpiresIn(data);
+      this.setToken(token);
+      setTokenMeta(data.refreshToken || null, expiresIn);
+      return token;
+    } catch (e) {
+      throw normalizeApiError(e);
+    }
+  }
+
+  async authGuest(): Promise<string> {
+    if (!isApiEnabled()) {
+      const token = 'mock-guest-token';
+      this.setToken(token);
+      return token;
+    }
+    const url = resolveApiUrl(API_CONFIG.ENDPOINTS.AUTH_GUEST);
+    try {
+      const res = await fetch(url, {
+        method: 'POST',
+        credentials: 'include',
+        ...this.withAuthHeaders()
+      });
+      if (!res.ok) throw new Error('Guest auth failed');
       const data = (await res.json()) as AuthResponse;
       const token = data.token || (data as any).accessToken;
       if (!token) {

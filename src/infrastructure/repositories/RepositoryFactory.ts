@@ -29,15 +29,24 @@ export class RepositoryFactory {
   private static bannerRepo?: IBannerRepository;
 
   private static shouldUseMockRepositories(): boolean {
-    // Use mock repositories if:
-    // 1. API is explicitly disabled OR
-    // 2. Guest mode is forced (for development without backend)
-    const useMock = !isApiEnabled() || shouldUseGuestMode();
-    DevLogger.logInfo('Repository selection', {
+    const apiEnabled = isApiEnabled();
+    const guestMode = shouldUseGuestMode();
+    
+    // FIXED: If API is enabled, ALWAYS use real repositories
+    // Guest mode only affects authentication flow, not data persistence
+    // Previously: useMock = !apiEnabled || guestMode (WRONG - mock even with API)
+    // Now: useMock = !apiEnabled (CORRECT - mock only if API is disabled)
+    const useMock = !apiEnabled;
+    
+    DevLogger.logInfo('[RepositoryFactory] Repository selection', {
       useMock,
-      isApiEnabled: isApiEnabled(),
-      isGuestMode: shouldUseGuestMode()
+      apiEnabled,
+      guestMode,
+      reason: useMock 
+        ? 'API disabled - using mock repositories' 
+        : 'API enabled - using real repositories (even in guest mode)'
     });
+    
     return useMock;
   }
 

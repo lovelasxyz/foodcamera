@@ -32,16 +32,6 @@ const PERMANENT_TOKEN_PRIZE: Prize = {
   description: 'Постоянный токен. Накапливается без срока действия. Каждое выпадение добавляет 100 токенов.'
 };
 
-const SKIP_TURN_PRIZE: Prize = {
-  id: 50001,
-  name: 'Skip Turn',
-  price: 0,
-  image: ASSETS.IMAGES.SCROLL,
-  rarity: 'common',
-  benefit: { type: 'skip_turn' },
-  description: 'Пропуск хода. Ничего не происходит.'
-};
-
 // Скидки как отдельные призы (не осколки)
 const DISCOUNT_PRIZES: Prize[] = [
   { id: 60001, name: 'Discount 10%', price: 10, image: ASSETS.IMAGES.SCROLL, rarity: 'epic', benefit: { type: 'discount', percent: 10 }, nonRemovableGift: true, description: 'Скидка 10% на следующую покупку кейса.' },
@@ -165,17 +155,6 @@ export const mockCases: Case[] = [
       ...DISCOUNT_PRIZES,
       WEEKLY_TICKET_PRIZE,
       PERMANENT_TOKEN_PRIZE,
-    ])
-  },
-  {
-    id: 9,
-    name: 'Risk & Reward',
-    image: ASSETS.IMAGES.FROG,
-    price: 0.3,
-    background: '#9C27B0',
-    items: PrizeSorter.sortByRarity([
-      { id: 3, name: 'Frog', price: 1562, image: ASSETS.IMAGES.FROG, rarity: 'legendary' },
-      SKIP_TURN_PRIZE,
     ])
   },
 ];

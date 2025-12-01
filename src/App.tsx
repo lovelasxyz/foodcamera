@@ -14,6 +14,9 @@ import { usePageScrollRestore } from '@/hooks/usePageScrollRestore';
 import { initErrorTracking, registerGlobalErrorHandlers } from '@/services/errorTracking';
 import { shouldUseGuestMode } from '@/utils/environment';
 
+import { useUserStore } from '@/store/userStore';
+import { userStorage } from '@/store/userStorage';
+
 const AppContentInner: React.FC = () => {
   useUIStore();
   const { closeCase } = useGameStore();
@@ -21,6 +24,14 @@ const AppContentInner: React.FC = () => {
   useOnlineStatus();
   const { showLoading } = useAuthBootstrap();
   usePageScrollRestore();
+  const token = useUserStore(s => s.token);
+
+  // Backup persistence for token
+  useEffect(() => {
+    if (token) {
+      userStorage.setToken(token);
+    }
+  }, [token]);
 
   // Close case when switching between main sections
   useEffect(() => {

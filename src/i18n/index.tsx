@@ -134,8 +134,7 @@ const en: TranslationDict = {
     // New prizes
     usdt: { description: 'Fiat USDT. Credited immediately to balance.' },
     weeklyTicket: { description: 'Weekly lottery ticket. Accumulates and automatically redeemed after one week.' },
-    permanentToken: { description: 'Permanent token. Accumulates indefinitely. Each drop adds 100 tokens.' },
-    skipTurn: { description: 'Skip turn. Nothing happens, better luck next time!' }
+    permanentToken: { description: 'Permanent token. Accumulates indefinitely. Each drop adds 100 tokens.' }
   },
   nav: {
     main: 'Main',
@@ -280,8 +279,7 @@ const ru: TranslationDict = {
     // Новые призы
     usdt: { description: 'Фиат USDT. Зачисляется сразу на баланс.' },
     weeklyTicket: { description: 'Билет на еженедельный розыгрыш. Накапливаются и автоматически списываются через неделю.' },
-    permanentToken: { description: 'Постоянный токен. Накапливается без срока действия. Каждое выпадение добавляет 100 токенов.' },
-    skipTurn: { description: 'Пропуск хода. Ничего не происходит, в следующий раз повезёт больше!' }
+    permanentToken: { description: 'Постоянный токен. Накапливается без срока действия. Каждое выпадение добавляет 100 токенов.' }
   },
   nav: {
     main: 'Главная',

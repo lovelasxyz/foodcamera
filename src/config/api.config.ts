@@ -8,6 +8,20 @@ import { DevLogger } from '@/services/devtools/loggerService';
 // Access Vite env safely (typed as any for broader compatibility with Vite's dynamic import.meta.env shape)
 const viteEnv: any = (import.meta as any)?.env || {};
 
+const isLocalhost = typeof window !== 'undefined' &&
+  (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+const isDevelopmentMode = viteEnv.DEV === true || viteEnv.MODE === 'development';
+
+console.log('[API Config] Environment detection:', {
+  isLocalhost,
+  isDevelopmentMode,
+  hostname: typeof window !== 'undefined' ? window.location.hostname : 'SSR',
+  viteEnv_DEV: viteEnv.DEV,
+  viteEnv_MODE: viteEnv.MODE,
+  viteEnv_VITE_USE_API: viteEnv.VITE_USE_API,
+  viteEnv_VITE_USE_MOCKS: viteEnv.VITE_USE_MOCKS
+});
+
 // Legacy vars (spin-only) fallback support
 const legacySpinBase: string | undefined = viteEnv.VITE_SPIN_API_URL;
 const legacyForceLocal = (viteEnv.VITE_FORCE_LOCAL_SPIN || '').toLowerCase() === 'true';
@@ -28,7 +42,7 @@ interface DefaultBaseResolution {
 const resolveDefaultBase = (): DefaultBaseResolution => {
   // Default to hosted backend so dev builds talk to the live API unless overridden via env
   const localDefault: DefaultBaseResolution = {
-    base: 'https://foodcameraserver-production.up.railway.app/api',
+    base: 'http://localhost:5053/api',
     shouldUseApi: true,
     source: 'local-default'
   };
@@ -43,9 +57,17 @@ const resolveDefaultBase = (): DefaultBaseResolution => {
       return localDefault;
     }
 
-    // Always fallback to the hosted Railway API if no env var is provided.
-    // This avoids 404 errors on Vercel when it tries to call /api on itself.
-    return localDefault;
+    // If running on localhost, default to localhost backend
+    if (origin.includes('localhost') || origin.includes('127.0.0.1')) {
+        return localDefault;
+    }
+
+    // Otherwise (e.g. Vercel), default to Railway
+    return {
+        base: 'https://foodcameraserver-production.up.railway.app/api',
+        shouldUseApi: true,
+        source: 'same-origin'
+    };
   } catch (_error) {
     return localDefault;
   }
@@ -75,15 +97,22 @@ const realtimeBase = deriveRealtimeBaseUrl(rawBase);
 const forceMocks = unifiedForceMocks || legacyForceLocal;
 const hasExplicitBase = Boolean(unifiedBase || legacySpinBase);
 
+// Explicit priority logic:
+// 1. If VITE_USE_MOCKS=true -> force mocks, disable API
+// 2. If VITE_USE_API=false -> disable API
+// 3. If VITE_USE_API=true -> enable API
+// 4. If has explicit base URL -> enable API
+// 5. Otherwise use default resolution
 let useApi = false;
-if (!forceMocks) {
-  if (unifiedUseApiFlag) {
-    useApi = true;
-  } else if (hasExplicitBase) {
-    useApi = true;
-  } else if (defaultBaseResolution.shouldUseApi) {
-    useApi = true;
-  }
+
+if (forceMocks) {
+  useApi = false;
+} else if (viteEnv.VITE_USE_API !== undefined && viteEnv.VITE_USE_API !== null && viteEnv.VITE_USE_API !== '') {
+  useApi = unifiedUseApiFlag;
+} else if (hasExplicitBase) {
+  useApi = true;
+} else {
+  useApi = defaultBaseResolution.shouldUseApi;
 }
 
 const baseSource: 'unified' | 'legacy' | DefaultBaseSource = unifiedBase
@@ -117,10 +146,11 @@ export const API_CONFIG = {
   FORCE_MOCKS: forceMocks,
   ENDPOINTS: {
     AUTH_TELEGRAM: '/auth/telegram',
+    AUTH_GUEST: '/auth/guest',
     USER_ME: '/users/me',
     USER_PROFILE: '/users/me',
     USERS: '/users',
-    SPIN: '/spin',
+    SPIN: '/game/spin',
     DEPOSIT_CREATE: '/billing/deposit',
     INVENTORY: '/inventory',
     CASES: '/cases',

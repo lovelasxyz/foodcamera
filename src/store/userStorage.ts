@@ -1,14 +1,17 @@
-const TOKEN_KEY = 'app_token_v1';
-const BALANCE_KEY = 'user_balance_v1';
-const DEV_SNAPSHOT_KEY = 'dev_user_snapshot_v1';
+const TOKEN_KEY = 'app_token_v2';
+const BALANCE_KEY = 'user_balance_v2';
+const DEV_SNAPSHOT_KEY = 'dev_user_snapshot_v2';
 
 const isClient = typeof window !== 'undefined';
 
 function safeGetItem(key: string): string | null {
   if (!isClient) return null;
   try {
-    return window.localStorage.getItem(key);
-  } catch {
+    const val = window.localStorage.getItem(key);
+    // console.log(`[UserStorage] Get ${key}:`, val);
+    return val;
+  } catch (e) {
+    console.error(`[UserStorage] Failed to get ${key}`, e);
     return null;
   }
 }
@@ -17,8 +20,9 @@ function safeSetItem(key: string, value: string): void {
   if (!isClient) return;
   try {
     window.localStorage.setItem(key, value);
-  } catch {
-    // ignore quota errors
+    // console.log(`[UserStorage] Set ${key}:`, value);
+  } catch (e) {
+    console.error(`[UserStorage] Failed to set ${key}`, e);
   }
 }
 
@@ -35,6 +39,7 @@ export const userStorage = {
   // Token
   getToken: (): string | null => safeGetItem(TOKEN_KEY),
   setToken: (token: string | null) => {
+    console.log('[UserStorage] Saving token to localStorage:', token);
     if (token) safeSetItem(TOKEN_KEY, token);
     else safeRemoveItem(TOKEN_KEY);
   },

@@ -9,8 +9,11 @@ import { AwardPrizeUseCase } from '@/application/inventory/AwardPrizeUseCase';
 import { isApiEnabled } from '@/config/api.config';
 import { userStorage } from './userStorage';
 import * as helpers from './userHelpers';
-import { OptimisticUpdateFactory } from '@/infrastructure/optimistic/OptimisticUpdateManager';
+import { shouldUseGuestMode } from '@/utils/environment';
+import { MockUserRepository } from '@/application/user/MockUserRepository';
+import { MockInventoryRepository } from '@/application/inventory/MockInventoryRepository';
 import { getUserStoreDependencies, ensureUserStoreDependenciesConfigured } from './userStoreDependencies';
+import { OptimisticUpdateFactory } from '@/infrastructure/optimistic/OptimisticUpdateManager';
 
 interface UserState {
   user: User;
@@ -54,7 +57,9 @@ const isDev = typeof window !== 'undefined' && (import.meta as any)?.env?.MODE !
 const shouldUseDevPersistence = isDev && !isApiEnabled();
 
 // Hydrate initial state
+// Force read from storage to ensure we get the latest token
 const initialToken = userStorage.getToken();
+console.log('[UserStore] Initial token from storage:', initialToken);
 const devSnapshot = shouldUseDevPersistence ? userStorage.getDevSnapshot<Partial<User>>() : null;
 const persistedBalance = userStorage.getBalance();
 
@@ -62,7 +67,8 @@ const initialUser = (() => {
   if (devSnapshot) {
     return { ...defaultUser, ...devSnapshot, inventory: devSnapshot.inventory || [] } as User;
   }
-  if (persistedBalance != null) {
+  // Only use persisted balance if we are NOT using API (otherwise API is source of truth)
+  if (persistedBalance != null && !isApiEnabled()) {
     return { ...defaultUser, balance: persistedBalance } as User;
   }
   return defaultUser;
@@ -81,7 +87,7 @@ export const useUserStore = create<UserState & UserActions>((set, get) => ({
   user: initialUser,
   isLoading: false,
   error: null,
-  isAuthenticated: false,
+  isAuthenticated: !!initialToken, // If we have a token, we are tentatively authenticated
   inventoryFetched: false,
   token: initialToken,
   refreshToken: null,
@@ -95,6 +101,7 @@ export const useUserStore = create<UserState & UserActions>((set, get) => ({
   },
 
   setToken: (token) => {
+    console.log('[UserStore] Setting token:', token);
     userStorage.setToken(token);
     set({ token });
   },
@@ -206,6 +213,22 @@ export const useUserStore = create<UserState & UserActions>((set, get) => ({
 
   loadInventory: async () => {
     set({ isLoading: true, error: null });
+    
+    if (shouldUseGuestMode() && !isApiEnabled()) {
+      try {
+        const fetched = await new MockInventoryRepository().fetchInventory('guest');
+        set((state) => ({
+          isLoading: false,
+          inventoryFetched: true,
+          user: { ...state.user, inventory: helpers.mergeInventory(state.user.inventory, fetched) }
+        }));
+        return;
+      } catch (e) {
+        set({ isLoading: false, error: 'Failed to load guest inventory' });
+        return;
+      }
+    }
+
     const { getInventoryRepository } = getUserStoreDependencies();
     const repo: IInventoryRepository = getInventoryRepository();
     try {
@@ -223,13 +246,29 @@ export const useUserStore = create<UserState & UserActions>((set, get) => ({
 
   loadUser: async () => {
     set({ isLoading: true, error: null });
+
+    if (shouldUseGuestMode() && !isApiEnabled()) {
+      // In guest mode without API, we rely on data from localStorage
+      // Don't overwrite with a fresh mock user!
+      console.log('[UserStore.loadUser] Guest mode without API - using stored data');
+      set({
+        isAuthenticated: false,
+        isLoading: false,
+        error: null,
+        inventoryFetched: true
+      });
+      return;
+    }
+
     const { apiService, getUserRepository, mapUser } = getUserStoreDependencies();
     const repo: IUserRepository = getUserRepository();
     try {
       const fetchedRaw = isApiEnabled() ? await apiService.getCurrentUser() : await repo.fetchUser();
       const fetched = isApiEnabled() ? mapUser(fetchedRaw as any) : fetchedRaw;
-      set((state) => {
-        const inventory = helpers.mergeInventory(state.user.inventory, fetched.inventory || []);
+      set(() => {
+        // If we are using API, we should trust the API inventory, but merge if needed
+        // For now, let's overwrite inventory from API if it's empty locally or just trust API
+        const inventory = fetched.inventory || []; 
         return {
           user: { ...fetched, inventory },
           isAuthenticated: true,
@@ -237,6 +276,11 @@ export const useUserStore = create<UserState & UserActions>((set, get) => ({
           error: null
         };
       });
+      // Also trigger inventory load separately if needed, but usually user profile has it
+      if (isApiEnabled()) {
+         // Ensure inventory is marked as fetched
+         set({ inventoryFetched: true });
+      }
     } catch (e: unknown) {
       const message = e instanceof Error ? e.message : String(e);
       set({ isLoading: false, error: message || 'Failed to load user' });
@@ -258,6 +302,13 @@ export const useUserStore = create<UserState & UserActions>((set, get) => ({
 // Subscribe for persistence
 if (typeof window !== 'undefined') {
   useUserStore.subscribe((state, prev) => {
+    // Always ensure token is synced if it exists in state but not in storage (edge case)
+    if (state.token && !userStorage.getToken()) {
+       userStorage.setToken(state.token);
+    } else if (state.token !== prev.token) {
+      userStorage.setToken(state.token ?? null);
+    }
+
     if (state.user.balance !== prev.user.balance) {
       userStorage.setBalance(state.user.balance);
     }
