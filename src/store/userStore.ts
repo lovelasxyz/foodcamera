@@ -10,7 +10,6 @@ import { isApiEnabled } from '@/config/api.config';
 import { userStorage } from './userStorage';
 import * as helpers from './userHelpers';
 import { shouldUseGuestMode } from '@/utils/environment';
-import { MockUserRepository } from '@/application/user/MockUserRepository';
 import { MockInventoryRepository } from '@/application/inventory/MockInventoryRepository';
 import { getUserStoreDependencies, ensureUserStoreDependenciesConfigured } from './userStoreDependencies';
 import { OptimisticUpdateFactory } from '@/infrastructure/optimistic/OptimisticUpdateManager';
