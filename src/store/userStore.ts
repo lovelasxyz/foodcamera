@@ -63,14 +63,23 @@ DevLogger.logInfo('[UserStore] Initial token from storage:', { token: initialTok
 const devSnapshot = shouldUseDevPersistence ? userStorage.getDevSnapshot<Partial<User>>() : null;
 const persistedBalance = userStorage.getBalance();
 
+// Clear persisted balance when API is enabled - server is source of truth
+if (isApiEnabled() && persistedBalance != null) {
+  DevLogger.logInfo('[UserStore] Clearing persisted balance - API is enabled', { persistedBalance });
+  userStorage.clearBalance();
+}
+
 const initialUser = (() => {
   if (devSnapshot) {
+    DevLogger.logInfo('[UserStore] Using dev snapshot for initial user', { balance: devSnapshot.balance });
     return { ...defaultUser, ...devSnapshot, inventory: devSnapshot.inventory || [] } as User;
   }
   // Only use persisted balance if we are NOT using API (otherwise API is source of truth)
   if (persistedBalance != null && !isApiEnabled()) {
+    DevLogger.logInfo('[UserStore] Using persisted balance for initial user', { balance: persistedBalance });
     return { ...defaultUser, balance: persistedBalance } as User;
   }
+  DevLogger.logInfo('[UserStore] Using default user', { balance: defaultUser.balance, isApiEnabled: isApiEnabled() });
   return defaultUser;
 })();
 
@@ -330,7 +339,9 @@ if (typeof window !== 'undefined') {
       userStorage.setToken(state.token ?? null);
     }
 
-    if (state.user.balance !== prev.user.balance) {
+    // Only persist balance to localStorage if API is DISABLED
+    // When API is enabled, server is the source of truth for balance
+    if (!isApiEnabled() && state.user.balance !== prev.user.balance) {
       userStorage.setBalance(state.user.balance);
     }
 
