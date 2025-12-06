@@ -28,7 +28,7 @@ export class SpinUseCase {
 	private readonly payment: SpinPaymentPolicy;
 	private readonly gateway?: ISpinGateway;
 
-	private enrichOutcomeWithServer(outcome: SpinOutcome, resp: { serverPrize?: { id: number; name?: string; price?: number; rarity?: string; image?: string }; position?: number; raw?: unknown; userPatch?: any }): SpinOutcome {
+	private enrichOutcomeWithServer(outcome: SpinOutcome, resp: { serverPrize?: { id: number; name?: string; price?: number; rarity?: string; image?: string }; position?: number; raw?: unknown; userPatch?: any; serverHandled?: boolean }): SpinOutcome {
 		if (!resp.serverPrize) return outcome;
 		const serverPrize = resp.serverPrize;
 		// Create a shallow copy to avoid mutating original outcome (functional style)
@@ -38,7 +38,13 @@ export class SpinUseCase {
 		const next: SpinOutcome = {
 			...outcome,
 			prize: { ...outcome.prize },
-			server: { prize: { ...serverPrize, rarity: normalizedRarity }, position: resp.position, raw: resp.raw, userPatch: resp.userPatch }
+			server: { 
+				prize: { ...serverPrize, rarity: normalizedRarity }, 
+				position: resp.position, 
+				raw: resp.raw, 
+				userPatch: resp.userPatch,
+				serverHandled: resp.serverHandled ?? true // Mark as server-handled if we got here
+			}
 		};
 		if (serverPrize.name) next.prize.name = serverPrize.name;
 		if (typeof serverPrize.price === 'number') next.prize.price = serverPrize.price;

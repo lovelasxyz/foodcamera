@@ -9,7 +9,8 @@ export interface SpinOutcome {
 		prize?: Partial<Prize> & { id: number };
 		position?: number; // authoritative server wheel position if provided
 		raw?: unknown; // raw server payload for debug
-		userPatch?: { balance?: number; stats?: { spinsCount?: number; lastAuthAt?: number | null }; [k: string]: unknown };
+		userPatch?: { balance?: number; stats?: { spinsCount?: number; lastAuthAt?: number | null }; inventory?: any[]; [k: string]: unknown };
+		serverHandled?: boolean; // true if server processed the transaction (inventory/balance)
 	};
 }
 

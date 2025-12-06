@@ -165,9 +165,11 @@ export const useSpinLogic = (): [SpinLogicState, SpinLogicApi] => {
     }
     
     // Check if server handled the transaction
-    if (result.server?.userPatch) {
+    if (result.server?.serverHandled || result.server?.userPatch) {
       serverHandledRef.current = true;
-      applyServerUserPatch(result.server.userPatch as any);
+      if (result.server.userPatch) {
+        applyServerUserPatch(result.server.userPatch as any);
+      }
       
       // IMPORTANT: Since server already added the prize to inventory,
       // we should reload user data to get the fresh inventory from server

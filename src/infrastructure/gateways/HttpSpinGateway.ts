@@ -25,11 +25,26 @@ type ServerPrizeDto = {
   ImageUrl?: string;
 };
 
+type ServerInventoryItemDto = {
+  id?: string;
+  Id?: string;
+  prizeId?: string;
+  PrizeId?: string;
+  status?: string;
+  Status?: string;
+  acquiredAt?: string;
+  AcquiredAt?: string;
+  prize?: ServerPrizeDto;
+  Prize?: ServerPrizeDto;
+};
+
 type ServerSpinResultDto = {
   prize?: ServerPrizeDto;
   Prize?: ServerPrizeDto;
   userBalance?: number | string;
   UserBalance?: number | string;
+  userInventory?: ServerInventoryItemDto[];
+  UserInventory?: ServerInventoryItemDto[];
 };
 
 const rarityValues = ['common', 'rare', 'epic', 'legendary'] as const;
@@ -70,6 +85,36 @@ const normalizePrize = (raw?: ServerPrizeDto): { id: number; name?: string; pric
   };
 };
 
+const normalizeInventoryItem = (item: ServerInventoryItemDto): any => {
+  const id = item.id ?? item.Id ?? '';
+  const prizeId = item.prizeId ?? item.PrizeId ?? '';
+  const status = item.status ?? item.Status ?? 'active';
+  const acquiredAt = item.acquiredAt ?? item.AcquiredAt ?? '';
+  const prizeRaw = item.prize ?? item.Prize;
+  const prize = prizeRaw ? normalizePrize(prizeRaw) : null;
+  
+  return {
+    id,
+    prizeId,
+    fromCase: '', // Server doesn't return this in inventory item
+    obtainedAt: acquiredAt ? new Date(acquiredAt).getTime() : Date.now(),
+    status,
+    prize: prize ? {
+      id: prize.id,
+      name: prize.name || 'Unknown',
+      price: prize.price ?? 0,
+      image: prize.image || '/assets/images/placeholder.png',
+      rarity: prize.rarity || 'common'
+    } : {
+      id: Number(prizeId),
+      name: 'Unknown',
+      price: 0,
+      image: '/assets/images/placeholder.png',
+      rarity: 'common' as const
+    }
+  };
+};
+
 const normalizeSpinResponse = (dto: ServerSpinResultDto): SpinResponse => {
   const prize = normalizePrize(dto.prize ?? dto.Prize);
   if (!prize) {
@@ -77,12 +122,21 @@ const normalizeSpinResponse = (dto: ServerSpinResultDto): SpinResponse => {
   }
 
   const balance = toNumber(dto.userBalance ?? dto.UserBalance);
-  const userPatch = typeof balance === 'number' ? { balance } : undefined;
+  const rawInventory = dto.userInventory ?? dto.UserInventory;
+  const inventory = rawInventory ? rawInventory.map(normalizeInventoryItem) : undefined;
+  
+  const userPatch: any = {};
+  if (typeof balance === 'number') {
+    userPatch.balance = balance;
+  }
+  if (inventory) {
+    userPatch.inventory = inventory;
+  }
 
   return {
     prizeId: prize.id,
     serverPrize: prize,
-    userPatch,
+    userPatch: Object.keys(userPatch).length > 0 ? userPatch : undefined,
     raw: dto
   };
 };

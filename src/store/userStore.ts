@@ -130,14 +130,25 @@ export const useUserStore = create<UserState & UserActions>((set, get) => ({
           ...('lastAuthAt' in patch.stats ? { lastAuthAt: patch.stats.lastAuthAt } : {})
         };
       }
+      // Handle inventory from server - replace local inventory with server's authoritative data
+      if (Array.isArray(patch.inventory)) {
+        next.inventory = patch.inventory;
+        DevLogger.logInfo('[UserStore.applyServerUserPatch] Inventory updated from server', { 
+          count: patch.inventory.length 
+        });
+      }
       for (const k of Object.keys(patch)) {
-        if (k === 'balance' || k === 'stats') continue;
+        if (k === 'balance' || k === 'stats' || k === 'inventory') continue;
         const v = (patch as any)[k];
         if (v == null) continue;
         if (typeof v === 'string' || typeof v === 'number' || typeof v === 'boolean') {
           (next as any)[k] = v;
         }
       }
+      DevLogger.logInfo('[UserStore.applyServerUserPatch] Applied patch', { 
+        balance: next.balance, 
+        inventoryCount: next.inventory?.length 
+      });
       return { user: next };
     }),
 
@@ -268,12 +279,19 @@ export const useUserStore = create<UserState & UserActions>((set, get) => ({
       const fetched = isApiEnabled() ? mapUser(fetchedRaw as any) : fetchedRaw;
       DevLogger.logInfo('[UserStore.loadUser] Mapped user:', { data: fetched });
       DevLogger.logInfo('[UserStore.loadUser] Balance from API:', { balance: fetched.balance });
-      set(() => {
+      set((state) => {
         // If we are using API, we should trust the API inventory, but merge if needed
         // For now, let's overwrite inventory from API if it's empty locally or just trust API
-        const inventory = fetched.inventory || []; 
+        const inventory = fetched.inventory || [];
+        const newUser = { ...fetched, inventory };
+        DevLogger.logInfo('[UserStore.loadUser] Setting user in store:', { 
+          newBalance: newUser.balance,
+          prevBalance: state.user.balance,
+          newInventoryCount: newUser.inventory?.length,
+          prevInventoryCount: state.user.inventory?.length
+        });
         return {
-          user: { ...fetched, inventory },
+          user: newUser,
           isAuthenticated: true,
           isLoading: false,
           error: null
