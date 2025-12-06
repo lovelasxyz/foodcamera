@@ -5,6 +5,7 @@ import { useTelegramAuth } from '@/hooks/useTelegramAuth';
 import { ParsedTelegramUser } from '@/types/telegram';
 import { apiService } from '@/services/apiService';
 import { isApiEnabled } from '@/config/api.config';
+import { DevLogger } from '@/services/devtools/loggerService';
 
 interface AuthBootstrapState {
   initializing: boolean;
@@ -57,22 +58,22 @@ export function useAuthBootstrap(): AuthBootstrapState {
               if (!token) {
                 const stored = userStorage.getToken();
                 if (stored) {
-                  console.log('[AuthBootstrap] Restored token from storage fallback:', stored);
+                  DevLogger.logInfo('[AuthBootstrap] Restored token from storage fallback:', { token: stored });
                   useUserStore.getState().setToken(stored);
                   token = stored;
                 }
               }
 
-              console.log('[AuthBootstrap] Checking token:', token);
+              DevLogger.logInfo('[AuthBootstrap] Checking token:', { token });
               if (!token) {
-                console.log('[AuthBootstrap] No token found, authenticating as guest...');
+                DevLogger.logInfo('[AuthBootstrap] No token found, authenticating as guest...', {});
                 const newToken = await apiService.authGuest();
-                console.log('[AuthBootstrap] Guest auth successful, token:', newToken);
+                DevLogger.logInfo('[AuthBootstrap] Guest auth successful, token:', { token: newToken });
                 useUserStore.getState().setToken(newToken);
                 // Explicitly force save to storage to be absolutely sure
                 userStorage.setToken(newToken);
               } else {
-                console.log('[AuthBootstrap] Token found, skipping guest auth.');
+                DevLogger.logInfo('[AuthBootstrap] Token found, skipping guest auth.', {});
               }
               await loadUser();
             } catch (e) {

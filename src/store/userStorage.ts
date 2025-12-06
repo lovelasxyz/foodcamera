@@ -1,3 +1,5 @@
+import { DevLogger } from '@/services/devtools/loggerService';
+
 const TOKEN_KEY = 'app_token_v2';
 const BALANCE_KEY = 'user_balance_v2';
 const DEV_SNAPSHOT_KEY = 'dev_user_snapshot_v2';
@@ -39,7 +41,7 @@ export const userStorage = {
   // Token
   getToken: (): string | null => safeGetItem(TOKEN_KEY),
   setToken: (token: string | null) => {
-    console.log('[UserStorage] Saving token to localStorage:', token);
+    DevLogger.logInfo('[UserStorage] Saving token to localStorage:', { token });
     if (token) safeSetItem(TOKEN_KEY, token);
     else safeRemoveItem(TOKEN_KEY);
   },

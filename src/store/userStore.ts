@@ -59,7 +59,7 @@ const shouldUseDevPersistence = isDev && !isApiEnabled();
 // Hydrate initial state
 // Force read from storage to ensure we get the latest token
 const initialToken = userStorage.getToken();
-console.log('[UserStore] Initial token from storage:', initialToken);
+DevLogger.logInfo('[UserStore] Initial token from storage:', { token: initialToken });
 const devSnapshot = shouldUseDevPersistence ? userStorage.getDevSnapshot<Partial<User>>() : null;
 const persistedBalance = userStorage.getBalance();
 
@@ -101,7 +101,7 @@ export const useUserStore = create<UserState & UserActions>((set, get) => ({
   },
 
   setToken: (token) => {
-    console.log('[UserStore] Setting token:', token);
+    DevLogger.logInfo('[UserStore] Setting token:', { token });
     userStorage.setToken(token);
     set({ token });
   },
@@ -250,7 +250,7 @@ export const useUserStore = create<UserState & UserActions>((set, get) => ({
     if (shouldUseGuestMode() && !isApiEnabled()) {
       // In guest mode without API, we rely on data from localStorage
       // Don't overwrite with a fresh mock user!
-      console.log('[UserStore.loadUser] Guest mode without API - using stored data');
+      DevLogger.logInfo('[UserStore.loadUser] Guest mode without API - using stored data', {});
       set({
         isAuthenticated: false,
         isLoading: false,
