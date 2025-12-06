@@ -21,6 +21,7 @@ interface UserState {
   error: string | null;
   isAuthenticated: boolean;
   inventoryFetched?: boolean;
+  userLoadedFromServer?: boolean; // Flag to prevent overwriting server data with Telegram defaults
   token?: string | null;
   refreshToken?: string | null;
   tokenExpiry?: number | null;
@@ -98,6 +99,7 @@ export const useUserStore = create<UserState & UserActions>((set, get) => ({
   error: null,
   isAuthenticated: !!initialToken, // If we have a token, we are tentatively authenticated
   inventoryFetched: false,
+  userLoadedFromServer: false,
   token: initialToken,
   refreshToken: null,
   tokenExpiry: null,
@@ -108,9 +110,32 @@ export const useUserStore = create<UserState & UserActions>((set, get) => ({
   },
 
   setTelegramUser: (telegramUser) => {
-    const user = UserFactory.createFromTelegram(telegramUser);
-    DevLogger.logInfo('[UserStore.setTelegramUser] Created user with DEFAULT balance:', { balance: user.balance });
-    set({ user, isAuthenticated: true, error: null, isLoading: false });
+    const newUser = UserFactory.createFromTelegram(telegramUser);
+    // IMPORTANT: Preserve balance/inventory from server if already loaded
+    // setTelegramUser is called with Telegram data which doesn't have balance
+    // So we should NOT overwrite the data that was loaded from API
+    const state = get();
+    
+    if (state.userLoadedFromServer) {
+      // Keep server data, only update Telegram-specific fields
+      const user = { 
+        ...state.user, 
+        name: newUser.name,
+        avatar: newUser.avatar,
+        telegram: newUser.telegram,
+        status: newUser.status
+      };
+      DevLogger.logInfo('[UserStore.setTelegramUser] Preserving server data:', { 
+        preservedBalance: state.user.balance,
+        telegramName: newUser.name
+      });
+      set({ user, isAuthenticated: true, error: null, isLoading: false });
+    } else {
+      DevLogger.logInfo('[UserStore.setTelegramUser] Setting full user (server not loaded yet):', { 
+        balance: newUser.balance
+      });
+      set({ user: newUser, isAuthenticated: true, error: null, isLoading: false });
+    }
   },
 
   setToken: (token) => {
@@ -303,12 +328,14 @@ export const useUserStore = create<UserState & UserActions>((set, get) => ({
       });
       
       // Use direct set with full state replacement for user
+      // IMPORTANT: Set userLoadedFromServer flag to prevent setTelegramUser from overwriting
       set({
         user: newUser,
         isAuthenticated: true,
         isLoading: false,
         error: null,
-        inventoryFetched: true
+        inventoryFetched: true,
+        userLoadedFromServer: true
       });
       
       // Verify the update was applied
