@@ -10,7 +10,10 @@ import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { useI18n } from '@/i18n';
 
 export const Header: React.FC = () => {
-  const { user } = useUserStore();
+  // Subscribe to individual fields to ensure re-render on each change
+  const user = useUserStore((state) => state.user);
+  const balance = useUserStore((state) => state.user.balance);
+  const isLoading = useUserStore((state) => state.isLoading);
   const { /* setActivePage, */ openModal } = useUIStore();
   const navigate = useNavigate();
   const isGuestMode = shouldUseGuestMode();
@@ -56,7 +59,9 @@ export const Header: React.FC = () => {
               </button>
             </div>
             <div className={styles.coinCountContainer} onClick={handleProfileClick}>
-              <div className={styles.coinCount}>{user.balance.toFixed(2)}</div>
+              <div className={styles.coinCount}>
+                {isLoading ? '...' : balance.toFixed(2)}
+              </div>
               <div className={styles.coinContainer}>
                 <div className={styles.coin}>
                   <img 

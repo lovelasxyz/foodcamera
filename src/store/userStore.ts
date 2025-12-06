@@ -102,10 +102,14 @@ export const useUserStore = create<UserState & UserActions>((set, get) => ({
   refreshToken: null,
   tokenExpiry: null,
 
-  setUser: (user) => set({ user, isAuthenticated: true, error: null }),
+  setUser: (user) => {
+    DevLogger.logInfo('[UserStore.setUser] Called with balance:', { balance: user.balance });
+    set({ user, isAuthenticated: true, error: null });
+  },
 
   setTelegramUser: (telegramUser) => {
     const user = UserFactory.createFromTelegram(telegramUser);
+    DevLogger.logInfo('[UserStore.setTelegramUser] Created user with DEFAULT balance:', { balance: user.balance });
     set({ user, isAuthenticated: true, error: null, isLoading: false });
   },
 
@@ -288,29 +292,29 @@ export const useUserStore = create<UserState & UserActions>((set, get) => ({
       const fetched = isApiEnabled() ? mapUser(fetchedRaw as any) : fetchedRaw;
       DevLogger.logInfo('[UserStore.loadUser] Mapped user:', { data: fetched });
       DevLogger.logInfo('[UserStore.loadUser] Balance from API:', { balance: fetched.balance });
-      set((state) => {
-        // If we are using API, we should trust the API inventory, but merge if needed
-        // For now, let's overwrite inventory from API if it's empty locally or just trust API
-        const inventory = fetched.inventory || [];
-        const newUser = { ...fetched, inventory };
-        DevLogger.logInfo('[UserStore.loadUser] Setting user in store:', { 
-          newBalance: newUser.balance,
-          prevBalance: state.user.balance,
-          newInventoryCount: newUser.inventory?.length,
-          prevInventoryCount: state.user.inventory?.length
-        });
-        return {
-          user: newUser,
-          isAuthenticated: true,
-          isLoading: false,
-          error: null
-        };
+      
+      // Build new user object
+      const inventory = fetched.inventory || [];
+      const newUser = { ...fetched, inventory };
+      
+      DevLogger.logInfo('[UserStore.loadUser] About to set user:', { 
+        newBalance: newUser.balance,
+        prevBalance: get().user.balance
       });
-      // Also trigger inventory load separately if needed, but usually user profile has it
-      if (isApiEnabled()) {
-         // Ensure inventory is marked as fetched
-         set({ inventoryFetched: true });
-      }
+      
+      // Use direct set with full state replacement for user
+      set({
+        user: newUser,
+        isAuthenticated: true,
+        isLoading: false,
+        error: null,
+        inventoryFetched: true
+      });
+      
+      // Verify the update was applied
+      DevLogger.logInfo('[UserStore.loadUser] After set, current balance:', { 
+        balance: get().user.balance 
+      });
     } catch (e: unknown) {
       const message = e instanceof Error ? e.message : String(e);
       set({ isLoading: false, error: message || 'Failed to load user' });
@@ -332,6 +336,14 @@ export const useUserStore = create<UserState & UserActions>((set, get) => ({
 // Subscribe for persistence
 if (typeof window !== 'undefined') {
   useUserStore.subscribe((state, prev) => {
+    // Debug: Log every state change
+    if (state.user.balance !== prev.user.balance) {
+      DevLogger.logInfo('[UserStore.subscribe] Balance changed!', {
+        from: prev.user.balance,
+        to: state.user.balance
+      });
+    }
+    
     // Always ensure token is synced if it exists in state but not in storage (edge case)
     if (state.token && !userStorage.getToken()) {
        userStorage.setToken(state.token);
