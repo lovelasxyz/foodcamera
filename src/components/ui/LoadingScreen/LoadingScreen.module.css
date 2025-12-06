@@ -141,7 +141,7 @@
 }
 
 .floatingLogo {
-  aspect-ratio: 1;
+  aspect-ratio: 0.95;
   object-fit: contain;
   width: 100%;
   animation: float 1s ease-in-out infinite alternate;
