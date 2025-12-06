@@ -263,7 +263,10 @@ export const useUserStore = create<UserState & UserActions>((set, get) => ({
     const repo: IUserRepository = getUserRepository();
     try {
       const fetchedRaw = isApiEnabled() ? await apiService.getCurrentUser() : await repo.fetchUser();
+      console.log('[UserStore.loadUser] Raw API response:', fetchedRaw);
       const fetched = isApiEnabled() ? mapUser(fetchedRaw as any) : fetchedRaw;
+      console.log('[UserStore.loadUser] Mapped user:', fetched);
+      console.log('[UserStore.loadUser] Balance from API:', fetched.balance);
       set(() => {
         // If we are using API, we should trust the API inventory, but merge if needed
         // For now, let's overwrite inventory from API if it's empty locally or just trust API
