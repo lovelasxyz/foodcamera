@@ -43,7 +43,7 @@ export const shouldUseGuestMode = (): boolean => {
 
   // 2. SSR режим - всегда guest
   if (typeof window === 'undefined') {
-    DevLogger.logInfo('[Environment] SSR mode, guest mode = TRUE');
+   // DevLogger.logInfo('[Environment] SSR mode, guest mode = TRUE');
     return true;
   }
 
@@ -53,7 +53,7 @@ export const shouldUseGuestMode = (): boolean => {
     const isLocalhost = hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1' || hostname.endsWith('.localhost');
     
     if (isLocalhost && !isTelegramWebApp()) {
-      DevLogger.logInfo('[Environment] Running on localhost without Telegram WebApp, guest mode = TRUE');
+     // DevLogger.logInfo('[Environment] Running on localhost without Telegram WebApp, guest mode = TRUE');
       return true;
     }
   } catch {
@@ -62,7 +62,7 @@ export const shouldUseGuestMode = (): boolean => {
 
   // 4. Telegram WebApp доступен - НЕ guest mode
   if (isTelegramWebApp()) {
-    DevLogger.logInfo('[Environment] Running in Telegram WebApp, guest mode = FALSE');
+ //   DevLogger.logInfo('[Environment] Running in Telegram WebApp, guest mode = FALSE');
     return false;
   }
 
