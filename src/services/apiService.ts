@@ -1,42 +1,32 @@
 import { apiClient } from './apiClient';
 import { normalizeApiError } from './apiError';
-import { API_CONFIG, resolveApiUrl, isApiEnabled } from '@/config/api.config';
+import { API_CONFIG, isApiEnabled } from '@/config/api.config';
 import { User } from '@/types/user';
 import { mockUser, mockSpin, mockDeposit } from './apiMocks';
 import { ApiSpinResult, ApiDeposit, CreateDepositRequest, SpinRequestDto, AuthResponse } from '@/types/api';
-import { getAuthToken, setAuthToken, setTokenMeta, refreshAuthToken, resolveExpiresIn } from './authTokenManager';
+import { setAuthToken, setTokenMeta, refreshAuthToken, resolveExpiresIn } from './authTokenManager';
 
-// Deprecated inline interfaces removed – using central API types.
-
+/**
+ * Central API service - orchestrates all API calls
+ * Uses apiClient for HTTP requests (handles auth, retry, logging)
+ */
 export class ApiService {
   setToken(token: string | null) {
     setAuthToken(token);
   }
 
-  private withAuthHeaders(init?: RequestInit): RequestInit {
-    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-    const token = getAuthToken();
-    if (token) headers['Authorization'] = `Bearer ${token}`;
-    return { ...(init || {}), headers: { ...(init?.headers || {}), ...headers } };
-  }
-
   async authWithTelegram(initData: string): Promise<string> {
     if (!isApiEnabled()) {
-      // return pseudo-token so rest of flow can proceed
       const token = 'mock-token';
       this.setToken(token);
       return token;
     }
-    const url = resolveApiUrl(API_CONFIG.ENDPOINTS.AUTH_TELEGRAM);
+    
     try {
-      const res = await fetch(url, {
-        method: 'POST',
-        body: JSON.stringify({ initData }),
-        credentials: 'include',
-        ...this.withAuthHeaders()
-      });
-      if (!res.ok) throw new Error('Auth failed');
-      const data = (await res.json()) as AuthResponse;
+      const data = await apiClient.post<AuthResponse>(
+        API_CONFIG.ENDPOINTS.AUTH_TELEGRAM, 
+        { initData }
+      );
       const token = data.token || (data as any).accessToken;
       if (!token) {
         throw new Error('Auth response does not contain token');
@@ -56,15 +46,9 @@ export class ApiService {
       this.setToken(token);
       return token;
     }
-    const url = resolveApiUrl(API_CONFIG.ENDPOINTS.AUTH_GUEST);
+    
     try {
-      const res = await fetch(url, {
-        method: 'POST',
-        credentials: 'include',
-        ...this.withAuthHeaders()
-      });
-      if (!res.ok) throw new Error('Guest auth failed');
-      const data = (await res.json()) as AuthResponse;
+      const data = await apiClient.post<AuthResponse>(API_CONFIG.ENDPOINTS.AUTH_GUEST, {});
       const token = data.token || (data as any).accessToken;
       if (!token) {
         throw new Error('Auth response does not contain token');
@@ -82,14 +66,13 @@ export class ApiService {
     if (!isApiEnabled()) {
       return mockUser();
     }
-    const profileUrl = resolveApiUrl(API_CONFIG.ENDPOINTS.USER_PROFILE);
+    
     try {
-      return await apiClient.get<User>(profileUrl);
+      return await apiClient.get<User>(API_CONFIG.ENDPOINTS.USER_PROFILE);
     } catch (primaryErr) {
       // Fallback to legacy endpoint for backward compatibility
       try {
-        const legacyUrl = resolveApiUrl(API_CONFIG.ENDPOINTS.USER_ME);
-        return await apiClient.get<User>(legacyUrl);
+        return await apiClient.get<User>(API_CONFIG.ENDPOINTS.USER_ME);
       } catch (fallbackErr) {
         throw normalizeApiError(primaryErr || fallbackErr);
       }
@@ -100,17 +83,29 @@ export class ApiService {
     if (!isApiEnabled()) {
       return mockSpin(caseId);
     }
-    const url = resolveApiUrl(API_CONFIG.ENDPOINTS.SPIN);
-    const payload: SpinRequestDto = { caseId, requestId: crypto.randomUUID?.() || `req-${Date.now()}` };
-    try { return await apiClient.post<ApiSpinResult>(url, payload); } catch (e) { throw normalizeApiError(e); }
+    
+    const payload: SpinRequestDto = { 
+      caseId, 
+      requestId: crypto.randomUUID?.() || `req-${Date.now()}` 
+    };
+    
+    try { 
+      return await apiClient.post<ApiSpinResult>(API_CONFIG.ENDPOINTS.SPIN, payload); 
+    } catch (e) { 
+      throw normalizeApiError(e); 
+    }
   }
 
   async createDeposit(payload: CreateDepositRequest): Promise<ApiDeposit> {
     if (!isApiEnabled()) {
       return mockDeposit(payload.amount);
     }
-    const url = resolveApiUrl(API_CONFIG.ENDPOINTS.DEPOSIT_CREATE);
-    try { return await apiClient.post<ApiDeposit>(url, payload); } catch (e) { throw normalizeApiError(e); }
+    
+    try { 
+      return await apiClient.post<ApiDeposit>(API_CONFIG.ENDPOINTS.DEPOSIT_CREATE, payload); 
+    } catch (e) { 
+      throw normalizeApiError(e); 
+    }
   }
 
   async refreshToken(): Promise<string | null> {

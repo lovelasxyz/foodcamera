@@ -103,34 +103,30 @@ export const useTelegramAuth = (): UseTelegramAuthReturn => {
         isPremium: payload.is_premium,
       };
 
-      const packedUser = {
-        id: payload.id,
+      // Login Widget: flat format (id, first_name, etc.) - NOT nested user JSON
+      const fields: Record<string, string | undefined> = {
+        id: String(payload.id),
+        auth_date: String(payload.auth_date),
+        hash: payload.hash,
         first_name: payload.first_name,
         last_name: payload.last_name,
         username: payload.username,
         photo_url: payload.photo_url,
-        is_premium: payload.is_premium,
       };
 
-      const params = new URLSearchParams();
-      params.set('auth_date', String(payload.auth_date));
-      params.set('hash', payload.hash);
-      params.set('user', JSON.stringify(packedUser));
+      const params = new URLSearchParams(
+        Object.entries(fields).filter((e): e is [string, string] => e[1] != null)
+      );
 
       setInitData(params.toString());
       setUser(widgetUser);
       setStatus('authenticated');
-
-      if (process.env.NODE_ENV === 'development') {
-        logDebug('Telegram login widget authenticated user:', widgetUser);
-      }
+      logDebug('Telegram login widget authenticated user:', widgetUser);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to handle Telegram login data';
       setStatus('error');
       setError(message);
-      if (process.env.NODE_ENV === 'development') {
-        logDebug('Error handling Telegram login widget auth:', err);
-      }
+      logDebug('Error handling Telegram login widget auth:', err);
     }
   }, [isWidgetAvailable]);
 

@@ -159,15 +159,25 @@ export const API_CONFIG = {
   }
 } as const;
 
+// Cache isApiEnabled result - it won't change during runtime
+let _isApiEnabledCached: boolean | null = null;
+
 export const isApiEnabled = (): boolean => {
-  const enabled = API_CONFIG.USE_API && !API_CONFIG.FORCE_MOCKS;
-  DevLogger.logInfo('[API Config] isApiEnabled', {
-    enabled,
+  if (_isApiEnabledCached !== null) {
+    return _isApiEnabledCached;
+  }
+  
+  _isApiEnabledCached = API_CONFIG.USE_API && !API_CONFIG.FORCE_MOCKS;
+  
+  // Log only once on first call
+  DevLogger.logInfo('[API Config] isApiEnabled (cached)', {
+    enabled: _isApiEnabledCached,
     USE_API: API_CONFIG.USE_API,
     FORCE_MOCKS: API_CONFIG.FORCE_MOCKS,
     BASE_URL: API_CONFIG.BASE_URL
   });
-  return enabled;
+  
+  return _isApiEnabledCached;
 };
 
 export type ApiEndpointKey = keyof typeof API_CONFIG.ENDPOINTS;

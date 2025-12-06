@@ -58,29 +58,23 @@ const isDev = typeof window !== 'undefined' && (import.meta as any)?.env?.MODE !
 const shouldUseDevPersistence = isDev && !isApiEnabled();
 
 // Hydrate initial state
-// Force read from storage to ensure we get the latest token
 const initialToken = userStorage.getToken();
-DevLogger.logInfo('[UserStore] Initial token from storage:', { token: initialToken });
 const devSnapshot = shouldUseDevPersistence ? userStorage.getDevSnapshot<Partial<User>>() : null;
 const persistedBalance = userStorage.getBalance();
 
 // Clear persisted balance when API is enabled - server is source of truth
 if (isApiEnabled() && persistedBalance != null) {
-  DevLogger.logInfo('[UserStore] Clearing persisted balance - API is enabled', { persistedBalance });
   userStorage.clearBalance();
 }
 
 const initialUser = (() => {
   if (devSnapshot) {
-    DevLogger.logInfo('[UserStore] Using dev snapshot for initial user', { balance: devSnapshot.balance });
     return { ...defaultUser, ...devSnapshot, inventory: devSnapshot.inventory || [] } as User;
   }
   // Only use persisted balance if we are NOT using API (otherwise API is source of truth)
   if (persistedBalance != null && !isApiEnabled()) {
-    DevLogger.logInfo('[UserStore] Using persisted balance for initial user', { balance: persistedBalance });
     return { ...defaultUser, balance: persistedBalance } as User;
   }
-  DevLogger.logInfo('[UserStore] Using default user', { balance: defaultUser.balance, isApiEnabled: isApiEnabled() });
   return defaultUser;
 })();
 
@@ -104,10 +98,7 @@ export const useUserStore = create<UserState & UserActions>((set, get) => ({
   refreshToken: null,
   tokenExpiry: null,
 
-  setUser: (user) => {
-    DevLogger.logInfo('[UserStore.setUser] Called with balance:', { balance: user.balance });
-    set({ user, isAuthenticated: true, error: null });
-  },
+  setUser: (user) => set({ user, isAuthenticated: true, error: null }),
 
   setTelegramUser: (telegramUser) => {
     const newUser = UserFactory.createFromTelegram(telegramUser);
@@ -125,21 +116,13 @@ export const useUserStore = create<UserState & UserActions>((set, get) => ({
         telegram: newUser.telegram,
         status: newUser.status
       };
-      DevLogger.logInfo('[UserStore.setTelegramUser] Preserving server data:', { 
-        preservedBalance: state.user.balance,
-        telegramName: newUser.name
-      });
       set({ user, isAuthenticated: true, error: null, isLoading: false });
     } else {
-      DevLogger.logInfo('[UserStore.setTelegramUser] Setting full user (server not loaded yet):', { 
-        balance: newUser.balance
-      });
       set({ user: newUser, isAuthenticated: true, error: null, isLoading: false });
     }
   },
 
   setToken: (token) => {
-    DevLogger.logInfo('[UserStore] Setting token:', { token });
     userStorage.setToken(token);
     set({ token });
   },
@@ -298,8 +281,6 @@ export const useUserStore = create<UserState & UserActions>((set, get) => ({
 
     if (shouldUseGuestMode() && !isApiEnabled()) {
       // In guest mode without API, we rely on data from localStorage
-      // Don't overwrite with a fresh mock user!
-      DevLogger.logInfo('[UserStore.loadUser] Guest mode without API - using stored data', {});
       set({
         isAuthenticated: false,
         isLoading: false,
@@ -313,19 +294,11 @@ export const useUserStore = create<UserState & UserActions>((set, get) => ({
     const repo: IUserRepository = getUserRepository();
     try {
       const fetchedRaw = isApiEnabled() ? await apiService.getCurrentUser() : await repo.fetchUser();
-      DevLogger.logInfo('[UserStore.loadUser] Raw API response:', { data: fetchedRaw });
       const fetched = isApiEnabled() ? mapUser(fetchedRaw as any) : fetchedRaw;
-      DevLogger.logInfo('[UserStore.loadUser] Mapped user:', { data: fetched });
-      DevLogger.logInfo('[UserStore.loadUser] Balance from API:', { balance: fetched.balance });
       
       // Build new user object
       const inventory = fetched.inventory || [];
       const newUser = { ...fetched, inventory };
-      
-      DevLogger.logInfo('[UserStore.loadUser] About to set user:', { 
-        newBalance: newUser.balance,
-        prevBalance: get().user.balance
-      });
       
       // Use direct set with full state replacement for user
       // IMPORTANT: Set userLoadedFromServer flag to prevent setTelegramUser from overwriting
@@ -336,11 +309,6 @@ export const useUserStore = create<UserState & UserActions>((set, get) => ({
         error: null,
         inventoryFetched: true,
         userLoadedFromServer: true
-      });
-      
-      // Verify the update was applied
-      DevLogger.logInfo('[UserStore.loadUser] After set, current balance:', { 
-        balance: get().user.balance 
       });
     } catch (e: unknown) {
       const message = e instanceof Error ? e.message : String(e);
@@ -363,14 +331,6 @@ export const useUserStore = create<UserState & UserActions>((set, get) => ({
 // Subscribe for persistence
 if (typeof window !== 'undefined') {
   useUserStore.subscribe((state, prev) => {
-    // Debug: Log every state change
-    if (state.user.balance !== prev.user.balance) {
-      DevLogger.logInfo('[UserStore.subscribe] Balance changed!', {
-        from: prev.user.balance,
-        to: state.user.balance
-      });
-    }
-    
     // Always ensure token is synced if it exists in state but not in storage (edge case)
     if (state.token && !userStorage.getToken()) {
        userStorage.setToken(state.token);
