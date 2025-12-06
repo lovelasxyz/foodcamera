@@ -13,6 +13,7 @@ import { shouldUseGuestMode } from '@/utils/environment';
 import { MockInventoryRepository } from '@/application/inventory/MockInventoryRepository';
 import { getUserStoreDependencies, ensureUserStoreDependenciesConfigured } from './userStoreDependencies';
 import { OptimisticUpdateFactory } from '@/infrastructure/optimistic/OptimisticUpdateManager';
+import { DevLogger } from '@/services/devtools/loggerService';
 
 interface UserState {
   user: User;
@@ -263,10 +264,10 @@ export const useUserStore = create<UserState & UserActions>((set, get) => ({
     const repo: IUserRepository = getUserRepository();
     try {
       const fetchedRaw = isApiEnabled() ? await apiService.getCurrentUser() : await repo.fetchUser();
-      console.log('[UserStore.loadUser] Raw API response:', fetchedRaw);
+      DevLogger.logInfo('[UserStore.loadUser] Raw API response:', { data: fetchedRaw });
       const fetched = isApiEnabled() ? mapUser(fetchedRaw as any) : fetchedRaw;
-      console.log('[UserStore.loadUser] Mapped user:', fetched);
-      console.log('[UserStore.loadUser] Balance from API:', fetched.balance);
+      DevLogger.logInfo('[UserStore.loadUser] Mapped user:', { data: fetched });
+      DevLogger.logInfo('[UserStore.loadUser] Balance from API:', { balance: fetched.balance });
       set(() => {
         // If we are using API, we should trust the API inventory, but merge if needed
         // For now, let's overwrite inventory from API if it's empty locally or just trust API
